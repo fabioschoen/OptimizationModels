@@ -1,0 +1,15 @@
+let Ineq := Ineq + 1;
+
+let cover[Ineq] := {i in OBJECTS: delta[i] > 0.00001};
+printf "Cover inequality # %d: ",Ineq;
+display cover[Ineq];
+printf "Weight: %f\n", sum{i in cover[Ineq]} weight[i];
+
+let amin := {s in cover[Ineq]: weight[s] = min {i in cover[Ineq]} weight[i]};
+repeat while (sum{i in cover[Ineq]} weight[i] - weight[first(amin)]) > cap  {
+   let cover[Ineq] := cover[Ineq] diff {first(amin)};
+   printf "Reduced Cover inequality # %d: ",Ineq;
+   display cover[Ineq];
+   printf "Weight: %f\n", sum{i in cover[Ineq]} weight[i];
+   let amin := {s in cover[Ineq]: weight[s] = min {i in cover[Ineq]} weight[i]};
+};

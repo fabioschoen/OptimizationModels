@@ -1,0 +1,25 @@
+model dea.mod;
+data healthcare.dat;
+option solver gurobi;
+
+for {unit in UNITS} {
+     # chose one unit to optimize 
+     let u := unit;
+     solve;           
+     printf "==========================================================\n";
+     printf "Unit %s eff: %f\n",u,eff;
+     printf "positive weights:\t";
+     for {io in IO : weight[io] > 1.e-7}{
+     printf "%s: %f\t",io,weight[io];
+     };
+     printf "\n Peer Comparison:\n";
+     for {ui in UNITS}{
+     printf "%s: %f\t",ui, (sum {o in OUTPUTS} weight[o] * iodata[ui,o]) /
+     	    	  	  (sum {i in INPUTS} weight[i] * iodata[ui,i]);
+     };
+     printf "\n Competitors (Dual weights):\n";
+     for {ui in UNITS: comparison.body[ui] > -1.e-7}{
+     printf "%s: %f\t",ui,comparison[ui];
+     };
+     printf "\n";
+};

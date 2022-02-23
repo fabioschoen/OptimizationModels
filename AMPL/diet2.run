@@ -1,0 +1,19 @@
+model diet.mod;
+data diet.dat;
+option solver gurobi;
+solve;
+
+option omit_zero_rows 1;
+display Buy;
+display Content.lb, Content, Content.ub;
+
+display totalcost ;
+
+let {f in FOODS} maxReq[f] := 2;
+solve;
+
+option omit_zero_rows 1;
+display Buy;
+display Content.lb, Content, Content.ub;
+
+display totalcost ;

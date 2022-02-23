@@ -1,0 +1,53 @@
+model biobjpath.mod;
+data biobj.dat;
+option solver gurobi;
+option omit_zero_rows 1;
+option omit_zero_cols 1;
+
+param opt{1..2};
+
+drop obj1AsConstraint;
+drop obj2AsConstraint;
+
+printf "Optimizing the first objective\n";
+objective cost1;
+solve;
+
+let opt[1] := cost1;
+display f;
+printf "Cost 1: %f (reliability; %f), Cost 2: %d\n",cost1, 100.*exp(-cost1),cost2;
+
+
+printf "Optimizing the second objective\n";
+objective cost2;
+solve;
+
+let opt[2] := cost2;
+display f;
+printf "Cost 1: %f (reliability; %f), Cost 2: %d\n",cost1, 100.*exp(-cost1),cost2;
+
+restore  obj2AsConstraint;
+
+for {p in {1.2,1.4,1.6,1.8,2.0}} {
+   let beta[1] := p * opt[2];
+   printf "Compromise: optimize obj 1 with obj 2 at most %f times the minimum (%f)\n",p,p*opt[2];
+
+   solve;
+   display f;
+   printf "Cost 1: %f (reliability; %f), Cost 2: %d\n",cost1, 100.*exp(-cost1),cost2;
+};
+
+
+drop  obj2AsConstraint;
+restore  obj1AsConstraint;
+
+for {p in {1.2,1.4,1.6,1.8,2.0}} {
+   let beta[2] := p * opt[1];
+   printf "Compromise: optimize obj 2 with obj 1 at most %f times the minimum (%f)\n",p,p*opt[1];
+
+   solve;
+   display f;
+   printf "Cost 1: %f (reliability; %f), Cost 2: %d\n",cost1, 100.*exp(-cost1),cost2;
+};
+
+

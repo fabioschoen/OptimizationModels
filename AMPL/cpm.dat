@@ -1,0 +1,40 @@
+param: NODES : Duration := # shorthand name
+"Start" 0                  # S
+"Boil Water" 10            # BW
+"Cut onions" 2             # CO
+"Cut garlic" 2             # CG
+"Scrap Grana cheese" 1     # SG
+"Peal off tomatoes" 3      # PT
+"Fry onions" 2             # FO
+"Cook tomatoes" 10         # CT
+"Prepare the sauce" 3      # PS
+"Cook spaghetti" 8         # CS
+"Put sauce on spaghetti" 1 # SS
+"End" 0;                   # E
+
+param S := "Start" ;
+param T := "End" ;
+
+set ARCS :=
+	("Start", "Boil Water")
+	("Start", "Cut onions")
+	("Start", "Cut garlic")
+        ("Start", "Peal off tomatoes")
+        ("Start", "Scrap Grana cheese")
+	("Cut onions", "Fry onions")
+        ("Peal off tomatoes", "Cook tomatoes")
+        ("Cut garlic", "Cook tomatoes")
+        ("Fry onions", "Cook tomatoes")
+        ("Cook tomatoes", "Prepare the sauce")
+	("Boil Water", "Cook spaghetti")
+        ("Prepare the sauce", "Put sauce on spaghetti")
+        ("Cook spaghetti", "Put sauce on spaghetti")
+        ("Put sauce on spaghetti", "End")
+        ("Scrap Grana cheese", "End")
+;
+
+
+# associate to each arc a cost equal to the duration
+# of the preceding activity
+
+let {(i,j) in ARCS} Cost[i,j] := Duration[i];

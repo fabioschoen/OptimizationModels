@@ -1,0 +1,11 @@
+model diet.mod;
+data StiglerSmallDiet.dat;
+option solver gurobi;
+solve;
+
+option omit_zero_rows 1;
+display Buy;
+display Content.lb, Content;
+
+display totalcost * 365.25 /100.;
+

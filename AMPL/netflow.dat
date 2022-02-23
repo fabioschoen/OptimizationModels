@@ -1,0 +1,19 @@
+param: NODES: balance := 
+s   180
+P1    0
+P2    0
+P3    0
+D1 -120
+D2  -60;
+
+param: ARCS:   cost     L       U :=
+        s  P1    11     .     100
+        s  P2    13     .     200
+        s  P3    10     .     100
+        P1 D1     3     .       .
+        P1 D2     5     .       .
+        P2 D1     1     .       .
+        P2 D2     1     .       .
+        P3 D1     5     .       .
+        P3 D2     3     .       .
+;

@@ -1,0 +1,217 @@
+set FOODS :=
+"Hamburger"
+"Cheeseburger"
+"Quarter Pounder w/ Cheese"
+"McLean Deluxe"
+"McLean Deluxe w/ Cheese"
+"Big Mac"
+"Filet-O-Fish"
+"McGrilled Chicken"
+"McChicken Sandwich"
+"Fries, small"
+"Fries, large"
+"Fries, super"
+"Chicken McNuggets (6 pcs)"
+"Chicken McNuggets (9 pcs)"
+"Chicken McNuggets (20 pcs)"
+"Hot Mustard Sauce"
+"Barbeque Sauce"
+"Sweet 'N Sour Sauce"
+"Honey"
+"Chef Salad"
+"Chunky Chicken Salad"
+"Garden Salad"
+"Side Salad"
+"Croutons"
+"Bacon Bits"
+"Bleu Cheese Dressing"
+"Ranch Dressing"
+"1000 Island Dressing"
+"Lite Vinaigrette Dressing"
+"French Rdcd Cal Dressing"
+"Egg McMuffin"
+"Sausage McMuffin"
+"Sansage McMuffin with Egg"
+"English Muffin"
+"Sausage Biscuit"
+"Sausage Biscuit with Egg"
+"Bacon, Egg & Cheese Biscuit"
+"Hash Browns"
+"Breakfast Burrito"
+"Cheerios"
+"Wheaties"
+"Apple Danish"
+"Cheese Danish"
+"Cinnamon Raisin Danish"
+"Raspberry Danish"
+"Lowfat Frozen Yogurt Cone"
+"Vanilla Shake"
+"Chocolate Shake"
+"Strawberry Shake"
+"1% Lowfat Milk"
+"Orange Juice"
+"Coca-Cola (small)"
+"Coca-Cola (medium)"
+"Coca-Cola (large)"
+"Diet Coke (small)"
+"Diet Coke (medium)"
+"Diet Coke (large)"
+"Sprite (small)"
+"Sprite (medium)"
+"Sprite (large)"
+"H-C Orange Drink (small)"
+"H-C Orange Drink (medium)"
+"H-C Orange Drink (large)"
+;
+
+set ELEMENTS :=  Cal	CalFat	Fat	SatFat	Chol	Sodium	Carbo
+    	     Protein	VitA	VitC	Calcium	Iron; 
+
+param:   minQual maxQual :=
+Cal	2000	2000
+CalFat	0	300
+Fat	0	100
+SatFat	0	30
+Chol	0	375
+Sodium	0	3000
+Carbo	350	375
+Protein	55	.
+VitA	100	.
+VitC	100	.
+Calcium	100	.
+Iron	100	.
+;
+param compos (tr):
+      Cal	CalFat	Fat	SatFat	Chol	Sodium	Carbo
+      Protein	VitA	VitC	Calcium	Iron :=
+"Hamburger"			255	80	9	3	35	490	30	12	4	4	10	15
+"Cheeseburger"			305	120	13	5	50	725	30	15	8	4	20	15
+"Quarter Pounder w/ Cheese"			510	250	28	11	115	1110	34	28	15	6	30	20
+"McLean Deluxe"			320	90	10	4	60	670	35	22	10	10	15	20
+"McLean Deluxe w/ Cheese"			370	125	14	5	75	890	35	24	15	10	20	20
+"Big Mac"			500	235	26	9	100	890	42	25	6	2	25	20
+"Filet-O-Fish"			370	160	18	4	50	730	38	14	2	0	15	10
+"McGrilled Chicken"			400	110	12	4	80	680	42	31	8	15	15	8
+"McChicken Sandwich"			470	225	25	5	60	830	42	19	2	2	15	10
+"Fries, small"			220	110	12	2.5	0	110	26	3	0	15	0	2
+"Fries, large"			400	200	22	5	0	200	46	6	0	25	0	6
+"Fries, super"			620	310	34	7.5	0	310	72	9	0	40	0	8
+"Chicken McNuggets (6 pcs)"			270	135	15	3.5	55	580	17	20	0	0	0	6
+"Chicken McNuggets (9 pcs)"			405	200	22	5	85	870	25	30	0	0	0	8
+"Chicken McNuggets (20 pcs)"			900	444	49	11	189	1933	56	67	0	0	0	18
+"Hot Mustard Sauce"			70	30	3.5	0.5	5	250	8	0	0	0	2	0
+"Barbeque Sauce"			50	5	0.5	0	0	340	12	0	4	4	0	2
+"Sweet 'N Sour Sauce"			60	0	0	0	0	190	14	0	6	0	0	0
+"Honey"			45	0	0	0	0	0	12	0	0	0	0	0
+"Chef Salad"			170	80	9	4	110	400	8	17	100	35	15	8
+"Chunky Chicken Salad"			150	35	4	1	80	230	7	25	170	45	4	6
+"Garden Salad"			50	20	2	0.5	65	70	6	4	90	35	4	8
+"Side Salad"			30	10	1	0.5	30	35	4	2	80	20	2	4
+"Croutons"			50	20	2	0.5	0	140	7	1	0	0	0	0
+"Bacon Bits"			15	10	1	0.5	1	95	0	1	0	0	0	0
+"Bleu Cheese Dressing"			250	180	20	5	35	750	5	0	0	0	0	0
+"Ranch Dressing"			220	180	20	4	20	520	5	0	0	0	0	0
+"1000 Island Dressing"			225	135	15	5	40	500	20	0	0	0	0	0
+"Lite Vinaigrette Dressing"			50	20	2	0.5	0	240	10	0	0	0	0	0
+"French Rdcd Cal Dressing"			160	70	8	1	0	460	20	0	0	0	0	0
+"Egg McMuffin"			280	100	11	4	235	710	28	18	10	0	25	15
+"Sausage McMuffin"			345	180	20	7	60	770	27	15	4	0	20	15
+"Sansage McMuffin with Egg"			430	225	25	8	270	920	27	21	10	0	25	20
+"English Muffin"			170	35	4	1	0	285	26	5	2	0	15	8
+"Sausage Biscuit"			420	250	28	8	45	1040	32	12	0	0	8	10
+"Sausage Biscuit with Egg"			505	300	33	10	260	1210	33	19	6	0	10	20
+"Bacon, Egg & Cheese Biscuit"			440	235	26	8	240	1215	33	15	10	0	20	15
+"Hash Browns"			130	65	7	1	0	330	15	1	0	2	0	0
+"Breakfast Burrito"			280	155	17	4	135	580	21	12	10	10	10	8
+"Cheerios"			80	10	1	0	0	210	14	3	15	15	2	30
+"Wheaties"			90	10	1	0	0	220	19	2	20	20	2	20
+"Apple Danish"			360	145	16	5	40	290	50	4	8	0	6	4
+"Cheese Danish"			400	200	22	8	70	330	45	7	10	0	8	4
+"Cinnamon Raisin Danish"			430	200	22	7	50	280	55	5	8	0	8	8
+"Raspberry Danish"			390	145	16	5	45	290	58	5	8	0	8	4
+"Lowfat Frozen Yogurt Cone"			110	10	1	0.5	5	80	22	4	2	0	10	0
+"Vanilla Shake"			310	45	5	3	25	170	55	12	4	4	35	2
+"Chocolate Shake"			350	55	6	4	25	240	62	13	4	4	35	6
+"Strawberry Shake"			340	45	5	3	25	170	63	12	4	4	35	2
+"1% Lowfat Milk"			110	20	2	1.5	10	130	12	9	10	4	30	0
+"Orange Juice"			80	0	0	0	0	20	20	1	2	120	2	2
+"Coca-Cola (small)"			145	0	0	0	0	15	38	0	0	0	0	0
+"Coca-Cola (medium)"			205	0	0	0	0	20	55	0	0	0	0	0
+"Coca-Cola (large)"			300	0	0	0	0	30	82	0	0	0	0	0
+"Diet Coke (small)"			1	0	0	0	0	20	0	0	0	0	0	0
+"Diet Coke (medium)"			2	0	0	0	0	25	0.5	0	0	0	0	0
+"Diet Coke (large)"			3	0	0	0	0	35	0.5	0	0	0	0	0
+"Sprite (small)"			140	0	0	0	0	35	37	0	0	0	0	0
+"Sprite (medium)"			205	0	0	0	0	50	53	0	0	0	0	0
+"Sprite (large)"			300	0	0	0	0	70	78	0	0	0	0	0
+"H-C Orange Drink (small)"			160	0	0	0	0	35	42	0	0	0	0	0
+"H-C Orange Drink (medium)"			240	0	0	0	0	50	60	0	0	0	0	0
+"H-C Orange Drink (large)"			350	0	0	0	0	75	89	0	0	0	0	0
+;
+
+param cost :=
+
+"Hamburger"		0.59
+"Cheeseburger"		0.69
+"Quarter Pounder w/ Cheese"		1.84
+"McLean Deluxe"		2.09
+"McLean Deluxe w/ Cheese"		2.19
+"Big Mac"		1.84
+"Filet-O-Fish"		1.44
+"McGrilled Chicken"		2.29
+"McChicken Sandwich"		2.04
+"Fries, small"		0.77
+"Fries, large"		1.17
+"Fries, super"		1.49
+"Chicken McNuggets (6 pcs)"		1.69
+"Chicken McNuggets (9 pcs)"		2.34
+"Chicken McNuggets (20 pcs)"		4.49
+"Hot Mustard Sauce"		0
+"Barbeque Sauce"		0
+"Sweet 'N Sour Sauce"		0
+"Honey"		0
+"Chef Salad"		2.94
+"Chunky Chicken Salad"		2.99
+"Garden Salad"		1.99
+"Side Salad"		1.39
+"Croutons"		0
+"Bacon Bits"		0
+"Bleu Cheese Dressing"		0
+"Ranch Dressing"		0
+"1000 Island Dressing"		0
+"Lite Vinaigrette Dressing"		0
+"French Rdcd Cal Dressing"		0
+"Egg McMuffin"		1.49
+"Sausage McMuffin"		1.29
+"Sansage McMuffin with Egg"		1.49
+"English Muffin"		0.84
+"Sausage Biscuit"		0.79
+"Sausage Biscuit with Egg"		1.49
+"Bacon, Egg & Cheese Biscuit"		1.49
+"Hash Browns"		0.69
+"Breakfast Burrito"		0.99
+"Cheerios"		1.09
+"Wheaties"		1.09
+"Apple Danish"		0.84
+"Cheese Danish"		0.84
+"Cinnamon Raisin Danish"		0.89
+"Raspberry Danish"		0.84
+"Lowfat Frozen Yogurt Cone"		0.79
+"Vanilla Shake"		1.09
+"Chocolate Shake"		1.09
+"Strawberry Shake"		1.09
+"1% Lowfat Milk"		0.6
+"Orange Juice"		0.72
+"Coca-Cola (small)"		0.88
+"Coca-Cola (medium)"		0.99
+"Coca-Cola (large)"		1.17
+"Diet Coke (small)"		0.88
+"Diet Coke (medium)"		0.99
+"Diet Coke (large)"		1.17
+"Sprite (small)"		0.88
+"Sprite (medium)"		0.99
+"Sprite (large)"		1.17
+"H-C Orange Drink (small)"		0.88
+"H-C Orange Drink (medium)"		0.99
+"H-C Orange Drink (large)"		1.17
+;

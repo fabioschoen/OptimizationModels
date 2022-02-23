@@ -1,0 +1,28 @@
+
+model portfolio.mod
+data portfolio.dat
+option solver gurobi;
+display min {a in ASSETS} r[a];
+
+display max {a in ASSETS} r[a];
+
+param maxR := max {a in ASSETS} r[a];
+
+param Trials := 100;
+param SmallThreshold := 0.001;
+
+param OptRisk{1..Trials} default 0;
+param OptRet{1..Trials} default 0;
+param NotSmall{1..Trials} default 0;
+
+for {i in 1..Trials} {
+   let rmin := i * maxR/Trials;
+   solve;
+   if solve_result = "solved" then {
+      let OptRisk[i] := sqrt(risk);
+      let OptRet[i] := rmin;
+      let NotSmall[i] := card({a in ASSETS: x[a] >= SmallThreshold});
+   };
+};
+
+display OptRisk, OptRet, NotSmall;

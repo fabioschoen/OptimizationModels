@@ -1,0 +1,18 @@
+param: OBJECTS: weight value:=
+A 20  10
+B 18   5
+C 17   7
+D 15   6
+E 14   9
+F 12  10
+G 10  12
+H 5    4
+I 4    4
+J 2    1
+;
+
+param: CONTAINERS : capacity :=
+C1 35
+C2 30
+C3 28;
+

@@ -1,0 +1,20 @@
+set NODES := s a b c d e t ;
+
+param S := s ;
+param T := t ;
+
+param:  ARCS:  Cost :=
+         s a    .91     s b    .98     s c    .96
+         a b    .93     a d    .94
+         b a    .92     b d    .93     b e    .91
+         c e    .94     d t    .99     e t    .94 ;
+
+
+param Cost2:=
+         s a    1     s b    8     s c    6
+         a b    1     a d    4
+         b a    2     b d    3     b e    1
+         c e    4     d t    9     e t    4 ;
+	
+
+let {(i,j) in ARCS} Cost[i,j] := - log(Cost[i,j]);

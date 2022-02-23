@@ -1,0 +1,83 @@
+model biobj-assignment.mod;
+data biobj-assignment.dat;
+option solver gurobi;
+option omit_zero_rows 1;
+option omit_zero_cols 1;
+
+param opt1{1..2};
+param opt2{1..2};
+
+drop obj1AsConstraint;
+drop obj2AsConstraint;
+
+printf "Optimizing the first objective\n";
+objective cost1;
+solve;
+
+let opt1[1] := cost1;
+let opt2[2] := cost2;
+
+printf "Assign Cost1 Cost2: \n";
+for {(i,j) in ARCS: Assign[i,j] ==1}
+    {printf "(%s,%s) %d  %d\n",i,j,Cost1[i,j],Cost2[i,j];};
+printf "Cost 1: %d  Cost 2: %d\n",cost1,cost2;
+
+
+printf "Optimizing the second objective\n";
+objective cost2;
+solve;
+
+let opt1[2] := cost1;
+let opt2[1] := cost2;
+printf "Assign Cost1 Cost2: \n";
+for {(i,j) in ARCS: Assign[i,j] ==1}
+    {printf "(%s,%s) %d  %d\n",i,j,Cost1[i,j],Cost2[i,j];};
+printf "Cost 1: %d Cost 2: %d\n",cost1,cost2;
+
+restore  obj2AsConstraint;
+
+for {p in {opt2[1]..opt2[2] by (opt2[2]-opt2[1])/10.} } {
+   let beta[2] := p;
+   printf "Compromise: optimize obj 1 with obj 2 at most %f\n",beta[2];
+
+   solve;
+   printf "Assign Cost1 Cost2: \n";
+   for {(i,j) in ARCS: Assign[i,j] ==1}
+    {printf "(%s,%s) %d  %d\n",i,j,Cost1[i,j],Cost2[i,j];};
+   printf "Cost 1: %d  Cost 2: %d\n",cost1, cost2;
+};
+
+
+drop  obj2AsConstraint;
+restore  obj1AsConstraint;
+
+for {p in {opt1[1]..opt1[2] by (opt1[2]-opt1[1])/10.} } {
+   let beta[1] := p ;
+   printf "Compromise: optimize obj 2 with obj 1 at most %f\n",beta[1];
+
+   solve;
+   printf "Assign Cost1 Cost2: \n";
+   for {(i,j) in ARCS: Assign[i,j] ==1}
+    {printf "(%s,%s) %d  %d\n",i,j,Cost1[i,j],Cost2[i,j];};
+   printf "Cost 1: %d  Cost 2: %d\n",cost1, cost2;
+};
+
+
+drop obj1AsConstraint;
+
+objective cost3;
+
+for {p in 0.1 .. 0.9 by 0.1} {
+   let lambda[1] := p;
+   let lambda[2] := 1-p;
+   
+   printf "Lin comb %f %f\n",lambda[1],lambda[2];
+
+   solve;
+   printf "Assign Cost1 Cost2: \n";
+   for {(i,j) in ARCS: Assign[i,j] ==1}
+    {printf "(%s,%s) %d  %d\n",i,j,Cost1[i,j],Cost2[i,j];};
+   printf "Cost 1: %d  Cost 2: %d\n",cost1, cost2;
+};
+
+

@@ -1,0 +1,15 @@
+set DynNODES := s A B t;
+param MaxT := 5;
+param DynS := s;
+param DynT := t;
+
+set DynARCS := (s,A) (s,B) (B,A) (A,B) (A,t) (B,t);
+
+param: DynFmax DynTime:=
+s A 5 1
+s B 8 3
+A B 2 1
+B A 3 1
+A t 1 1
+B t 5 1
+;

@@ -1,0 +1,89 @@
+model AggrProd.mod;
+data AggrProd.dat;
+option solver gurobi;
+
+drop Level;
+drop Chase;
+solve;
+printf "Aggregate Production Results\n" > AggrProd.out;
+printf "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" >> AggrProd.out;
+printf "Optimal Plan\t\t\t\t %s\n", solve_result >> AggrProd.out;
+printf "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" >> AggrProd.out;
+if(solve_result_num <= 200) then {
+printf "Total cost in %u periods: %9u Euro\n\n", T, TotalCost >>
+AggrProd.out;
+
+printf "\n\nt\tProd\n" >> AggrProd.out;
+for {p in PRODTYPE} printf "\t%s ", p >> AggrProd.out;
+printf "\n" >> AggrProd.out;
+for {t in 1..T}{
+    printf "%d\t", t >> AggrProd.out;
+    for {p in PRODTYPE} {
+    	printf "%d\t\t", Prod[t,p] >> AggrProd.out;
+    };
+    printf "\n" >> AggrProd.out;
+};
+printf "\n\nt\tInv\tDemand\tStaff\tHire\tLayoff\tUnused\n" >> AggrProd.out;
+for {t in 1..T}{
+    printf "%d\t%d\t%d\t%d\t%d\t%d\t%d\n",t,Inv[t],Demand[t],Staff[t],
+    Hire[t],Layoff[t],  Staff[t]*MaxProd["Regular"] - Prod[t,"Regular"] >> AggrProd.out;
+};
+printf "\n\n" >> AggrProd.out;
+};
+
+restore Level;
+solve;
+printf "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" >> AggrProd.out;
+printf " Level Plan\t\t\t %s\n", solve_result >> AggrProd.out;
+printf "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" >> AggrProd.out;
+if(solve_result_num <= 200) then {
+printf "Total cost in %u periods: %9u Euro\n\n", T, TotalCost >>
+AggrProd.out;
+
+printf "\n\nt\tProd\n" >> AggrProd.out;
+for {p in PRODTYPE} printf "\t%s ", p >> AggrProd.out;
+printf "\n" >> AggrProd.out;
+for {t in 1..T}{
+    printf "%d\t", t >> AggrProd.out;
+    for {p in PRODTYPE} {
+    	printf "%d\t\t", Prod[t,p] >> AggrProd.out;
+    };
+    printf "\n" >> AggrProd.out;
+};
+printf "\n\nt\tInv\tDemand\tStaff\tHire\tLayoff\tUnused\n" >> AggrProd.out;
+for {t in 1..T}{
+    printf "%d\t%d\t%d\t%d\t%d\t%d\t%d\n",t,Inv[t],Demand[t],Staff[t],
+    Hire[t],Layoff[t],  Staff[t]*MaxProd["Regular"] - Prod[t,"Regular"] >> AggrProd.out;
+};
+printf "\n\n" >> AggrProd.out;
+};
+
+drop Level;
+restore Chase;
+solve;
+printf "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" >> AggrProd.out;
+printf " Chase  Plan\t\t\t %s\n", solve_result >> AggrProd.out;
+printf "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" >> AggrProd.out;
+if(solve_result_num <= 200) then {
+printf "Total cost in %u periods: %9u Euro\n\n", T, TotalCost >>
+AggrProd.out;
+
+printf "\n\nt\tProd\n" >> AggrProd.out;
+for {p in PRODTYPE} printf "\t%s ", p >> AggrProd.out;
+printf "\n" >> AggrProd.out;
+for {t in 1..T}{
+    printf "%d\t", t >> AggrProd.out;
+    for {p in PRODTYPE} {
+    	printf "%d\t\t", Prod[t,p] >> AggrProd.out;
+    };
+    printf "\n" >> AggrProd.out;
+};
+printf "\n\nt\tInv\tDemand\tStaff\tHire\tLayoff\tUnused\n" >> AggrProd.out;
+for {t in 1..T}{
+    printf "%d\t%d\t%d\t%d\t%d\t%d\t%d\n",t,Inv[t],Demand[t],Staff[t],
+    Hire[t],Layoff[t],  Staff[t]*MaxProd["Regular"] - Prod[t,"Regular"] >> AggrProd.out;
+};
+printf "\n\n" >> AggrProd.out;
+};
+
+close AggrProd.out;

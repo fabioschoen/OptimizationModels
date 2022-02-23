@@ -1,0 +1,27 @@
+set ASSETS ordered;
+param r{ASSETS};
+param Q{ASSETS, ASSETS};
+param T;
+param Ret{1..T,ASSETS};
+data returns.dat;
+
+for {a in ASSETS} {
+    let r[a] := 0;
+    for {t in 1..T} let r[a] := r[a] + Ret[t,a];
+    let r[a]:= r[a]/T;
+};
+
+display r;
+
+for {a1 in ASSETS}{
+    for {a2 in ASSETS : ord(a1,ASSETS) <= ord(a2,ASSETS)} {
+    	let Q[a1,a2] := 0;
+	for {t in 1..T} {
+	    let Q[a1,a2] := Q[a1,a2] + (Ret[t,a1] - r[a1])*(Ret[t,a2] - r[a2]);
+	};
+	let Q[a1,a2] := Q[a1,a2] / T;
+	let Q[a2,a1] := Q[a1,a2];
+    };
+};
+
+display Q;

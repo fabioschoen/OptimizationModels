@@ -1,0 +1,15 @@
+set NODES := s A B C D t;
+param S := s;
+param T := t;
+
+param: ARCS: Fmax :=
+s A 10
+s B  8
+A C  4
+A B  3
+B C  9
+B D  2
+C t  8
+D C  3
+D t  4
+;

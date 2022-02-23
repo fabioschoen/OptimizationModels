@@ -1,0 +1,36 @@
+Qty [*] :=
+prod-1   9.07143
+prod-2  37.5
+prod-3  30
+prod-4  48
+prod-5  23
+prod-6  20
+prod-7   8.6
+;
+
+:              Sold   Demand    Slack  Surplus    :=
+prod-1 AVG    9.07143    30    20.9286    0
+prod-1 NEG    9.07143    20    10.9286    0
+prod-1 OPT    9.07143    45    35.9286    0
+prod-2 AVG   30          30     0         7.5
+prod-2 NEG   25          25     0        12.5
+prod-2 OPT   37.5        60    22.5       0
+prod-3 AVG   30          30     0         0
+prod-3 NEG   30          30     0         0
+prod-3 OPT   30          30     0         0
+prod-4 AVG   45          45     0         3
+prod-4 NEG   40          40     0         8
+prod-4 OPT   48          60    12         0
+prod-5 AVG   20          20     0         3
+prod-5 NEG   10          10     0        13
+prod-5 OPT   23          40    17         0
+prod-6 AVG   20          20     0         0
+prod-6 NEG    0           0     0        20
+prod-6 OPT   20          40    20         0
+prod-7 AVG    5           5     0         3.6
+prod-7 NEG    2           2     0         6.6
+prod-7 OPT    8.6        20    11.4       0
+;
+
+expected_gain = 3361.03
+

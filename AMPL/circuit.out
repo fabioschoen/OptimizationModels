@@ -1,0 +1,26 @@
+u [*] :=
+A  12
+B  10
+C  19
+D  -3
+E   0
+F  -6
+;
+
+v :=
+A B    -2
+B E   -10
+C B    -9
+D E     0
+D F    -3
+E C     0
+F A     0
+;
+
+BalanceR :=
+A B   2
+B E   5
+C B   3
+D F   2
+;
+

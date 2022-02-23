@@ -1,0 +1,34 @@
+model setCovering.mod;
+
+set NODES ordered;
+set ARCS := NODES cross NODES;
+param time{ARCS};
+param distance{ARCS};
+param threshold;
+
+data Pistoia.dat;
+
+let REQUESTS := NODES;
+let RESOURCES := NODES;
+
+
+let threshold := 20;
+
+let PAIRS := {(i,j) in ARCS : time[i,j] <= threshold};
+
+option solver gurobi;
+option omit_zero_rows 1;option omit_zero_cols 1;
+
+solve;
+display delta;
+display Covering.body;
+for {i in REQUESTS} display i,{j in RESOURCES: delta[j]==1 && (i,j) in PAIRS};
+
+#############   up to here is displayed #############
+param num{NODES};
+for {i in NODES} let num[i] := ord(i,NODES);
+display num;
+for {i in REQUESTS, j in RESOURCES: delta[j]==1 && (i,j) in PAIRS && i != j}
+{printf "\\draw[->] (%d)  -- (%d);\n",num[j],num[i]};
+for {i in REQUESTS, j in RESOURCES: delta[j]==1 && (i,j) in PAIRS && i == j}
+{printf "\\fill (%d)  circle(2pt);\n",num[i]};

@@ -1,0 +1,25 @@
+set NODES := A B C D E F;
+
+set RESISTORS := 
+(A, B) 
+(B, E) 
+(C, B)
+(D, F)
+;
+set GENERATORS :=
+(F,A) (D,E) (E,C);
+
+param R :=
+A B 1
+B E 2
+C B 3
+D F 1.5
+;
+
+param V:=
+F A 18
+D E 3
+E C 19
+;
+
+param Ground := E;

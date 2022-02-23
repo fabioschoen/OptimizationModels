@@ -1,0 +1,23 @@
+set OBJECTS := A B C D E F G H I J K L M N O;
+
+param: 
+  value weight:=
+A 135     70    
+B 139     73    
+C 149     77    
+D 150     80    
+E 156     82    
+F 163     87    
+G 173     90    
+H 184     94    
+I 192     98    
+J 201    106    
+K 210    110    
+L 214    113    
+M 221    115    
+N 229    118    
+O 240    120    
+;
+
+param cap := 730;
+

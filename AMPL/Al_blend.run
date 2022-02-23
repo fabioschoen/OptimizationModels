@@ -1,0 +1,10 @@
+model Al_blend.mod;
+data Al6061.dat;
+
+option solver cbc;
+
+solve;
+
+display Buy;
+display minReq, Chem, maxReq;
+

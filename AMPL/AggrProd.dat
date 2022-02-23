@@ -1,0 +1,40 @@
+# Aggregate production planning example
+
+param T := 12; # Planning Period
+
+set PRODTYPE := Regular Overtime External;
+
+param:  ProdCost MaxProd:=
+Regular   3.5     4000
+Overtime  3.7    15000
+External  4.2     5000
+;
+
+param RegularCost := 0.525;
+# regular workforce cost (Euro) for a single product 
+
+param InvCost := 0.28;
+# inventory cost per product per period
+
+param HireCost := 1000; # hiring cost (Euro) 
+param LayoffCost := 600; # cost for laying off
+
+param InitialInv := 30000;
+
+param Demand:= 
+1   70000
+2  150000
+3  320000
+4  100000 
+5  300000
+6  350000
+7  250000
+8    2000
+9   50000
+10 120000
+11 130000
+12 100000;
+# demand per period
+
+# initial workforce level
+param InitialStaff := 30;

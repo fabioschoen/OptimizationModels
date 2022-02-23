@@ -1,0 +1,54 @@
+num [*] :=
+AAAVNRV  3
+AAVANRV  2
+ANRAPVV  1
+ANRAVAV  3
+AVPNRVA  1
+NRPAVVA  1
+NRVPAPV  5
+PANRPVV  3
+PANRVPV  1
+PPPNRVV  3
+PPVPPVA  1
+PVNRPVP  1
+RVAVAAN  3
+VAANRVA  2
+VNRPAVP  1
+VNRVAAP  1
+VPAAVNR  2
+VPNRVAP  1
+VPPANRV  1
+VVPPPNR  2
+;
+
+:      Covering.body Covering.lb    :=
+Mo0812       10           10
+Mo1216       19           12
+Mo1620        9            8
+Mo2008        6            6
+Tu0812       11           10
+Tu1216       19           12
+Tu1620        8            8
+Tu2008        6            6
+We0812       10           10
+We1216       18           12
+We1620        8            8
+We2008        6            6
+Th0812       10           10
+Th1216       19           12
+Th1620        9            8
+Th2008        6            6
+Fr0812       10           10
+Fr1216       18           12
+Fr1620        8            8
+Fr2008        6            6
+Sa0812        8            8
+Sa1216       14            8
+Sa1620        6            6
+Sa2008        4            4
+Su0812        5            4
+Su1216        9            4
+Su1620        4            4
+Su2008        3            3
+;
+

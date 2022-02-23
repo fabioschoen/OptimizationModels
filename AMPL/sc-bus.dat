@@ -1,0 +1,17 @@
+model;
+param duration{ORIGINS union DESTINATIONS}; # duration of each route
+param D;  # threshold for overtime
+data;
+
+set ORIGINS      := AM1 AM2 AM3 AM4 AM5 AM6 AM7 AM8;
+set DESTINATIONS := PM1 PM2 PM3 PM4 PM5 PM6 PM7 PM8;
+
+param duration:=
+AM1  3  AM2   2    AM3  3   AM4  4   AM5  2    AM6   3   AM7  3  AM8 2
+PM1  4  PM2   4    PM3  3   PM4  1   PM5  3    PM6   2   PM7  2  PM8 2;
+   
+param D := 5;
+
+let {o in ORIGINS, d in DESTINATIONS}
+    Cost[o,d]  := max(0,  duration[o] + duration[d] - D); 
+

@@ -1,0 +1,22 @@
+CBC 2.10.3 optimal, objective 1286.369005
+5 iterations
+Buy [*] :=
+  LithoSheets     0
+           Mg     4.77662
+    MixedAuto     0
+MixedTurnings   139.282
+     Radiator     1.06954
+           Si     0
+          UBC   154.872
+   WireScraps  1200
+;
+
+:  minReq     Chem   maxReq    :=
+Cu   0.15   0.310622   0.4
+Fe   0      0.348733   0.7
+Mg   0.8    0.8        1.2
+Mn   0      0.15       0.15
+Si   0.4    0.8        0.8
+Zn   0      0.150333   0.25
+;
+

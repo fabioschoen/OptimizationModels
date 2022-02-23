@@ -1,0 +1,79 @@
+data;
+set NODES := 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22;
+model;
+set COLORS{NODES} ordered;
+data;
+
+set COLORS[1]:=blue brown cyan red;
+set COLORS[2]:=	blue	brown	green	yellow;
+set COLORS[3]:=	blue	brown	magenta	red;
+set COLORS[4]:=	blue	brown	magenta	violet;
+set COLORS[5]:=	blue	brown	magenta	yellow;
+set COLORS[6]:=	blue	cyan	red	violet;
+set COLORS[7]:=	blue	green	magenta	red;
+set COLORS[8]:=	blue	green	magenta	violet;
+set COLORS[9]:=	blue	magenta	violet	yellow;
+set COLORS[10]:=	blue	red	violet	yellow;
+set COLORS[11]:=	brown	green	red	violet;
+set COLORS[12]:=	brown	magenta	red	violet;
+set COLORS[13]:=	brown	magenta	red	yellow;
+set COLORS[14]:=	brown	red	violet	yellow;
+set COLORS[15]:=	cyan	brown   red	violet;
+set COLORS[16]:=	cyan	green	magenta	red;
+set COLORS[17]:=	cyan	green	magenta	violet;
+set COLORS[18]:=	cyan	green	red	yellow;
+set COLORS[19]:=	cyan	magenta	red	violet;
+set COLORS[20]:=	cyan	magenta	red	yellow;
+set COLORS[21]:=	cyan	magenta	violet	yellow;
+set COLORS[22]:=	green	magenta	orange	yellow;
+;
+
+let {(i,j) in ARCS} Cost[i,j] := card(COLORS[i] symdiff COLORS[j]) / 2;
+let Source := 1;
+solve;
+for {i in NODES} printf "%s pos: %d\n",i,y[i];
+printf "\n";
+printf "\\newcommand{\\patt}[5]{\\fill[#1]   (a) node[left,black]{\\tiny{#5}}  rectangle ++(1,1);\n \\fill[#2]   (a)++(1,0) rectangle ++(1,1);\n \\fill[#3]   (a)++(2,0) rectangle ++(1,1);\n  \\fill[#4]   (a)++(3,0) rectangle ++(1,1);}\n \\begin{tikzpicture}";
+
+param cnt;
+param horiz;
+param  var;
+let cnt := 0;
+let horiz := 0;
+for {i in NODES}{
+if horiz mod 3 == 0 then let cnt := cnt +1 ;
+
+if i == first(NODES) then let var := Cost[i,last(NODES)]; else let var := Cost[i, prev(i,NODES)];
+printf "\\coordinate (a) at (%d,%2.2f);\n",5*(horiz mod 3), (22-cnt)-0.1*cnt;
+printf "\\patt{%s}{%s}{%s}{%s}{%d};\n", member(1,COLORS[i]),member(2,COLORS[i]),member(3,COLORS[i]),member(4,COLORS[i]),var;
+let horiz := horiz +1;
+
+};
+
+printf "\\end{tikzpicture} \n \\begin{tikzpicture}";
+
+#printf "Initial: \n";
+#for {i in NODES: i != last(NODES)} printf "(%s,%s): %d\n",i,next(i,NODES),Cost[i,next(i,NODES)];
+#printf "(%s,%s): %d\n",last(NODES),first(NODES),Cost[last(NODES),first(NODES)];
+#printf "Optimal: \n";
+#for {(i,j) in ARCS: delta[i,j] == 1} printf "(%s,%s): %d\n",i,j,Cost[i,j];
+
+set OPT ordered within NODES;
+
+# opt:  1 6  19 16 18 20 13 5 2 22 17 21 9 10 14 15 11 12 4 8 7 3
+
+let OPT := {1, 6, 19, 16, 18, 20, 13, 5, 2, 22, 17, 21, 9, 10, 14, 15, 11, 12, 4, 8, 7, 3};
+
+let cnt := 0;
+let horiz := 0;
+for {i in OPT}{
+if horiz mod 3 == 0 then let cnt := cnt +1 ;
+
+if i == first(OPT) then let var := Cost[i,last(OPT)]; else let var := Cost[i, prev(i,OPT)];
+printf "\\coordinate (a) at (%d,%2.2f);\n",5*(horiz mod 3), (22-cnt)-0.1*cnt;
+printf "\\patt{%s}{%s}{%s}{%s}{%d};\n", member(1,COLORS[i]),member(2,COLORS[i]),member(3,COLORS[i]),member(4,COLORS[i]),var;
+let horiz := horiz +1;
+
+};
+
+printf "\\end{tikzpicture} \n";
