@@ -1,0 +1,59 @@
+# ==========================================================
+# = Solver Results                                         =
+# ==========================================================
+# ----------------------------------------------------------
+#   Problem Information
+# ----------------------------------------------------------
+Problem: 
+- Lower bound: -inf
+  Upper bound: inf
+  Number of objectives: 1
+  Number of constraints: 7
+  Number of variables: 14
+  Sense: unknown
+# ----------------------------------------------------------
+#   Solver Information
+# ----------------------------------------------------------
+Solver: 
+- Status: ok
+  Message: CBC 2.10.3 optimal, objective 1286.36900512821; 5 iterations
+  Termination condition: optimal
+  Id: 0
+  Error rc: 0
+  Time: 0.02892017364501953
+# ----------------------------------------------------------
+#   Solution Information
+# ----------------------------------------------------------
+Solution: 
+- number of solutions: 1
+  number of solutions displayed: 1
+- Gap: None
+  Status: optimal
+  Message: CBC 2.10.3 optimal, objective 1286.36900512821; 5 iterations
+  Objective:
+    totalcost:
+      Value: 1286.3690051282053
+  Variable:
+    Buy[Mg]:
+      Value: 4.776615384615386
+    Buy[MixedTurnings]:
+      Value: 139.28205128205136
+    Buy[Radiator]:
+      Value: 1.069538461538454
+    Buy[UBC]:
+      Value: 154.87179487179483
+    Buy[WireScraps]:
+      Value: 1200
+    Chem[Cu]:
+      Value: 0.3106215384615384
+    Chem[Fe]:
+      Value: 0.34873331282051284
+    Chem[Mg]:
+      Value: 0.8
+    Chem[Mn]:
+      Value: 0.15
+    Chem[Si]:
+      Value: 0.8000000000000004
+    Chem[Zn]:
+      Value: 0.15033333333333337
+  Constraint: No values
