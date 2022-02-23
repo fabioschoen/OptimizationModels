@@ -1,0 +1,25 @@
+T = 24
+
+expenses = zeros(T)
+expenses[4] = 6800
+expenses[11] = 5800
+expenses[16] = 5800
+expenses[23] = 5800
+
+income = zeros(T)
+for t in 1:T
+   income[t]= 2000
+end
+
+StartCash = 4000
+MinCash   = 3000
+
+INVEST = ["Cert-1" "Cert-3" "Cert-6" "Cert-12"]
+
+
+invest_data  = JuMP.Containers.DenseAxisArray([
+                1      1.20;       
+                3      1.31;
+                6      1.41;
+               12      1.6;
+], INVEST, ["life" "nominal"])

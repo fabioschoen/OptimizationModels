@@ -1,0 +1,51 @@
+# Aggregate production planning example
+
+T = 12 # Planning Period
+
+PRODTYPE= ["Regular", "Overtime", "External"]
+
+ProdCost = JuMP.Containers.DenseAxisArray([
+   3.5;
+   3.7;
+   4.2],
+PRODTYPE)
+
+RegularCost = 0.525
+# regular workforce cost (Euro) for a single product 
+
+InvCost = 0.28
+# inventory cost per product per period
+
+HireCost = 1000; # hiring cost (Euro) 
+LayoffCost = 600; # cost for laying off
+
+
+MaxProd  = JuMP.Containers.DenseAxisArray([
+ 4000;
+ 15000;
+5000],
+PRODTYPE)
+
+InitialInv = 30000 
+FinalInv = 30000 
+
+Demand = [
+ 70000
+ 150000
+ 320000
+ 100000 
+ 300000
+ 350000
+ 250000
+ 2000
+ 50000
+ 120000
+ 130000
+ 100000]
+# numero di prodotti venduti in ogni periodo 
+
+# initial workforce level
+InitialStaff = 30 
+# final workforce level
+FinalStaff = 30
+

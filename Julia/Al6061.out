@@ -1,0 +1,33 @@
+Welcome to the CBC MILP Solver 
+Version: 2.10.3 
+Build Date: Jan  1 1970 
+
+command line - Cbc_C_Interface -solve -quit (default strategy 1)
+Presolve 7 (0) rows, 8 (-6) columns and 41 (-6) elements
+0  Obj 536.91077 Primal inf 1395.4875 (4)
+5  Obj 1286.369
+Optimal - objective value 1286.369
+After Postsolve, objective 1286.369, infeasibilities - dual 0 (0), primal 0 (0)
+Optimal objective 1286.369005 - 5 iterations time 0.002, Presolve 0.00
+Total time (CPU seconds):       0.00   (Wallclock seconds):       0.00
+
+
+===============   optimal solution =============
+
+UBC : 154.87179487179483
+MixedAuto : 0.0
+Radiator : 1.069538461538454
+WireScraps : 1200.0
+MixedTurnings : 139.28205128205133
+LithoSheets : 0.0
+Si : 0.0
+Mg : 4.776615384615386
+
+===============   chemical composition  =============
+
+Si: 0.4 <= 0.8000000000000002 <= 0.8)
+Mg: 0.8 <= 0.8 <= 1.2)
+Fe: 0.0 <= 0.3487333128205128 <= 0.8)
+Cu: 0.15 <= 0.3106215384615384 <= 0.4)
+Mn: 0.0 <= 0.14999999999999997 <= 0.15)
+Zn: 0.0 <= 0.15033333333333337 <= 0.25)
