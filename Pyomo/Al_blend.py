@@ -4,6 +4,8 @@ from pyomo.environ import *
 #     optimal scrap bleding problem                    #
 #------------------------------------------------------#
 
+# ADDED THIS LINE
+
 Infinity = float('inf')
 
 model = AbstractModel()
