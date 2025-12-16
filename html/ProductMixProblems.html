@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>3. Product Mix Models &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="4. Blending Models" href="BlendingModels.html" />
+    <link rel="prev" title="2. Structured linear optimization models" href="LinearModels.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="LinearModels.html" title="Previous document"><span class="section-number">2. </span>Structured linear optimization models</a>
+        </li>
+        <li>
+          <a href="BlendingModels.html" title="Next document"><span class="section-number">4. </span>Blending Models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="product-mix-models">
+<h1><span class="section-number">3. </span>Product Mix Models<a class="headerlink" href="#product-mix-models" title="Link to this heading">¶</a></h1>
+<p>A field in which linear models find wide applicability is
+that of decisions related to some aspects of the
+production process. In particular,  <span class="target" id="index-0"></span>production mix problems
+correspond to the case in which it is necessary to choose, among many
+possible  products, the quantity to produce, taking into account the
+availability of some scarce  resources (like, e.g.,
+available workers). An assumption  frequently made in some of these models, is
+that of operating in a market in which the supply of finished products
+always finds a suitable demand in the market. This assumption might
+however be somewhat relaxed without necessarily having to include
+stochastic models of the demand.</p>
+<p>The basic problem therefore reduces to choosing the quantities to
+produce to maximize the total
+gain, within the  constraints imposed by the availability
+of resources. The components of these models are:</p>
+<ol class="arabic simple">
+<li><p>a set of possible products;</p></li>
+<li><p>a set of available resources;</p></li>
+<li><p>the quantity of each resource required for the production of each product;</p></li>
+<li><p>the net gain for each product.</p></li>
+</ol>
+<p>Also in this model we can highlight the basic elements
+of all optimization models and, in particular,</p>
+<ul class="simple">
+<li><p>index sets: the set of possible products and the set of resources;</p></li>
+<li><p>parameters: the unit gain for each product (a parameter
+indexed by the set of products), the  availability of resources
+(a numeric parameter indexed by the set of resources), a table
+in which, for each product and for each resource, the quantity of
+resource needed to produce one unit of this product is given; this
+parameter is indeed a
+matrix indexed by the Cartesian product between the set of
+resources and the set of products; other parameters may also be
+present, such as lower and upper limits on the quantity to be
+produced;</p></li>
+<li><p>decision variables:
+the quantities to be produced, a vector of variables indexed by
+the set of products.
+It is worth observing that there is only a difference between
+parameters and variables:  variables are under the control
+of the decision maker, while parameters are considered
+known and constant, and cannot be modified by the solver;</p></li>
+<li><p>constraints:</p>
+<ul>
+<li><p>lower and upper limits on the quantities to be produced
+(two sets of constraints indexed by the set of products);</p></li>
+<li><p>maximum resource consumption (a set of constraints
+corresponding to the different types of resources).</p></li>
+</ul>
+</li>
+<li><p>an objective function; in the example we assume that we wish
+to maximize the  total gain.</p></li>
+</ul>
+<p>It may be useful to put  the elements of the model in
+a scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ProductMix</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{Products}\)</span> :  product types</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{Resources}\)</span> :  available  resources  types (work
+hours, machines, prime material, …)</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\param{Gain}_p\)</span> : unit gain for  product <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Avail}_r\)</span>: maximum availability of  resource
+<span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{MinQty}_p, \param{MaxQty}_p\)</span>:  minimum and maximum
+quantities to be produced, for each <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span> ;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Consumption}_{rp}\)</span>: quantity of resource <span class="math notranslate nohighlight">\(r
+\in \set{Resources}\)</span> required in order to produce one unit of <span class="math notranslate nohighlight">\(p \in
+\set{ Products}\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{x}_p\)</span>: quantity to be produced, for each
+<span class="math notranslate nohighlight">\(p \in \set{Products}\)</span></p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Lower and upper bounds on production:</p>
+<div class="math notranslate nohighlight">
+\[
+\param{MinQty}_p \leq \var{x}_p \leq \param{MaxQty}_p
+\]</div></li>
+</ul>
+<p>for every <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span>;</p>
+<ul>
+<li><p>Resource consumption:</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_{p \in \set{Products}} \param{Consumption}_{rp} \var{x}_p \leq \param{Avail}_r
+\]</div></li>
+</ul>
+<p>for each <span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span></p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span> Maximize the total gain:</div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[
+\max \sum_{p \in \set{Products}} \param{Gain}_p \var{x}_p
+\]</div></div></blockquote>
+<p>Of course this is an overly simplified model of a realistic situation;
+by the way:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>the above statement is true for all of the models described in this
+volume!</p>
+</div>
+<p>Several deliberately simplified modeling assumptions are made in
+order to keep models easy to understand without unnecessary
+details. In realistic situations, complex models will be built by
+joining parts of different models.</p>
+<p>In this product mix example, many
+additional aspects might be considered, like, e.g.:</p>
+<ul>
+<li><p>fixed costs: the decision regarding the production
+of a particular piece must sometimes be based on the presence of
+a fixed cost to be paid just to start production. As an example, starting
+production  might require “warming up” a machine or a plant until it
+is ready to produce, thus consuming costly energy; in other
+situations,  hours
+should be initially devoted to training. This modeling aspect
+will be seen in the
+chapter on <a class="reference internal" href="StructuredMIPmodels.html#sect-fixedcharge"><span class="std std-ref">Fixed Charge models</span></a> and will require the introduction of
+binary variables;</p></li>
+<li><p>dynamic models: demand  forecasts do not concern a single period, but a
+set of consecutive production periods, linked together through
+the introduction of an inventory. These models will be introduced in
+the section on <a class="reference internal" href="MultiPeriodModels.html#section-multi-prod"><span class="std std-ref">Multi Period Models</span></a>.</p></li>
+<li><p>stochastic models:  some parameters,
+like, most notably, the demand for a certain product,  can be
+seen as realizations of random variables.
+Even when dealing with make-to-order systems, in which production is
+started based on known purchase orders, randomness is always present when
+dealing with future planning periods. And, of course, when the company
+operates in a make-to-stock way, demand needs to be somewhat
+anticipated and, thus, estimated.</p>
+<p>In many situations in which uncertainty is present  decision makers
+simply replace random variables with an estimate, usually the
+expected value or the most likely one. However, optimization
+approaches do exist which are capable of taking into account uncertainty in an
+explicit way, thus accounting, e.g., not only for expected values but
+also for the variance of random variables. A very short and simplified
+introduction to these models will be presented in
+Chapter <a class="reference internal" href="StochasticOptimization.html#sect-plstoc"><span class="std std-ref">Stochastic linear optimization models</span></a>, where it will be shown how far from
+optimality   a policy might be when summarizing a stochastic quantity
+by its expected value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-1"></span>Choosing among different production modes</p>
+</dd>
+</dl>
+<p>Sometimes a product mix model
+is  not used to decide, among several
+<em>products</em>, which ones to produce and in which
+quantities. Frequently, the quantity to be produced is fixed and
+known; the decision problem might in this case be that of choosing
+among multiple <em>production modes</em>, instead. In other words, we are not
+required to decide how much to produce, but how much of the production
+should be allocated to different plants, with different resource
+consumption, different resource availability and possibly different
+production costs and, thus, gains. Formally the problem is identical to the
+standard one. As an example, consider
+steel rods of different diameters to be produced using different machines. The
+available machines can produce material of different diameters, with
+production rates and  costs which depend on the machine.</p>
+<p>The  data file below is an example of this situation.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">steel.dat</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="p">:</span><span class="w"> </span>
+<span class="nv">RESOURCES</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">Avail    Speed MinDiam MaxDiam HourlyCost</span><span class="p">:</span><span class="o">=</span>
+mach<span class="o">-</span><span class="mi">1</span><span class="w">       </span><span class="mi">35</span><span class="w">       </span><span class="mi">150</span><span class="w">     </span><span class="mi">3</span><span class="w">       </span><span class="mi">6</span><span class="w">            </span><span class="mi">10</span>
+mach<span class="o">-</span><span class="mi">2</span><span class="w">       </span><span class="mi">35</span><span class="w">       </span><span class="mi">100</span><span class="w">     </span><span class="mi">5</span><span class="w">       </span><span class="mi">8</span><span class="w">            </span><span class="mi">15</span>
+mach<span class="o">-</span><span class="mi">3</span><span class="w">       </span><span class="mi">35</span><span class="w">        </span><span class="mi">75</span><span class="w">     </span><span class="mi">6</span><span class="w">      </span><span class="mi">12</span><span class="w">            </span><span class="mi">17</span>
+<span class="p">;</span>
+<span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">TYPES</span><span class="p">:</span><span class="w"> </span><span class="nv">Qty    diameter   revenue </span><span class="p">:</span><span class="o">=</span>
+A<span class="w">             </span><span class="mi">218000</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mf">0.017</span>
+B<span class="w">             </span><span class="mi">114000</span><span class="w">      </span><span class="mi">6</span><span class="w">      </span><span class="mf">0.019</span>
+C<span class="w">             </span><span class="mi">111000</span><span class="w">      </span><span class="mi">8</span><span class="w">      </span><span class="mf">0.02</span>
+<span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nv">PRODUCTS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span>TYPES<span class="p">,</span><span class="w"> </span>r<span class="w"> </span><span class="kr">in</span><span class="w"> </span>RESOURCES<span class="p">:</span><span class="w"> </span>
+<span class="w">                 </span>MinDiam<span class="p">[</span>r<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>diameter<span class="p">[</span>t<span class="p">]</span>
+<span class="w">                 </span><span class="kr">and</span><span class="w"> </span>MaxDiam<span class="p">[</span>r<span class="p">]</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>diametert<span class="p">]};</span>
+
+<span class="kd">let</span><span class="w">  </span><span class="p">{(</span>t<span class="p">,</span>r<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>PRODUCTS<span class="p">}</span><span class="w"> </span>
+<span class="w">    </span><span class="nv">consumption</span><span class="p">[</span>t<span class="p">,</span>r<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="mi">60</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>Speed<span class="p">[</span>r<span class="p">]);</span><span class="w">              </span>
+<span class="c1"># resource consumptions (in fractions of one hour)</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="p">{(</span>t<span class="p">,</span>r<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>PRODUCTS<span class="p">}</span><span class="w"> </span><span class="nv">profit</span><span class="p">[</span>t<span class="p">,</span>r<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>revenue<span class="p">[</span>t<span class="p">]</span><span class="w"> </span>
+<span class="w">                 </span><span class="o">-</span><span class="w"> </span>HourlyCost<span class="p">[</span>r<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>consumption<span class="p">[</span>t<span class="p">,</span>r<span class="p">];</span>
+<span class="c1"># net gain per unit produced per machine</span>
+</pre></div>
+</div>
+</div>
+<p>Considering the data in the example, the resources in this case are
+machines which differ one another  for their availability (hours
+per week) and production speed: in this example the
+actual availability doesn’t just depend on the available hours,
+but also on the speed of the machine. So, for example, if the speed
+of machine 1 is  150 meters per minute, in order to produce one
+meter  <span class="math notranslate nohighlight">\(1/(60 \cdot 150)\)</span> hours would be required. In this
+case, the consumption
+of each resource does not depend on the product itself, but on the
+machine type. There is also another special type of dependence:
+not every  machine, in fact, is capable of producing  all  product types.
+As an example, product type A can only be worked
+on machine 1 (its diameter is within the interval 3 to 6 which
+characterizes this machine), while product type B (diameter 6) can be
+produced both on the second or on third machine, but not on the
+first one. The
+net gain  resulting from the decision to produce a type of
+rod on a specific machine is obtained as  the difference between the revenue
+associated with this rod and the cost of using the machine.
+If we wish to formalize this model, the following scheme might be a guide.</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Choice between production modes</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{Resources}\)</span>: available machines</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{Products}\)</span>:  product types;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{Match} \subseteq \set{Resources} \times
+\set{Products}\)</span>: set of feasible combinations between
+product types and production-enabled machines.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p><span class="math notranslate nohighlight">\(\param{MinQty}_p, \param{MaxQty}_p\)</span>: minimum and maximum
+quantities to be produced for each    <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span> ;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Avail}_r\)</span>: resource availability <span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Consumption}_{rp}\)</span>: amount of  resource <span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span>
+needed to produce a unit of product <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span>; this
+parameter can be an input data, or it can be computed as a function
+of other parameters, as in the case of the included file,  where
+it is based on the  production speed of each machine;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Cost}_r\)</span>: hourly cost of using  resource
+<span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span>;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Revenue}_p\)</span>: unit revenue for  product <span class="math notranslate nohighlight">\(p \in
+\set{Products}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Gain}_{pr}\)</span>: difference between revenues and
+costs</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\param{Gain}_{rp} = \param{Revenue}_p  - \param{Cost}_r \times \param{Consumption}_{rp}
+\end{align*}</div></li>
+</ul>
+<p>for  <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span>, <span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span>,
+provided that  <span class="math notranslate nohighlight">\(Match(p, r)\)</span> is true, i.e., that product
+<span class="math notranslate nohighlight">\(p\)</span> can
+be obtained on machine <span class="math notranslate nohighlight">\(r\)</span> ;</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{x}_{rp}\)</span>: quantity of   <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span>
+to be produced on machine  <span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Minimum and maximum production:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\param{MinQty}_p \leq \sum_{r \in \set{Resources}: Match(p, r)}
+\var{x}_{rp} \leq \param{MaxQty}_p
+\end{align*}</div><p>for each <span class="math notranslate nohighlight">\(p \in \set{Products}\)</span>.</p>
+</li>
+<li><p>Resource availability:</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_{p \in \set{Products}: Match(p, r) }
+\param{Consumption}_{rp} \var{x}_{rp} \leq \param{Avail}_r
+\]</div><p>for each  <span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span></p>
+</li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span> Maximize the total gain:</div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Gain maximization:</p>
+<div class="math notranslate nohighlight">
+\[
+\max \sum_{p, r: Match(p, r)} \param{Gain}_{rp} \var{x}_{rp}
+\]</div></li>
+</ul>
+</div></blockquote>
+<p>It can be seen that the structure of this model is  quite close to that of the
+generic product mix; some variants had to be introduced just in order to
+take into account the characteristics of  different machine and compatibility issues.</p>
+</li>
+</ul>
+<section id="dual-of-the-product-mix-problem">
+<h2><span class="section-number">3.1. </span>Dual of the product mix problem<a class="headerlink" href="#dual-of-the-product-mix-problem" title="Link to this heading">¶</a></h2>
+<p>Consider a simplified version of the
+product mix model introduced before:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_p \param{Gain}_p \, \var{x}_p &amp; \\
+\sum_p \param{Consumption}_{rp} \, \var{x}_p &amp; \leq \param{Avail}_r &amp; \forall \, r \\
+\var{x}_p &amp; \geq 0 &amp; \forall \, p
+\end{align*}</div><p>The dual of this problem might be easily derived, either by
+reformulating it as a standard linear optimization model, or by
+considering it as the dual of a standard one; in this case the only
+“non standard” aspect of the problem is the non negativity of the
+variables, which can be traced back to a primal with inequalities in
+place of equations.
+Formally the dual of turns out to be:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_r \param{Avail}_r \mathvar{\lambda}_r &amp; \\
+\sum_r \param{Consumption}_{rp} \mathvar{\lambda}_r &amp; \geq \param{Gain}_p &amp; \forall \, p \\
+\mathvar{\lambda}_r &amp; \geq 0 &amp; \forall \, r
+\end{align*}</div><p>This problem lends itself to an economic interpretation.
+A work agency would like  to buy  the available resources from the
+producer. The agency will try
+to purchase all the available  resources of the company and will
+propose a unit price
+<span class="math notranslate nohighlight">\(\mathvar{\lambda}_r\)</span> for  resource <span class="math notranslate nohighlight">\(r\)</span>, trying to  minimize the
+total cost.
+In order to  convince the company to release  manpower and  other
+resources, the proposed  prices  must be
+competitive. The dual constraint associated with product <span class="math notranslate nohighlight">\(p\)</span>,
+represents the fact that,  if the manufacturer decides to sell the
+resources requested to produce one unit of <span class="math notranslate nohighlight">\(p\)</span> to the dual agency, the
+revenue will be at least equal to the  unit gain.</p>
+<p>Duality  implies that there will be no
+advantage for either actor, neither the producer nor the agency:
+optimal values are identical and a  strictly competitive price (in the
+dual) will be allowed
+only for products types which will not be produced in the  optimal mix.</p>
+<p>As a simple illustrative example consider the following data.</p>
+<div class="math notranslate nohighlight">
+\[
+\begin{array}{lrrrrrrrl}
+\text{prod:}&amp; \text{1} &amp; \text{2} &amp; \text{3} &amp; \text{4} &amp; \text{5} &amp; \text{6} &amp; \text{7} &amp; \\ \hline
+\text{carpentry} &amp; 7 &amp; 5 &amp; 9 &amp; 10 &amp; 10 &amp; 12 &amp; 15 &amp; \leq 2000 \\
+\text{coating} &amp; 2 &amp; 2 &amp; 2 &amp; 3 &amp; 3 &amp; 3 &amp; 3 &amp; \leq 1500\\
+\text{assembly} &amp; 2 &amp; 2 &amp; 4 &amp; 7 &amp; 9 &amp; 15 &amp; 18 &amp; \leq 1700\\
+\text{control} &amp; 1 &amp; 1 &amp; 1 &amp; 2 &amp; 1 &amp; 2 &amp; 2 &amp;  \leq 300 \\
+\text{packaging} &amp; 1 &amp; 1 &amp; 1 &amp; 1 &amp; 2 &amp; 1 &amp; 0 &amp; \leq 500 \\ \hline
+\text{Gain} &amp; 10 &amp; 18 &amp; 20 &amp; 25 &amp; 27 &amp; 28 &amp; 35 &amp; \max
+\end{array}
+\]</div><p>It is readily seen, possibly through a suitable implementation, that an
+optimal solution consists of producing 200 units of product 2 and 100
+of product 5, with  a total gain 6300. The resources “carpentry”
+and “control” are used at full capacity.</p>
+<p>Solving the dual, the variable associated to carpentry gets a price
+1.8, the one associated to control 9, all the others being fixed to
+0. With this price, while there is no strict convenience, for the
+product mixer, with respect to the production of products 2 and 5, apparently
+there might be a gain for what concerns other products. As an
+example, selling the resources needed to produce one unit of product 1
+will generate a revenue of 21.6, significantly higher than 10, the
+unit gain on that product. However, the producer has no interest in this
+product, as it does not appear in the optimal solution.</p>
+<p>We note in passing that duality helps in gaining confidence on the
+solution reported by a numerical solver: if we plug the above
+solutions in the primal and dual respectively, we can immediately
+check  that both are feasible and satisfy complementarity, without the
+necessity of going through the computation of a numerical solver.</p>
+<p>We observe that duality is
+an extremely powerful <em>modeling</em>, and not just <em>computational</em>,
+tool. Whenever a problem which models a real situation is formulated,
+its dual might  be interpreted in the same context and sometimes
+gives rise to interesting models. Finding a reasonable dual
+interpretation  might not be easy, but is surely worth the effort.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="LinearModels.html" title="Previous document"><span class="section-number">2. </span>Structured linear optimization models</a>
+        </li>
+        <li>
+          <a href="BlendingModels.html" title="Next document"><span class="section-number">4. </span>Blending Models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">3. Product Mix Models</a><ul>
+<li><a class="reference internal" href="#dual-of-the-product-mix-problem">3.1. Dual of the product mix problem</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="LinearModels.html" title="previous chapter"><span class="section-number">2. </span>Structured linear optimization models</a></li>
+      <li>Next: <a href="BlendingModels.html" title="next chapter"><span class="section-number">4. </span>Blending Models</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/ProductMixProblems.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

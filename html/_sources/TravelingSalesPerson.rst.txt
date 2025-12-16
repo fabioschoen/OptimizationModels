@@ -1,0 +1,920 @@
+.. include:: preamble.rst
+
+---------------------------------------------------------------
+Sequencing problems: the Traveling Salesperson Problem
+---------------------------------------------------------------
+
+A :index:`sequencing problem` arises
+when the decision maker needs to choose
+the best ordering for a set of objects or in which sequence
+to perform a set of operations. The problem consists in determining a
+permutation among all feasible ones; to each  permutation 
+a cost is associated, and the problem, in its basic formulation,
+consists in  the search for the least cost feasible permutation.
+
+There exist various  formulations for sequencing  problems,
+the most common of which corresponds to the case where the
+cost  of a permutations is given by the sum of
+costs associated to contiguous pairs in the sequence.
+To be more concrete, a typical sequencing problem is often encountered in
+transport logistics from where the model got the name of :index:`traveling
+salesperson`, or :index:`TSP`:  a driver needs to visit a set of
+destinations. This situation arises, e.g.,  in  parcel  delivery or
+collection, or when some service tasks, like maintenance or gas meter
+reading, are to be performed in various locations. 
+There are in general no
+capacity constraints; the only requirement is that every destination is visited
+once and, at the end of the tour, the driver returns to the starting
+base station. Thus the problem can be seen as that of sequencing the
+visits, in order to spend as little as possible in the overall travel.
+The total cost in this case is the sum of the cost
+incurred in moving from one destination node (or from the base
+station) to the following one in the sequence, or back to the base station
+when the tour is terminated.
+
+This is perhaps one of the best known and most studied research
+problem in Operations Research.
+The interest in this problem arises both from the fact that it
+is  a problem which is very simple to describe, but
+considerably complex to solve, and from the fact that the applications of the
+traveling salesperson problem are many and not limited to delivery  or 
+collection of goods.
+ 
+A possible formalization of the problem can be obtained in the
+following way. Consider a directed graph whose nodes are 
+cities (or customers) to be visited. We assume that the graph is
+*complete*, which means that there exists an arc connecting each pair
+of nodes.
+Sometimes this is not the case: in a road network, as an example, only
+some pairs of cities are connected directly by a road. In graphs which
+are not complete, a path which goes through each node once and only
+once might not exist:
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=1.5]
+   \foreach \x / \y / \name in {0/0/0,0/2/1,1/1/2,2/0/3,2/2/4,3/1/5}
+   \node[vertex] (\name) at (\x,\y) {\name};
+   \foreach \source / \dest in
+   {0/1,1/2,3/4,4/5,2/3,2/4,3/5} 
+   \draw[draw] (\source) -- (\dest); 
+   \end{tikzpicture}
+
+It is evident that, in this figure, no path exists which, starting
+from node 0, goes through nodes 1-5 and back to 0 without passing more
+than once over a node. A path which satisfies this
+requirement would be  called an :index:`Hamiltonian path`.
+In some applications the constraint of not
+passing more than once through a node might be relaxed. In the
+traveling example, it is important to visit each location to deliver
+or collect parcels; however, it is not forbidden to pass again through an
+already visited node, on the way to a different destination. We may
+thus create a  complete graph in which the arc between two nodes
+represents a shortest path between the nodes itself. In other
+words, a minimum cost path problem (see
+chapter :ref:`Shortest (Minimum Cost) Path Problems`) is repeatedly solved to find the
+least cost route from each node to each other node in the
+graph. Then, if the graph is connected, a complete graph can be
+defined in which arcs, representing optimal paths, connect each
+pair of nodes. In this graph it is always possible to find hamiltonian paths. 
+
+From now on, let us assume that the graph is complete, and that costs
+associated to each arc are non negative. In order to formulate the optimization problem 
+we associate an indicator variable to each arc:
+:math:`\mathvar{\delta}_{ij}`. Constraints need to be defined in
+such a way that this variable is equal to 1 if and
+only if the route prescribes to visit node :math:`j` *immediately* after
+having visited node :math:`i`. Assuming the constraints have been 
+formulated,  the objective function is simply written, exactly in the
+same way as in the minimum cost path problem:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_{(i,j) \in E} \param{c}_{ij} \mathvar{\delta}_{ij}
+   \end{align*}
+
+In the above objective, :math:`E` is the set of arcs in the
+graph. If nodes are denoted by :math:`V = \{0,1, \ldots, n\}`, then
+:math:`E = \{(i,j) \in V \times V : i \ne j\}`.
+      
+For what concerns the
+constraints, first observe that the tour must touch each node once;
+thus, referring to a network flow problem, the total flow in and out
+of each node should be equal to 1. That is, one and only one arc of
+a feasible tour
+will  enter each node and one and only one arc will exit from it. In
+formulae:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_{i \in V, i \ne j } \mathvar{\delta}_{ij} & = 1 & \forall \, j \in V\\
+   \sum_{j \in V, j \ne i} \mathvar{\delta}_{ij} & = 1 & \forall \, i
+   \in V
+   \end{align*}
+ 
+It is easily recognized that the structure of these two groups of
+constraints is that of matching constraints (on a graph which,
+however, is not
+bipartite like in chapter :ref:`Assignment or bi-partite matching`).
+Generic (non bipartite) weighted matching problems are easily solvable, and
+efficient algorithms do exist (see, e.g., :cite:`Edmonds65`).
+Unfortunately these constraints, although necessary for
+a feasible solution, are not  sufficient
+to force the indicator variables to identify a single 
+closed tour. The following example shows the situation:
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=1.5]
+   \foreach \x / \y / \name in {0/0/0,0/2/1,1/1/2,2/0/3,2/2/4,3/1/5}
+   \node[vertex] (\name) at (\x,\y) {\name};
+   \foreach \source /  \dest in {0/1,1/2,2/0}
+   \path[->,ultra thick,draw,red] (\source) -- (\dest); 
+   \foreach \source /  \dest in {3/4,4/5,5/3}
+   \path[->,ultra thick,draw,red] (\source) -- (\dest); 
+   \foreach \source /  \dest in {0/2,0/3,0/4,0/5,1/3,1/4,1/5,2/3,2/4,2/5,3/5}
+   \draw[dotted,thin,draw] (\source) -- (\dest); 
+   \end{tikzpicture}
+
+In the figure, red arcs corresponds to arcs for which the indicator
+variable is 1. 
+All matching constraints are
+satisfied by this solution, but it does not represent a feasible
+solution, as the proposed path is not a unique cycle. We thus need to
+introduce special purpose constraints to
+eliminate :index:`sub-tours` from feasible solutions. A sub-tour is
+a closed circuit which  does not contain the
+origin node.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Sub-tour elimination constraints
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  
+The first technique consists of  *labeling*  the nodes, i.e.,
+assigning a new variable to each node. The idea is to
+assigns a variable to each node and, by means of suitable logical constraints,
+force the label assigned to a node to be strictly greater than that
+assigned to its direct predecessor along the path. Let us denote by :math:`\var{y}_i`
+the variable associated to node :math:`i`. Then we would like to
+impose logical constraints:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \mathvar{\delta}_{ij} = 1 & \implies \var{y}_j  > \var{y}_i 
+   \end{align*}
+   
+Assume that a sub-tour :math:`v_1, v_2, \ldots, v_k, v_{k+1}=v_1` exists
+in a solution. The logical constraints above would then imply:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \mathvar{\delta}_{v_1v_2} = 1 & \implies \var{y}_{v_2}  >
+   \var{y}_{v_1} \\ 
+   \mathvar{\delta}_{v_2v_3} = 1 & \implies \var{y}_{v_3}  >
+   \var{y}_{v_2} >  \var{y}_{v_1} \\
+   \dots \\
+   \mathvar{\delta}_{v_{k}v_1} = 1 & \implies \var{y}_{v_1}  >
+   \var{y}_{v_k} >  \var{y}_{v_1}
+   \end{align*}
+
+which is impossible. Thus it has been proven that these logical
+constraints make any tour infeasible. However it should be recalled
+that a tour should be allowed, namely one which returns to the base
+station. So it is necessary to impose the logical constraints for
+each pair of nodes, provided that the second one is not the origin:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \mathvar{\delta}_{ij} = 1 & \implies \var{y}_j  > \var{y}_i &
+   \forall\,i, \forall\,j \ne 0
+   \end{align*}
+
+In practice, replacing the "strictly greater" constraint with
+:math:`\geq \var{y}_{i}+1`, the constraint becomes
+
+.. math::
+   :nowrap:
+
+   \[
+   \mathvar{\delta}_{ij} = 1 \implies \var{y}_{j} \geq \var{y}_{i}
+   +1, \quad j \ne 0
+   \]
+ 
+To correctly formulate this constraint, we can proceed in the
+following way:
+if  :math:`\mathvar{\delta}_{ij} = 1` then  the difference
+:math:`\var{y}_{j} - \var{y}_{i}` must be greater than or equal to
+one (or to any other positive quantity). Otherwise, 
+it is necessary to find a lower bound on the same difference in such a way that the
+generated constraint is redundant. If we fix, arbitrarily,
+:math:`\var{y}_0=0`, it can be observed that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{y}_j  & \leq n & \forall\, j \\
+   \var{y}_j & \geq 1 & \forall\, j \ne 0
+   \end{align*}
+
+Thus the logical constraint can be formulated as:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{y}_j  - \var{y}_i & \geq  \mathvar{\delta}_{ij} + (1-n)
+   (1-\mathvar{\delta_{ij}}) & \forall\,i \in 0,n, \forall\, j \in
+   1,n  \\
+   \var{y}_0  & = 0
+   \end{align*}
+
+The addition of these constraints excludes the possibility of
+cycles not including node 0. We may also notice that it is not
+required to impose integrality constraints on the variables
+:math:`\var{y}`; in fact they might also be non integer, if
+necessary. In the above model, as the source is assigned label 0,
+the highest possible label is :math:`n` and the increment is one,
+it turns out that in any feasible solution the values of variables
+:math:`\var{y}` will be consecutive integers, i.e., a sequential
+numbering of the visited nodes.
+
+In the following we give a formulation of the model, using the
+formulation just introduced:
+
+.. literalinclude:: AMPL/tsp.mod
+   :caption: tsp.mod
+   :language: ampl
+
+
+An example of the execution of this model can be obtained, with the
+already used dataset Pistoia.dat, using the following script:
+
+.. literalinclude:: AMPL/tsp.run
+   :caption: tsp.run
+   :language: ampl
+
+which gives the following results:
+
+.. literalinclude:: AMPL/tsp.out
+   :caption: tsp.out
+	
+The following figure reports the optimal tour (based on estimated
+travel times):
+
+   
+.. tikz::
+
+      \begin{tikzpicture}
+      \node{\includegraphics[scale=0.5]{/home/schoen/git.schoen/teaching/MyBooks/OADS/Sphinx/source/pistoia.png}};
+      %  \draw[help lines,blue] (-5,-5) grid[step=0.5] (5,5);
+      %  \draw[help lines,thick,red] (-5,-5) grid (5,5);
+      %  \draw[help lines,thick,black] (-5,-5) grid[step=5] (5,5);
+      \foreach \i/\x/\y/\name in
+      {1/-3.5/3.65/Abetone,
+      2/2.6/-1.9/Agliana,
+      3/-2/-2.5/Buggiano,
+      4/-2.2/-3.2/Chiesina,
+      5/-2.2/3.5/Cutigliano,
+      6/1/-4/Lamporecchio,
+      7/.5/-3.5/Larciano,
+      8/-1/-.5/Marliana,
+      9/-1.5/-1.5/MassaCozzile,
+      10/-.25/-2.75/Monsummano,
+      11/3/-.5/Montale,
+      12/-1.2/-2/Montecatini,
+      13/-2.5/-.5/Pescia,
+      14/-.75/-2.5/PieveNievole,
+      15/1/0/Pistoia,
+      16/-1.5/1/Piteglio,
+      17/-1.5/-3.5/PonteBugg,
+      18/2/-3/Quarrata,
+      19/2.5/2.25/SambucaP,
+      20/-.5/2.25/SanMarcello,
+      21/.5/-2.25/SerravalleP,
+      22/-2.35/-2.2/Uzzano}
+      {\node (\i) at (\x,\y) {};
+      };
+      \draw[blue,thick] (15)  -- (11) -- (2) -- (18) -- (6) -- (7) -- (10)
+      -- (14) -- (21) -- (12) -- (17) -- (4) -- (3) -- (13) -- (22) --
+      (9) -- (8) -- (16) -- (5) -- (1) -- (20) -- (19)  -- (15);
+      \fill (15)  circle(2pt);
+      \end{tikzpicture}
+
+Some comments are in order. First we can notice from the graph
+above that the path "crosses itself", which is something which
+might be considered as negative at first sight. But it should be
+reminded that the arrows represented in the figure are not
+the actual path followed by the driver, but just
+are meant to represent the correct visit sequence. As an example,
+the apparent crossing close to Cutigliano is not real, as the best
+path San Marcello Pistoiese to Abetone and then Piteglio, goes
+through Cutigliano, and similarly for other apparent crossings.
+
+Another observation is the speed by which this problem is
+solved. Indeed this is a small instance. However, the fact that,
+with this formulation, it was solved in a very short CPU time, is
+not due to the formulation, but to the advanced optimization
+software employed. The solver used in the example automatically
+adds a large number of cuts (valid inequalities) to improve the
+formulation, which, in itself, is very weak. If we used, e.g., the
+CBC solver, which is already a very advanced implementation, the
+same instance would be solved in 17 seconds, with over 150000
+simplex iterations. In fact, the formulation just presented does
+not allow to solve  problems of size, say, larger than 50.
+Different formulations will be introduced later in this chapter.
+   
+   
+Although "weak"  from the polyhedral point of view, the constraints just presented are
+important as they allow for the formulation  of additional
+constraints, useful in many applications. In fact, in place of the unit
+increase of variable :math:`\var{y}_j`, an increase equal to, say,
+the travel time along arc :math:`(i, j)`, or the sum of the time
+spent in node :math:`i`  plus the travel time on the arc. In this
+case, variable :math:`\var{y}_j` would have the meaning of 
+the arrival time at node :math:`j`. Having this variable in the model
+easily allows to  insert temporal constraints like, e.g. requiring
+that a node must be visited in a specific time window, or requiring
+that a node is not visited before another one. An application of
+models of this kind can be considered, as an example, for the
+scheduling of home care visits to patients by a
+medical or nursing staff. In order to implement a model of
+this kind, the logical  constraints need to be slightly modified.
+The lower bound on the difference of
+visit times of two consecutive nodes must be computed as a function
+of the travel and visit times. For example, we might
+assume that there are an earliest start and return times, denoted
+by :math:`\param{T_{\min}}, \param{T_{\max}}`.
+Assume furthermore that visiting a node requires
+:math:`\param{T}_i`  time units
+and that the travel time between two nodes is
+:math:`\param{T}_{ij}`. Then
+the logical constraint becomes
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      \var{y}_j  - \var{y}_i & \geq  (\param{T}_i +
+      \param{T}_{ij})\mathvar{\delta}_{ij}
+      - (\param{T_{\max}} - \param{T_{\min}})
+      (1-\mathvar{\delta_{ij}}) \\& \forall\,i \in 0,n, \forall\, j \in
+      1,n  \\
+      \var{y}_0  & = \param{T_{\min}}
+   \end{align*}
+           
+The TSP problem has been the subject of very intense research in
+all recent years; there exist many different formulations of the
+sub-tour elimination constraints (see, e.g., :cite:`Oncan2009` for a
+list of 24 different models).  One of the best known formulations
+directly proceeds
+without the need for any additional labeling.
+Let  :math:`\set{S}` be any not empty subset of the set of nodes
+which does not coincide with the set of nodes: :math:`\set{S} \subset V,
+S \ne \emptyset`. In order to prevent any tour within the set
+:math:`\set{S}` it is sufficient to require that at least one arc in
+the solution exits (or enters) this set. This can be done through
+the constraint:
+
+.. math::
+   :nowrap:
+	 
+   \begin{align*}
+      \sum_ {i \in \set{S}, j \not \in
+      \set{S}} \mathvar{\delta}_{ij} \geq 1 
+   \end{align*}
+ 
+Such a constraint should theoretically be imposed for
+each set of non empty subset of the set of nodes,
+with the exception of the whole set. However, it is easily seen
+that, for symmetry,  imposing the constraint for a set is
+equivalent to imposing the same constraint to the complementary
+set, so that we can limit the set :math:`\set{S}` to have a
+cardinality which is no more than one half the number of
+nodes. Moreover, when the set is a singleton, the constraint is
+already included in the model as an assignment constraint. Thus,
+the required sub-tour elimination constraints  are:
+
+.. math::
+   :nowrap:
+	 
+   \begin{align*}
+      \sum_ {i \in \set{S}, j \not \in
+      \set{S}} \mathvar{\delta}_{ij} &\geq 1  & \forall \, \set{S}
+      \subset V: 2 \leq |S| \leq \lceil (|V|/2) \rceil
+   \end{align*}
+ 
+Despite this reduction, the number of constraints to be added
+to the formulation is astronomical and grows exponentially fast as
+the size of the problem grows. The total number of constraints
+remains :math:`O(2^{|V|})`. It is therefore impossible
+to add all of these in a formulation of the
+problem. On the other hand it can be proven that these constraints are
+rather *strong* and their addition to the original formulation
+would lead to a model whose linear relaxation is quite good.
+A possibility, exploited in most recent implementations,
+is to dynamically insert only those inequalities which are violated
+in the solution of the current relaxation.
+This is done in an automatic way within so-called
+:index:`Branch & Cut` implementations. The general idea is to
+solve an initial relaxation
+of the problem, and then calling  a procedure which  determines if there exists
+any of the sub-tour elimination constraints which is violated.
+If the current solution is binary, this task is quite easy, as it
+just requires to identify cycles in the current solutions: the
+nodes of any cycle which does not include the source node form a
+set :math:`\set{S}` associated to a violated inequality which can
+be added to the formulation. More complex is the case in which the
+current solution is not binary: a separation procedure needs to be
+implemented which is capable of finding a violated inequality which
+cuts off the current solution. This topic is out of the scope of
+this volume. Just as an illustrative example, if in the example
+used before we drop the labeling constraints and just solve the
+relaxed problem with only the constraints requiring one unit flow
+in and out of each node, the following solution is obtained:
+   
+.. tikz::
+
+   \begin{tikzpicture}
+      \node{\includegraphics[scale=0.5]{/home/schoen/git.schoen/teaching/MyBooks/OADS/Sphinx/source/pistoia.png}};
+      %  \draw[help lines,blue] (-5,-5) grid[step=0.5] (5,5);
+      %  \draw[help lines,thick,red] (-5,-5) grid (5,5);
+      %  \draw[help lines,thick,black] (-5,-5) grid[step=5] (5,5);
+      \foreach \i/\x/\y/\name in
+      {1/-3.5/3.65/Abetone,
+      2/2.6/-1.9/Agliana,
+      3/-2/-2.5/Buggiano,
+      4/-2.2/-3.2/Chiesina,
+      5/-2.2/3.5/Cutigliano,
+      6/1/-4/Lamporecchio,
+      7/.5/-3.5/Larciano,
+      8/-1/-.5/Marliana,
+      9/-1.5/-1.5/MassaCozzile,
+      10/-.25/-2.75/Monsummano,
+      11/3/-.5/Montale,
+      12/-1.2/-2/Montecatini,
+      13/-2.5/-.5/Pescia,
+      14/-.75/-2.5/PieveNievole,
+      15/1/0/Pistoia,
+      16/-1.5/1/Piteglio,
+      17/-1.5/-3.5/PonteBugg,
+      18/2/-3/Quarrata,
+      19/2.5/2.25/SambucaP,
+      20/-.5/2.25/SanMarcello,
+      21/.5/-2.25/SerravalleP,
+      22/-2.35/-2.2/Uzzano}
+      {\node (\i) at (\x,\y) {};
+      };
+      \foreach \i / \j in
+      {1/5,12/3,3/9,9/12,2/18,18/11,11/2,13/22,14/10,4/17,
+      15/19,16/20,6/7,8/21}
+      {\draw[black,thick] (\i)  -- (\j);};
+   \end{tikzpicture}
+      
+This solution, as it can be immediately seen, contains various
+sub-tours. Its total cost is 192.23, which is thus a lower bound on
+the optimal solution value. Adding to the formulation
+only the sub-tour elimination constraints
+associated to the 10 sub-tours in this solution, and solving the
+problem again, the following solution is found, which is again
+infeasible, but starts to get closer to a single tour:
+   
+.. tikz::
+
+   \begin{tikzpicture}
+      \node{\includegraphics[scale=0.5]{/home/schoen/git.schoen/teaching/MyBooks/OADS/Sphinx/source/pistoia.png}};
+      %  \draw[help lines,blue] (-5,-5) grid[step=0.5] (5,5);
+      %  \draw[help lines,thick,red] (-5,-5) grid (5,5);
+      %  \draw[help lines,thick,black] (-5,-5) grid[step=5] (5,5);
+      \foreach \i/\x/\y/\name in
+      {1/-3.5/3.65/Abetone,
+      2/2.6/-1.9/Agliana,
+      3/-2/-2.5/Buggiano,
+      4/-2.2/-3.2/Chiesina,
+      5/-2.2/3.5/Cutigliano,
+      6/1/-4/Lamporecchio,
+      7/.5/-3.5/Larciano,
+      8/-1/-.5/Marliana,
+      9/-1.5/-1.5/MassaCozzile,
+      10/-.25/-2.75/Monsummano,
+      11/3/-.5/Montale,
+      12/-1.2/-2/Montecatini,
+      13/-2.5/-.5/Pescia,
+      14/-.75/-2.5/PieveNievole,
+      15/1/0/Pistoia,
+      16/-1.5/1/Piteglio,
+      17/-1.5/-3.5/PonteBugg,
+      18/2/-3/Quarrata,
+      19/2.5/2.25/SambucaP,
+      20/-.5/2.25/SanMarcello,
+      21/.5/-2.25/SerravalleP,
+      22/-2.35/-2.2/Uzzano}
+      {\node (\i) at (\x,\y) {};
+      };
+      \draw[black,thick] (1)--(20)--(16)--(5)--(1);
+      \draw[green,thick] (2)--(11);
+      \draw[red,thick] (3)--(13)--(22)--(4)--(17)--(3);
+      \draw[cyan,thick]
+      (6)--(18)--(15)--(19)--(21)--(8)--(9)--(12)--(14)--(10)--(7)--(6);
+   \end{tikzpicture}
+
+This process can be continued and eventually the optimal solution
+is found; this happens well before having added all of the possible
+sub-tour elimination constraints which, in this example, would be
+slightly more than :math:`2\,000`. 
+   
+
+The applications of the traveling salesman model are
+many. Obviously, the main application field is in transportation
+logistics, where the model can be applied to sequence deliveries,
+garbage collection, home care visits, ... 
+Problems connected with street cleaning or snow removal are only apparently similar:
+in this case it is required that each *arc* is visited at least once,
+while in the traveling salesperson each *node* is visited at least
+once. This problem will be shortly dealt with later on in chapter :ref:`Arc routing`. 
+
+Among the many applications, it is important to  recall in particular those related to
+industrial production.
+It is quite common, in production,  that some jobs can be worked on a
+machine, or a plant, in any arbitrary ordering, within, say, a single
+production period (a day, as an example).  However, it is also
+frequently the case that after a job has been completed, before
+starting the next one some setup is needed, and production needs to be
+stopped. Frequently, this setup time depends *both* on the job just
+concluded *and* on the next one. Consider, as an example, a drilling
+machine: after drilling a hole in  a plate, it is necessary to change
+the tool in order to drill holes of different sizes: this retooling
+requires a time which depends on the relative sizes of the two
+different tools to be mounted and dismounted from the machine. 
+In a different environment, consider the
+problem of establishing the optimal sequence of surgical operations
+in an hospital: after an operation ends, and before the following one
+can start, some time is needed for sterilization and for changing the
+equipment in the operating room. These setup actions have a  duration
+which might depend on the two surgeries involved. In these examples,
+the nodes to be "visited" are the different industrial or surgical
+operations; the arcs connect different operations which might be
+scheduled in sequence. The cost of each arc is the amount of time
+wasted in setup. The traveling salesperson solution allows us to find
+how to sequence all of the operations so that the total time spent in
+setup is minimized. This has great benefits in terms of productivity,
+in the first case, and, in the hospital case, allows the planner to
+save time on setup and have more time allowed for surgeries.
+ 
+   :application: :index:`Sequencing in industrial production`
+
+   Consider the problem of sequencing operations in a
+   machine used to color a material or in a textile loom where
+   different colors are needed for each product. Assume a list
+   of jobs ready to be processed is available, each characterized by a
+   set of colors. The plant is organized in such a way that, when a
+   job is finished and the next one has to be prepared to start, some
+   colors need possibly to be changed. This change requires a setup
+   time. If colors are liquid, it might be necessary to clean the
+   containers and to fill them with  a new color, or to extract the
+   color container and insert a new one. In textile industries, color
+   changes require dismounting a set of threads and substituting them
+   with another set.  In general, the time wasted in this operation
+   depends on the number of colors changed. In painting, it might also
+   depend on the colors themselves, as cleaning some colors from a
+   container might require different times depending on the color
+   type. In this latter case, the graph of the TSP is asymmetric.
+   Consider as an example the case of coloring tissues in 4 colors,
+   and assume that the jobs to be worked on a day are represented by
+   the following figure:
+
+   .. tikz::
+
+      \begin{tikzpicture}[scale=0.3]
+      \newcommand{\patt}[5]{\fill[#1]   (a) node[below,black]{\tiny{#5}}  rectangle ++(1,1);
+       \fill[#2]   (a)++(0,1) rectangle ++(1,1);
+       \fill[#3]   (a)++(0,2) rectangle ++(1,1);
+       \fill[#4]   (a)++(0,3) rectangle ++(1,1);}
+      \coordinate (a) at (0,0);
+      \patt{blue}{brown}{cyan}{red}{4};
+      \coordinate (a) at (1.3,0);
+      \patt{blue}{brown}{green}{yellow}{2};
+      \coordinate (a) at (2.6,0);
+      \patt{blue}{brown}{magenta}{red}{2};
+      \coordinate (a) at (3.9,0);
+      \patt{blue}{brown}{magenta}{violet}{1};
+      \coordinate (a) at (5.2,0);
+      \patt{blue}{brown}{magenta}{yellow}{1};
+      \coordinate (a) at (6.5,0);
+      \patt{blue}{cyan}{red}{violet}{3};
+      \coordinate (a) at (7.8,0);
+      \patt{blue}{green}{magenta}{red}{2};
+      \coordinate (a) at (9.1,0);
+      \patt{blue}{green}{magenta}{violet}{1};
+      \coordinate (a) at (10.4,0);
+      \patt{blue}{magenta}{violet}{yellow}{1};
+      \coordinate (a) at (11.7,0);
+      \patt{blue}{red}{violet}{yellow}{1};
+      \coordinate (a) at (13,0);
+      \patt{brown}{green}{red}{violet}{2};
+      \coordinate (a) at (14.3,0);
+      \patt{brown}{magenta}{red}{violet}{1};
+      \coordinate (a) at (15.6,0);
+      \patt{brown}{magenta}{red}{yellow}{1};
+      \coordinate (a) at (16.9,0);
+      \patt{brown}{red}{violet}{yellow}{1};
+      \coordinate (a) at (18.2,0);
+      \patt{cyan}{brown}{red}{violet}{1};
+      \coordinate (a) at (19.5,0);
+      \patt{cyan}{green}{magenta}{red}{2};
+      \coordinate (a) at (20.8,0);
+      \patt{cyan}{green}{magenta}{violet}{1};
+      \coordinate (a) at (22.1,0);
+      \patt{cyan}{green}{red}{yellow}{2};
+      \coordinate (a) at (23.4,0);
+      \patt{cyan}{magenta}{red}{violet}{2};
+      \coordinate (a) at (24.7,0);
+      \patt{cyan}{magenta}{red}{yellow}{1};
+      \coordinate (a) at (26,0);
+      \patt{cyan}{magenta}{violet}{yellow}{1};
+      \coordinate (a) at (27.3,0);
+      \patt{green}{magenta}{orange}{yellow}{2};
+      \end{tikzpicture}
+
+
+   In this figure the standard is to  process jobs in the order given
+   by reading the table from left to right. At the left of
+   each job a number denotes the number of colors to be changed before
+   that job begins. For the first job this number is 4, as,
+   considering the last job, all of the colors need to be changed. The
+   second job in this sequence has a setup cost 2, as it can be seen
+   that from job 1 to job 2 only two colors have to be changed, while
+   blue and brown can be left unchanged. It should be clear how to
+   compute setup times for all pairs of jobs. Using this sequence,
+   which was built using a lexicographic ordering of job colors, a
+   total of 35 color changes is needed.
+
+   If we run the TSP model with the data corresponding to this job
+   set, the following sequence of jobs is obtained:
+
+   .. tikz::
+
+      \begin{tikzpicture}[scale=0.3]
+      \newcommand{\patt}[5]{\fill[#1]   (a) node[below,black]{\tiny{#5}}  rectangle ++(1,1);
+       \fill[#2]   (a)++(0,1) rectangle ++(1,1);
+       \fill[#3]   (a)++(0,2) rectangle ++(1,1);
+       \fill[#4]   (a)++(0,3) rectangle ++(1,1);}
+       \coordinate (a) at (0,0.);
+       \patt{blue}{brown}{cyan}{red}{1};
+       \coordinate (a) at (1.3,0.);
+       \patt{blue}{cyan}{red}{violet}{1};
+       \coordinate (a) at (2.6,0);
+       \patt{cyan}{magenta}{red}{violet}{1};
+       \coordinate (a) at (3.9,0);
+       \patt{cyan}{green}{magenta}{red}{1};
+       \coordinate (a) at (5.2,0);
+       \patt{cyan}{green}{red}{yellow}{1};
+       \coordinate (a) at (6.5,0);
+       \patt{cyan}{magenta}{red}{yellow}{1};
+       \coordinate (a) at (7.8,0);
+       \patt{brown}{magenta}{red}{yellow}{1};
+       \coordinate (a) at (9.1,0);
+       \patt{blue}{brown}{magenta}{yellow}{1};
+       \coordinate (a) at (10.4,0);
+       \patt{blue}{brown}{green}{yellow}{1};
+       \coordinate (a) at (11.7,0);
+       \patt{green}{magenta}{orange}{yellow}{2};
+       \coordinate (a) at (13,0);
+       \patt{cyan}{green}{magenta}{violet}{2};
+       \coordinate (a) at (14.3,0);
+       \patt{cyan}{magenta}{violet}{yellow}{1};
+       \coordinate (a) at (15.6,0);
+       \patt{blue}{magenta}{violet}{yellow}{1};
+       \coordinate (a) at (16.9,0);
+       \patt{blue}{red}{violet}{yellow}{1};
+       \coordinate (a) at (18.2,0);
+       \patt{brown}{red}{violet}{yellow}{1};
+       \coordinate (a) at (19.5,0);
+       \patt{cyan}{brown}{red}{violet}{1};
+       \coordinate (a) at (20.8,0);
+       \patt{brown}{green}{red}{violet}{1};
+       \coordinate (a) at (22.1,0);
+       \patt{brown}{magenta}{red}{violet}{1};
+       \coordinate (a) at (23.4,0);
+       \patt{blue}{brown}{magenta}{violet}{1};
+       \coordinate (a) at (24.7,0);
+       \patt{blue}{green}{magenta}{violet}{1};
+       \coordinate (a) at (26,0);
+       \patt{blue}{green}{magenta}{red}{1};
+       \coordinate (a) at (27.3,0);
+       \patt{blue}{brown}{magenta}{red}{1};
+       \end{tikzpicture} 
+
+
+   This sequence requires only 24 color changes, with a saving of more
+   than 30% of the setups.
+
+In the examples we  always assumed  an initial state is known and that
+at the end of the tour, the same state needs to be restored. In the
+geographical TSP, the start city, or base station,  is known and the
+tour should terminate in that node; in production or in surgery, we
+assume the initial setup is given and that at the end of the day the
+same setup needs to be restored. If this assumption were false,
+we could easily extend the model to include any
+start and end node, possibly  different one from the other.
+If the initial node coincides with the final one, then clearly
+choosing any different starting node, the same tour will remain
+optimal.
+If instead we do not know the initial and final nodes, and they are
+different, we might 
+insert a dummy node (a repository) connected to every other node in
+the graph (in both directions)  with zero cost arcs.
+
+This part on the TSP problem is necessarily too short, as this is one
+of the most deeply explored problems in Optimization and Operations
+Research. We hope we have given at least the feeling on how relevant
+this problem is and of how many practical problems can be profitably
+solved through a model like this one. We did not mention many other
+possibilities, like, e.g., organizing the tour of an automatic
+machine for the production of VLSI (Very Large Scale Integrated)
+circuits: here the machine needs to place thousands of components on a
+chip, and the TSP tour could save a significant amount of time in
+moving the tool from one location to another one. A very large set of
+examples, software, historical notes on the TSP problem can be found
+in the :index:`Concorde` web site :cite:`Concorde` which is devoted to
+the TSP problem and offers among the best software tools for the
+solution of large instances.
+
+---------------
+Vehicle Routing
+---------------
+
+This chapter is meant to very briefly introduce the subject of Vehicle
+Routing, without any presumption of being exhaustive. This problem, in
+fact, is the subject of very active research and it is difficult to
+summarize here all of the variants, models, applications.   Just to
+give an idea, the problem deals with more than just sequencing a set
+of visits: the first complication is that more than one route has to
+be planned - a situation which arises, e.g., in good distribution
+services, where a company owns several trucks, possibly with different
+capacities, and would like to use them to serve all requests with the
+lowest possible cost. In addition to a multiple traveling
+salesperson problem, a bin-packing like model has to be formulated. It
+is important to say that even this first basic model has a very high
+computational complexity. The range of problems which can be
+solved through a mathematical optimization model with a standard
+general purpose solver is significantly more limited than those which
+might be solved as TSP ones. Moreover, already within this initial
+model, additional information is required: do all the trips consist of
+deliveries? Or there is some pick-up? In other words, does every truck
+start from a depot with full load and return to the depot after having
+delivered each parcel at a specific location, or are there location at
+which some parcel will be collected?   And, if this is the case, where
+should those parcel be delivered? To another customer, or back to the depot?
+Let us assume here that all parcels are to be delivered, and no
+pick-up is required. Then a possible formulation of the problem might
+be the following one. Assume that a graph :math:`G=\langle V, E\rangle`
+is given with :math:`V = \{0,1,\ldots,N\}` being the set of nodes;
+node :math:`0` refers to the depot from which we assume that all vehicles
+will start and eventually return. Denote by :math:`V_0 := V \setminus \{0\}`
+the set of customers to be served. Let :math:`\var{\delta}` be a binary flow
+variable representing the  passage of a vehicle through each
+arc. If we denote by :math:`\param{c}_{ij}` the cost associated to arc
+:math:`(i,j)`, by :math:`\param{K}` the available number of vehicles (which we
+assume here to be identical) and by :math:`\param{Q}` the capacity of
+each vehicle and :math:`\param{q}_j` the quantity to be delivered to
+a customer at node :math:`j`.
+The optimization problem can be stated as follows:
+
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min_{\var{\delta}} \sum_{(i,j) \in E} \param{c}_{ij}
+   \var{\delta}_{ij} & \\
+   \sum_{i \in V: (i,j) \in E} \var{\delta}_{ij} & = 1 & \forall\, j
+   \in  V_0 \\
+   \sum_{j \in V: (i,j) \in E} \var{\delta}_{ij} & = 1 & \forall\, i
+   \in  V_0 \\
+   \sum_{j \in V_0 : (0,j) \in E} \var{\delta}_{0j} & \leq \param{K} \\
+   \var{\delta}_{ij} = 1 & \implies \var{y}_i \geq \var{y}_j +
+   \param{q}_j & \forall\,i \in V, j \in V_0\\
+   \var{y}_i & \geq 0 & \forall\, i \in V \\
+   \var{y}_i & \leq \param{Q} \\
+   \var{y}_0 & = \param{Q} \\
+   \var{\delta}_{ij} & \in \{0,1\} & \forall\,(i,j) \in E
+   \end{align*}
+
+The logical constraint models the fact that in this problem, assumed
+to be a delivery one, each truck starts with full capacity from the
+depot and when it decides to visit a node :math:`j`, it must have
+enough residual load to be able to satisfy the demand of that node.  
+Using the standard tools to transform a logical constraint into a
+linear one, we obtain:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{y}_i & \geq \var{y}_j + \param{q}_{j}
+   \var{\delta}_{ij} - \param{Q} (1 - \var{\delta}_{ij}) & \forall\,i \in V,j \in V_0
+   \end{align*}
+
+This model is quite similar to the TSP model presented above, and it
+shares the defects of that model, namely the fact that the linear
+relaxation is quite weak. Many different formulations exist, most of
+which are based  on binary variables with three indices  :math:`\var{\delta}_{ijk}`
+which assume the value :math:`1` if and only if vehicle :math:`k` travels on
+arc :math:`(i,j)`.
+
+The following code contains a possible implementation of the model and
+of an example,
+based on the same data seen before.
+
+.. literalinclude:: AMPL/vrp.mod
+   :caption: vrp.mod
+   :language: ampl
+
+.. literalinclude:: AMPL/vrp.dat
+   :caption: vrp.dat
+   :language: ampl
+and the optimal solution, computed for 4 trucks with capacity 30 each,
+is represented below.
+
+   
+   .. tikz::
+
+      \begin{tikzpicture}
+      \node{\includegraphics[scale=0.5]{/home/schoen/git.schoen/teaching/MyBooks/OADS/Sphinx/source/pistoia.png}};
+      %  \draw[help lines,blue] (-5,-5) grid[step=0.5] (5,5);
+      %  \draw[help lines,thick,red] (-5,-5) grid (5,5);
+      %  \draw[help lines,thick,black] (-5,-5) grid[step=5] (5,5);
+      \foreach \i/\x/\y/\name in
+      {1/-3.5/3.65/Abetone,
+      2/2.6/-1.9/Agliana,
+      3/-2/-2.5/Buggiano,
+      4/-2.2/-3.2/Chiesina,
+      5/-2.2/3.5/Cutigliano,
+      6/1/-4/Lamporecchio,
+      7/.5/-3.5/Larciano,
+      8/-1/-.5/Marliana,
+      9/-1.5/-1.5/MassaCozzile,
+      10/-.25/-2.75/Monsummano,
+      11/3/-.5/Montale,
+      12/-1.2/-2/Montecatini,
+      13/-2.5/-.5/Pescia,
+      14/-.75/-2.5/PieveNievole,
+      15/1/0/Pistoia,
+      16/-1.5/1/Piteglio,
+      17/-1.5/-3.5/PonteBugg,
+      18/2/-3/Quarrata,
+      19/2.5/2.25/SambucaP,
+      20/-.5/2.25/SanMarcello,
+      21/.5/-2.25/SerravalleP,
+      22/-2.35/-2.2/Uzzano}
+      {\node (\i) at (\x,\y) {};
+      };
+      \draw[blue,thick] (15)  -- (8) -- (9) -- (13) -- (22) -- (3)
+      -- (4) -- (17) -- (6) -- (7) -- (15);
+      \draw[black,thick] (15)  -- (11) -- (2) -- (18) -- (15);
+      \draw[cyan,thick] (15)  -- (16) -- (5) -- (1) -- (20) -- (19) -- (15);
+      \draw[orange,thick] (15)  -- (21) -- (12) -- (14) -- (10) -- (15);      
+      \fill (15)  circle(2pt);
+      \end{tikzpicture}
+
+
+We prefer not too go much into detail, as from one side the field is
+huge, and, from another one, very few exact models are really useful
+in even moderately sized problem instances. Most of the currently used
+approaches are based on heuristics; some of these heuristics exploit
+at least part of the formulation - thus modeling the problem is not
+a useless exercise. However the main problem is in the richness of
+different model types: one of the most frequently encountered variants
+includes time windows, e.g. lower and upper bounds on the time allowed
+for each visit and for the departure from and the return to the depot. Other
+variants include requirements on specific skills or capabilities, so
+that not all vehicles can serve all customers. Another one takes into
+account traffic limitations, like city centers in Europe where
+deliveries may occur only during a specific time window and/or require
+an additional payment. Other variants include priorities (some
+customers need to be served before others) or multiple visits to the
+same customer,  but at different times of the day, or preferences
+which tend to assign the same driver (truck) to the same set of
+customers in different days; another complex variant concerns multiple
+day planning, with the additional complexity of having to decide on
+the possibility of not returning to the depot. And of course many
+models try to take into account the inherent stochasticity of travel
+times and of customer availability; recently models have been proposed
+for green or electric vehicle routing or even for drones.
+We refer the interested reader to the vast literature on this subject
+and we limit to a classical reference book :cite:`Vigo2014`. 
+
+
+.. include:: closing.rst
+

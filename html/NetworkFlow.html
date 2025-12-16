@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>6. Network flow models &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="7. Shortest (Minimum Cost) Path Problems" href="ShortestPath.html" />
+    <link rel="prev" title="5. Multi Period Models" href="MultiPeriodModels.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="MultiPeriodModels.html" title="Previous document"><span class="section-number">5. </span>Multi Period Models</a>
+        </li>
+        <li>
+          <a href="ShortestPath.html" title="Next document"><span class="section-number">7. </span>Shortest (Minimum Cost) Path Problems</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="network-flow-models">
+<h1><span class="section-number">6. </span>Network flow models<a class="headerlink" href="#network-flow-models" title="Link to this heading">¶</a></h1>
+<p>In this chapter a class of very important models will be introduced,
+all belonging to the class of network flow models. They can be thought
+of as representing the flow of some material (e.g., a liquid or a gas,
+but also vehicles or bits) along a (physical) network. These models lend
+themselves to theoretical analysis, to the development of specialized
+solution methods and to modeling much diverse situations, some of
+which apparently far from the concept of flows. The models we will
+introduce are, with few exceptions,
+linear optimization ones, and, thus, they inherit both the theory and the
+algorithms known for generic linear optimization. However their structure
+make them well suited for extremely efficient, specialized algorithms, capable of
+solving problems of huge size. The literature on network flow models
+and methods is very large; here we just mention <span id="id1">[<a class="reference internal" href="Bibliography.html#id23" title="Ravindra K. Ahuja, Thomas L. Magnanti, and James B. Orlin. Network Flows: Theory, Algorithms, and Applications. Pearson, 1993.">Ahuja <em>et al.</em>, 1993</a>]</span>, an
+excellent classic on this subject - although significant improvements have
+been observed in recent years and some of the proposed methods are
+nowadays slightly outdated, the book is an excellent reading for its
+clearness, depth and coverage.</p>
+<section id="minimum-cost-flow">
+<h2><span class="section-number">6.1. </span>Minimum cost flow<a class="headerlink" href="#minimum-cost-flow" title="Link to this heading">¶</a></h2>
+<p>Assume a <span class="target" id="index-0"></span>graph <span class="math notranslate nohighlight">\(G\)</span> is given.
+Definitions related to the elements of graph theory are briefly
+summarized in the Appendix: <a class="reference internal" href="Appendix.html#graphs-basic-definitions"><span class="std std-ref">Graphs: basic definitions</span></a>.
+The generic <span class="target" id="index-1"></span>minimum cost flow model can be defined as
+follows:</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Minimum cost flow</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{V}\)</span>: set of vertices or nodes of the graph</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{E} \subseteq V \times V\)</span>: set of arcs; unless
+stated otherwise, arcs are  directed, i.e. <span class="math notranslate nohighlight">\((i,j)  \ne (j,i)\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\param{b}_i\)</span> (balance): net output / input balance for
+node <span class="math notranslate nohighlight">\(i \in V\)</span>.
+This quantity represents
+the  difference between the total outflow from node <span class="math notranslate nohighlight">\(i\)</span> and the total inflow
+for the same node. A positive balance is associated to nodes which
+generate  flow, a negative one with consumer nodes, while
+zero balance corresponds to transit nodes;</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\param{L}_{ij}, \param{U}_{ij}\)</span> (lower and upper bounds
+on arc flows): on each arc <span class="math notranslate nohighlight">\((i, j) \in E\)</span>
+a minimum flow can be imposed
+(frequently equal to 0) as well as a maximum one (sometimes
+absent, or equal to <span class="math notranslate nohighlight">\(+ \infty\)</span>)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{c}_{ij}\)</span>: cost associated with one unit of flow
+passing through  arc <span class="math notranslate nohighlight">\((i, j) \in E\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{f}_{ij}\)</span>: the amount of flow through arc <span class="math notranslate nohighlight">\((i, j)\)</span></p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p><span class="target" id="index-2"></span>Flow conservation or balance equations:</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_{k: (i, k) \in E} \var{f}_{ik} - \sum_{h: (h, i) \in E}
+\var{f}_{hi} = \param{b}_i \qquad \forall \, i \in V
+\]</div><p>This constraint  forces the difference between flow out from
+node  <span class="math notranslate nohighlight">\(i\)</span>  and the  entering flow to be
+equal to  <span class="math notranslate nohighlight">\(\param{b}_i\)</span>.</p>
+</li>
+<li><p>Bounds:</p>
+<div class="math notranslate nohighlight">
+\[
+\param{L}_{ij} \leq \var{f}_{ij} \leq \param{U}_{ij} \qquad \forall \, (i, j) \in E
+\]</div></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Objective:  total cost minimization:</p>
+<div class="math notranslate nohighlight">
+\[
+\min \sum_{(i, j) \in E} \param{c}_{ij} \var{f}_{ij}
+\]</div></li>
+</ul>
+</div></blockquote>
+<p>In matrix form the problem might be represented as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_\var{f} c^T \var{f} &amp; \\
+\param{A} \var{f} &amp; = \param{b} \\
+\param{L} \leq \var{f} &amp; \leq \param{U}
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\param{A} \in \{-1, 0, +1\}^{|V| \times |E|}\)</span> is the <span class="target" id="index-3"></span>incidence
+matrix of the graph (see the Appendix <a class="reference internal" href="Appendix.html#graphs-basic-definitions"><span class="std std-ref">Graphs: basic definitions</span></a>).
+While for modeling purposes this representation is less useful than
+the explicit one, it becomes interesting for theoretical
+analysis. In particular it might be proven that the incidence matrix
+enjoys the <span class="target" id="index-4"></span>total unimodularity property. This means that
+every square sub-matrix of <span class="math notranslate nohighlight">\(\param{A}\)</span> has either 0 or 1 or -1 determinant. A
+fundamental consequence of this is the fact that, as the inverse of an
+integer matrix with determinant <span class="math notranslate nohighlight">\(\pm 1\)</span> is still integer, all basic
+solution of the above linear optimization model are granted to be
+integer, provided that <span class="math notranslate nohighlight">\(\param{b}, \param{L}, \param{U}\)</span> are
+integer. Thus, in this case, from the fundamental theorem of linear
+optimization, if the problem admits an optimal solution, then it will
+admit an optimal <em>basic</em> solution whose components are all integer. In
+this case, thus, there is no need to look for specialized, and
+significantly more complex, algorithms if an integer solution is
+required. Integrality comes for free in network flow models, under the
+assumption of integrality of the above terms. It is worth reminding
+that this fundamental property is usually lost as soon as even a
+single constraint which cannot be considered as a balance equation or
+as a bound on the flow on a single arc is added to the model.</p>
+<p>In the definition of the  minimum cost flow model some assumptions are
+made, some of which can be relaxed, although with some disadvantages:
+usually, extending the model will compromise the integrality
+property of optimal basic solutions:</p>
+<ol class="arabic">
+<li><p>It is required that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{i \in \set{V}} \param{b}_{i} &amp; = 0
+\end{align*}</div><p>This assumption cannot be relaxed:  if it is not satisfied, then no feasible
+flow can be found in the network. In fact,  summing all balance
+equations, it can be seen that the variable associated to any
+arc <span class="math notranslate nohighlight">\((i,j)\)</span> appears in exactly two flow balance equations: the flow
+balance of node <span class="math notranslate nohighlight">\(i\)</span>, where it appears with coefficient +1,
+and the flow balance of
+node <span class="math notranslate nohighlight">\(j\)</span>, with coefficient   -1. Therefore, summing all balance
+equation, a null left hand side is obtained. Thus, in order for the
+system of equations to admit solutions, it is necessary (although
+not sufficient) that the sum
+of the right hand sides is zero too.</p>
+</li>
+<li><p>The network is oriented;
+if this were not the case, frequently it is possible to associate to each
+undirected arc (an <span class="target" id="index-5"></span>edge) a pair of directed arcs.
+This modeling solution is feasible, provided that a capacity can be assigned
+to each of the two directions; this is  the case when a two-way road
+can be seen as two one-way roads, each of which with its own capacity.
+A different situation occurs when
+the two directions share the same capacity and thus, if a large
+amount of flow is present on one direction, the other one will have
+a more limited capacity. In this case, if the undirected edge is
+<span class="math notranslate nohighlight">\((i, j)\)</span> and the maximum (shared) capacity is <span class="math notranslate nohighlight">\(\param{U}\)</span>, after
+the substitution of the edge with two directed arcs <span class="math notranslate nohighlight">\((i,j)\)</span> and <span class="math notranslate nohighlight">\((j,i)\)</span>,
+the following constraint needs to be added</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{f}_{ij} + \var{f}_{ji} &amp; \leq \param{U}
+\end{align*}</div><p>This constraint is a linear inequality, so the overall problem is
+again a linear optimization one, although no more a minimum cost
+network flow problem. In fact this constraint cannot be seen as a
+flow balance constraint or a simple bound on flow variables. The
+main negative consequence of this, besides not being able to
+exploit the specialized algorithms for network flow problems, is
+that the inclusion of even a single constraint of this kind usually
+destroys the integrality property of the problem. Thus, if an
+integer flow is looked for, this will not be granted by simply
+solving the linear optimization problem.</p>
+</li>
+<li><p>The flow is  “single commodity”.  Thus the demand of nodes
+with negative balance can be satisfied by the production of any
+node whose balance is positive. Sometimes, however, it is necessary to deal
+with separate  flows; as an example, consider a transportation
+network in which some origin nodes produce vehicles and some
+destination nodes ask for  produced vehicles: if products differ in
+color, size, brand, it will be necessary to keep all of the  flows of each
+product type well separated from each other, so that each customer will receive the
+correct quantity of the required products. This situation originates
+so–called <span class="target" id="index-6"></span>multi-commodity flow models. It is easy
+to take into account different flow types by adding a
+further index to each flow variable, like, e.g., <span class="math notranslate nohighlight">\(\var{f}_{ij}^k\)</span> meant
+to model the flow on arc <span class="math notranslate nohighlight">\((i,j)\)</span> of products  of type <span class="math notranslate nohighlight">\(k\)</span>. In some
+cases these multiple flows give simply rise to several, distinct
+and independent, network flow models, one for each flow
+type. Sometimes, however, there will be “linking” constraints
+which create a dependency between flows of different
+commodities. An elementary example is, again that of shared arc
+capacity. If the maximum amount of flow along arc <span class="math notranslate nohighlight">\((i,j)\)</span> is
+<span class="math notranslate nohighlight">\(\param{U}\)</span>, this limit must not be exceeded, whichever the commodity
+associated to that arc.
+As an example, referring again to the vehicle production example,
+transportation on each arc might be done with a single truck with a
+finite capacity  of <span class="math notranslate nohighlight">\(\param{U}\)</span> vehicles.
+To model this situation we might simply add constraints like:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{k \in \set{ProductTypes}} \var{f}_{ij}^k &amp; \leq U_{ij}
+\end{align*}</div><p>Again, this linear constraint usually destroys the integrality
+property enjoyed by pure network flow problems.</p>
+</li>
+<li><p>No flow losses or gains are possible long an arc. It is thus assumed that the
+amount of flow entering an arc is kept unchanged until the end of the
+arc. Sometimes, however, we might wish to model arc losses or
+gains. As an example, in an hydraulic network, there might be flow
+losses along pipes, proportional to the amount of flow.
+In modeling financial flows it might happen that the flow leaving a
+node represents an amount of money, e.g., in €, while at the end
+of the arc we would like to have that amount in US$, through a
+multiplication by the current exchange rate. So, as an example, if
+100€  start from arc <span class="math notranslate nohighlight">\((i,j)\)</span>, they will be transformed into,
+say, 120 US$ at the end of the arc:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-96b304fbbb91c9dfa5ae0f852f01edf4ef286c37.png" alt="Figure made with TikZ" /></p>
+</div><p>A model including this kind of behavior can be easily built
+starting from the generic one. In fact it is sufficient to include
+the multiplier on the arc in the corresponding balance equation. In
+particular, if flow along a specific arc <span class="math notranslate nohighlight">\((i,j)\)</span> gets multiplied by
+a factor <span class="math notranslate nohighlight">\(\theta\)</span>, the balance equation associated to the destination
+node should become</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{k: (j, k) \in E} \var{f}_{jk} - \sum_{h: (h, j) \in
+E, h \ne i}
+\var{f}_{hj} - \theta \var{f}_{ij} = \param{b}_j \qquad  j \in V
+\end{align*}</div><p>In the above balance equation, associated to node <span class="math notranslate nohighlight">\(j\)</span>, the
+flow going out from the node, assumed to be in US$, is simply
+summed as usual; however, the flow entering the node includes the
+special case of a flow from a € node, <span class="math notranslate nohighlight">\(i\)</span> to <span class="math notranslate nohighlight">\(j\)</span> and,
+thus, a multiplication factor is introduced. This
+situation can be generalized to the case in which several
+entering arcs carry flows which need a transformation before
+entering node <span class="math notranslate nohighlight">\(j\)</span>.
+Again, the model remains a linear one, although no more a network
+flow one and, in general, the integrality property does not hold
+anymore.</p>
+</li>
+<li><p>The flow is assumed to be stationary;
+this means that a constant quantity is “flowing” along every arc
+and there is no dynamics: flows are constant over time. Sometimes
+this is not desirable and we would like to model flows which vary
+in time. We will see later, in section
+<a class="reference internal" href="Dynamic.html#section-dynamic-networks"><span class="std std-ref">Dynamic Flows</span></a>, how to modify the basic model in
+order to deal with this situation</p></li>
+</ol>
+<p>An example of a general model for the minimum cost flow problem
+is given in the following figure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-c59abd2adc7826007360b1f2b3db1bb0d739292c.png" alt="Figure made with TikZ" /></p>
+</div><p>In this figure, the problem is graphically represented, including all
+data: above each node the balance is reported, with the convention
+that nothing is written above nodes with zero balance. On each arch we
+represent the unit cost, the lower and the upper bound on the flow.</p>
+<p>Solving this example with a Linear Optimization software the optimal
+flow turns out to be:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-4a62afe211d2bc9df1505067e1cad703db718632.png" alt="Figure made with TikZ" /></p>
+</div><p>The solution represented above has been found by running a linear
+programming solver with the following model:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">minflow.mod</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="c1"># generic min cost newtwork flow model</span>
+<span class="c1">#</span>
+<span class="c1"># illustration of the special network syntax available in AMPL</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="kr">within</span><span class="w"> </span>NODES<span class="w"> </span><span class="kr">cross</span><span class="w"> </span>NODES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">cost</span><span class="w"> </span><span class="p">{</span>ARCS<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">L</span><span class="w"> </span><span class="p">{</span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">U</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>L<span class="p">[</span>i<span class="p">,</span>j<span class="p">],</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">Infinity</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">balance</span><span class="w"> </span><span class="p">{</span>NODES<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span><span class="c1"># balance net-out minus net-in</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">TotalCost</span><span class="p">;</span>
+
+<span class="kd">node</span><span class="w"> </span><span class="nv">node</span><span class="w"> </span><span class="p">{</span>k<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">}:</span><span class="w"> </span><span class="kr">net_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>balance<span class="p">[</span>k<span class="p">];</span>
+
+<span class="kd">arc</span><span class="w"> </span><span class="nv">Flow</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>L<span class="p">[</span>i<span class="p">,</span>j<span class="p">],</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>U<span class="p">[</span>i<span class="p">,</span>j<span class="p">],</span>
+<span class="w">    </span><span class="kr">from</span><span class="w"> </span>node<span class="p">[</span>i<span class="p">],</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span>node<span class="p">[</span>j<span class="p">],</span><span class="w"> </span><span class="kr">obj</span><span class="w"> </span>TotalCost<span class="w"> </span>cost<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<p>and the following data:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">netflow.dat</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">NODES</span><span class="p">:</span><span class="w"> </span><span class="nv">balance </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>
+s<span class="w">   </span><span class="mi">180</span>
+P1<span class="w">    </span><span class="mi">0</span>
+P2<span class="w">    </span><span class="mi">0</span>
+P3<span class="w">    </span><span class="mi">0</span>
+D1<span class="w"> </span><span class="o">-</span><span class="mi">120</span>
+D2<span class="w">  </span><span class="o">-</span><span class="mi">60</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">ARCS</span><span class="p">:</span><span class="w">   </span><span class="nv">cost     L       U </span><span class="p">:</span><span class="o">=</span>
+<span class="w">        </span>s<span class="w">  </span>P1<span class="w">    </span><span class="mi">11</span><span class="w">     </span>.<span class="w">     </span><span class="mi">100</span>
+<span class="w">        </span>s<span class="w">  </span>P2<span class="w">    </span><span class="mi">13</span><span class="w">     </span>.<span class="w">     </span><span class="mi">200</span>
+<span class="w">        </span>s<span class="w">  </span>P3<span class="w">    </span><span class="mi">10</span><span class="w">     </span>.<span class="w">     </span><span class="mi">100</span>
+<span class="w">        </span>P1<span class="w"> </span>D1<span class="w">     </span><span class="mi">3</span><span class="w">     </span>.<span class="w">       </span>.
+<span class="w">        </span>P1<span class="w"> </span>D2<span class="w">     </span><span class="mi">5</span><span class="w">     </span>.<span class="w">       </span>.
+<span class="w">        </span>P2<span class="w"> </span>D1<span class="w">     </span><span class="mi">1</span><span class="w">     </span>.<span class="w">       </span>.
+<span class="w">        </span>P2<span class="w"> </span>D2<span class="w">     </span><span class="mi">1</span><span class="w">     </span>.<span class="w">       </span>.
+<span class="w">        </span>P3<span class="w"> </span>D1<span class="w">     </span><span class="mi">5</span><span class="w">     </span>.<span class="w">       </span>.
+<span class="w">        </span>P3<span class="w"> </span>D2<span class="w">     </span><span class="mi">3</span><span class="w">     </span>.<span class="w">       </span>.
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="applications-of-minimum-cost-flow-models">
+<h2><span class="section-number">6.2. </span>Applications of minimum cost flow models<a class="headerlink" href="#applications-of-minimum-cost-flow-models" title="Link to this heading">¶</a></h2>
+<dl class="field-list">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-7"></span>Production and distribution</p>
+<p>Logistics, and, in particular, distribution, is one of the fields
+where the minimum cost flow model finds
+many applications.
+As an example, consider a  set of plants, each with a given
+maximum production capacity and a set of distributors; consider also a
+set of  customers, whose demand for the product is assumed to be
+known.</p>
+<p>In a situation like this one, we would like to plan both
+production as well as transportation in order to minimize the total
+costs. Production might have different costs, depending on the
+producing plant; transportation, also, has a cost which depends
+both on the producer’s location as well as on the customer’s one.
+Reconsider the example of the preceding paragraph:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-6ac14feae763cd34567f5a757f072466647796d1.png" alt="Figure made with TikZ" /></p>
+</div><p>We might consider the example as a production/transportation case:
+node <span class="math notranslate nohighlight">\(s\)</span> is a decision node, from which production orders are
+issued. Each production order consists of a quantity to be produced
+from a specific producer (P1, P2, P3). The capacity on <em>production arcs</em> <span class="math notranslate nohighlight">\((s,P1),
+(s,P2), (s,P3)\)</span> are the maximum production capacities of the three
+plants (100, 200, 100, respectively). The costs associated to each of
+these arc
+are production costs: P1 and P3 produce at 10€ per unit, while P2 has a
+production cost of 13€. Arcs from P1, P2, P3 to D1 and D2 can be
+thought of as <em>transportation arcs</em>, with unlimited capacity (in
+this example) but
+different unit costs, raging from 1 per unit out of producer P2, to 5
+per unit in two links from the other producers. The balance of nodes
+D1 and D2 represent demand, while an equivalent balance, of opposite
+sign, is associated to the start node <span class="math notranslate nohighlight">\(s\)</span>.</p>
+<p>It might seem that in this model flows of different kinds are present
+(production orders, finished good transportation):
+however, we can consider each flow as an order (from the producers to
+the customer). There is no distinction among flows, as any destination
+can be satisfied with flows from any of the connected nodes.</p>
+<p>This model shows how it is possible to model two important decisions
+(production and transportation) by means of a single model which, in this case,
+is a network flow one. Being able to solve this global problem can be a
+great advantage, as decisions are taken in a non myopic way:
+traditionally, first production would be allocated to existing plants,
+minimizing production costs and then products would be shipped at
+minimum cost to destinations, thus taking the two decisions in
+different, separated, stages. In this example,  minimizing just
+production costs would lead to produce all 180 parts in plants P1 and
+P3, possibly 90 each (but any other combination not exceeding
+production capacity would cost the same).
+Taking into account that shipping costs from P1 are 3 towards D1
+and 5 towards D2, a slightly less myopic solution  would be to produce
+100 at P1 and 80 at P2, with a total production cost 1,800€. From
+there, transportation costs are: <span class="math notranslate nohighlight">\(3 \times 100 + 5 \times 20 + 3
+\times 60 = 580\)</span>, with total cost 2,380€. On the other hand, the
+optimal solution reported has a total cost 2,360€, which is only
+slightly more convenient; although the difference is small, the
+structure of the solution is quite radically different and it is not
+difficult to see that in more complex production/transportation
+applications, the difference between a solution found by optimizing
+single stages in the process may be arbitrarily worse than the optimal one.</p>
+</dd>
+</dl>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="MultiPeriodModels.html" title="Previous document"><span class="section-number">5. </span>Multi Period Models</a>
+        </li>
+        <li>
+          <a href="ShortestPath.html" title="Next document"><span class="section-number">7. </span>Shortest (Minimum Cost) Path Problems</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">6. Network flow models</a><ul>
+<li><a class="reference internal" href="#minimum-cost-flow">6.1. Minimum cost flow</a></li>
+<li><a class="reference internal" href="#applications-of-minimum-cost-flow-models">6.2. Applications of minimum cost flow models</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="MultiPeriodModels.html" title="previous chapter"><span class="section-number">5. </span>Multi Period Models</a></li>
+      <li>Next: <a href="ShortestPath.html" title="next chapter"><span class="section-number">7. </span>Shortest (Minimum Cost) Path Problems</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/NetworkFlow.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

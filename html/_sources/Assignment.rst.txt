@@ -1,0 +1,683 @@
+.. include:: preamble.rst
+
+=================================
+Assignment or bi-partite matching
+=================================
+
+An important special case of the
+minimum cost flow problem and, in particular, the transportation problem, is the
+so called *assignment* problem on bi-partite graphs,
+also called *bi-partite matching* problem. In its basic formulation, this is just
+a transportation model in which the cardinality of the set of origin
+nodes is exactly equal to that of the destination ones and both
+the production levels as well as each demand are equal to one.
+ 
+A  feasible matching consists of a sub-graph in which
+each node in the origin node set is adjacent to one and only one node
+of the destination set. In
+practice an assignment, or matching, is a one-to-one correspondence between
+the nodes of the bi-partition. If a weight, or cost, is associated
+with each arc,
+the problem becomes that  of finding the minimum total cost feasible
+assignment.
+
+If  there were more origin than destination nodes,
+the model might be employed to find a one-to-one correspondence  between a
+subset of sources  with the destination nodes.
+It is of course possible to  consider situations  in which the bi-partite graph is not
+complete, i.e. not all source nodes are connected with all
+target nodes. In these cases it is not generally granted  a priori that the
+assignment problem has a solution.
+ 
+In the most common case, in which origin nodes are as many as the destinations
+the assignment model might  be formulated as follows:
+
+
+.. role:: model
+   :class: smallcaps
+	   
+:model: Assignment (or bi-partite matching)
+
+|
+   :model:`Sets:`
+|
+
+   * :math:`\set{Orig}`: set of origin nodes
+   * :math:`\set{Dest}`: set of destination nodes
+   * :math:`\set{E} \subseteq \set{Orig} \times \set{Dest}`: set of directed arcs
+
+|
+   :model:`Parameters:`
+|
+   
+   * :math:`\param{Cost}_{ij}`: cost of matching node :math:`i \in \set{Orig}` and
+     node :math:`j \in \set{Dest}`
+
+|
+   :model:`Variables:`
+|
+
+   * :math:`\var{f}_{ij}`: flow from node :math:`i` to node :math:`j`. 
+
+|
+   :model:`Constraints:`
+|
+
+   * A single input arc for each destination node:
+
+     .. math::
+	:nowrap:
+	
+	\begin{align*}
+        \sum_{i \in \set{Orig}: (i, j) \in \set{E}} \var{f}_{ij} &=
+        1 & \forall \, j \in \set{Dest}
+	\end{align*}
+	
+   * A single arc  from each source node:
+
+     .. math::
+	:nowrap:
+	
+	\begin{align*}
+        \sum_{j \in \set{Dest}: (i, j) \in \set{E}} \var{f}_{ij} &= 1
+        & \forall \, i \in \set{Orig}
+	\end{align*}
+
+   * Non negativity:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+	\var{f}_{ij} &\geq 0 & \forall \, (i, j) \in \set{E}
+	\end{align*}
+
+|
+   :model:`Objective:` 
+|
+
+   * Minimization of the total matching cost:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+	\min \sum_{(i, j) \in E} \param{Cost}_{ij} \var{f}_{ij}
+	\end{align*}
+
+In this model, since the supply and demand of each node
+are equal to one and the model is a special case of 
+of the transportation one, in each basic feasible solution all variables will 
+be    binary. Variables :math:`\var{f}_{ij}` with unit value
+correspond to a selection of arcs.
+
+The particular structure of the assignment problem makes it
+possible to design specialized algorithms which are by far
+more efficient than the simplex. If we consider an example of a problem
+with one thousand nodes in each element of the
+bi-partition, the linear formulation just introduced would require
+one million variables, of which only one thousand would be
+non-zero in the optimal solution.
+ 
+An apparently minor variant of the assignment problem
+concerns models based on non-bipartite graphs: as an example, 
+consider the problem of defining a calendar
+of tennis matches, on which it is necessary to  pair players in
+order to  optimize some function (e.g., the audience): in this case there exist no 
+natural bi-partition of players. The model can be
+formulated in very similar way:
+
+
+:model: Non bi-partite matching
+
+|
+   :model:`Sets:`
+|
+
+   * :math:`\set{V}`: set of nodes
+   * :math:`\set{E} \subseteq \set{V} \times \set{V}`: set of
+     edges (un-directed arcs)
+
+|
+   :model:`Parameters:`
+|
+   
+   * :math:`\param{Cost}_{e}`: cost of matching nodes :math:`i \in \set{V}` and
+     :math:`j \in \set{V}`, with :math:`e = \{i,j\}`
+
+|
+   :model:`Variables:`
+|
+
+   * :math:`\var{f}_{e}`: match between the nodes of
+     arc :math:`e \in \set{E}`. 
+
+|
+   :model:`Constraints:`
+|
+
+   * A single arc is incident to each node:
+
+     .. math::
+	:nowrap:
+	
+	\begin{align*}
+        \sum_{e  \in \set{E}: i \in e} \var{f}_{e} &=
+        1 & \forall \, i \in \set{V}
+	\end{align*}
+	
+
+   * Binary variables:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+	\var{f}_{e} & \in \{0,1\} & \forall \, e \in \set{E}
+	\end{align*}
+
+|
+   :model:`Objective:` 
+|
+
+   * Minimization of the total matching cost:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+	\min \sum_{e \in E} \param{Cost}_{e} \var{f}_{e}
+	\end{align*}
+
+ 
+In this case the problem is no longer a special case of the 
+general  minimum cost network flow problem, and the integrality of
+basic feasible solutions, with this formulation, can no longer be
+guaranteed. However,
+the problem can be very efficiently solved 
+through specialized algorithms  :cite:`Edmonds65`.
+ 
+Bi-partite assignment models  find application  in many different applications.
+One of  the  classical ones concerns the problem of deciding, given a group of students
+and a set of projects, how to assign students to each
+project; the cost might be a preference index expressed by each
+student  on the  individual projects. Another direct application is 
+that of assigning some tasks to a group of persons, knowing that
+assigning a specific task to a person has a  cost for the company (e.g.
+example, the cost of training) or requires some amount of time which
+is different for different pairings.
+
+  :application: :index:`Shift/staff matching`
+
+  Many organizations, like, e.g., hospitals, assign shifts to their
+  staff so that a sufficient coverage of the required personnel type is
+  available in every period of the planning horizon. The problem of
+  optimally  planning shifts for a company is, as anyone can easily imagine,
+  a very complex one; a simplified version of the problem of deciding
+  which type, and in which quantity, of shifts to plan will be the
+  subject of a specific model, called covering, which will be presented in 
+  chapter :ref:`set-covering`.  Assume that the required quantity and
+  type of shifts have already been decided;
+  it is now necessary to proceed with assigning each unit of personnel
+  to one of the
+  scheduled shifts. A possible implementation in this case might be that
+  of presenting to each  employee
+  the list of shifts  to be  covered:
+  each worker, according to personal needs and preferences, will
+  indicate a  preference or a ranking. As an example, value 1 will be
+  assigned to  the preferred shift, 2 on the second choice and so on up
+  to the least preferred shift. These preference indices can be
+  considered as costs in an assignment problem between the
+  employee and the shift nodes. The optimal solution of the
+  assignment problem
+  will then provide a worker / shift match which
+  maximizes a  total preference index given by the sum of the
+  individual preferences.
+  
+  As an example, with the following assignment model:
+
+  .. literalinclude:: AMPL/assignment.mod
+     :caption: assignment.mod
+     :language: ampl
+
+  and the following data
+
+  .. literalinclude:: AMPL/assignment.dat
+     :caption: assignment.dat
+     :language: ampl
+
+  the solver determines the following optimal solution:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \begin{array}{l|ccccccc}
+	& 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ \hline
+	A&  &   & 2  &   &   &   &   \\
+	B&  &   &    &   &   & 1 &   \\
+	C&1 &   &   &   &   &   &   \\
+	D&  & 1 &   &   &   &   &   \\
+	E&  &   &   & 1 &   &   &   \\
+	F&  &   &   &   & 4 &   &   \\
+	G&  &   &   &   &   &   & 1 \\ \hline
+     \end{array}
+     \end{align*}
+
+  where we choose to represent the cost of the optimal assignment in the
+  rows and columns of the resulting matching. As it can be seen, 5 out
+  of the 7 workers obtain their preferred choice, one the second one and  one receives the
+  fourth choice. Had we proceeded in a myopic, priority-based, way
+  assigning the first available choice to A, then to B, and so on, we
+  would have obtained a much worse assignment:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \begin{array}{l|ccccccc}
+     & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ \hline
+     A&  &   &   &   &   &   & 1 \\
+     B&  &   &   &   &   & 1 &   \\
+     C&1 &   &   &   &   &   &   \\
+     D&  & 1 &   &   &   &   &   \\
+     E&  &   &   & 1 &   &   &   \\
+     F&  &   &   &   & 4 &   &   \\
+     G&  &   & 7  &   &   &   &   \\ \hline
+     \end{array}
+     \end{align*}
+
+  The solution determined with this model minimizes the sum of the
+  penalties associated with each choice. This  could
+  lead to quite unbalanced combinations, in which many receive the
+  favorite choice against a few who get a quite bad one.
+  As an example, consider a slightly sub-optimal solution for this example with
+  the following assignments:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \begin{array}{l|ccccccc}
+     & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\ \hline
+     A&  &   & 2  &   &   &   &   \\
+     B&  &   &    &   & 3 &   &   \\
+     C&1 &   &   &   &   &   &   \\
+     D&  & 1 &   &   &   &   &   \\
+     E&  &   &   & 1 &   &   &   \\
+     F&  &   &   &   &   &3  &   \\
+     G&  &   &   &   &   &   & 1 \\ \hline
+     \end{array}
+     \end{align*}
+
+  Although the total cost becomes 12, instead of the optimal 11, the
+  assignment can be considered as more fair.
+  If we are looking for a fair assignment the model needs to be changed
+  (and it loses the characteristics of being a network flow one).
+
+  However, without changing the underlying model, a more equitable
+  assignment might be found with a few tricks. A simple way
+  would be to change the weights
+  increasing the penalty associated with worse choices: as an 
+  example, the costs associated with each pair might be squared. In this
+  example, squaring the penalties, a solution equivalent to the last one
+  above, with sum of (non squared) penalties equal to 12, would be obtained.
+
+  Another possibility to avoid assigning too bad shifts to a small group
+  of workers, would be to cancel the corresponding arcs. E.g., we might
+  cancel all arcs whose weight is 4 or more. There is a risk of
+  infeasibility, but if a feasible solution exists, it will have quite a
+  fair distribution of duties.
+
+  A model in which, explicitly, we would like to minimize the cost of
+  the worst assignment would lead to a "minimax" model, with the objective
+
+  .. math::
+     :nowrap:
+      
+     \begin{align*}
+     \min_{\var{f}} \max_{(i, j) \in \set{Arcs}} \{\param{Cost}_{ij} \var{f}_{ij} \}
+     \end{align*}
+  
+  The linear formulation of minimax models is quite simple and
+  will be presented in
+  application  :ref:`Fair Assignment <fair_assignment>`
+  in chapter :ref:`Objectives in optimization models`;
+  however
+  the transformations necessary 
+  to convert the minimax model into a  linear one will destroy the
+  integrality property enjoyed by pure network flow models.
+ 
+  A simpler modification, often useful in
+  these kind of applications, is connected with the need to assign more than
+  one person to a shift or to a duty. It is indeed trivial to change the
+  model to include different requirements for each shift. The resulting model
+  becomes a  transportation one, where the source nodes  always have a
+  unit balance, while destination nodes have a balance equal to the demand.
+
+  :application: :index:`School bus driver assignment`
+
+  Consider  the problem
+  of  assigning drivers to buses for the transport of
+  school children; in this particular case, an assignment of
+  drivers is required for two distinct working shifts, corresponding
+  to the entrance and exit of children from school. It is assumed then
+  that  :math:`n` vehicles in the morning and in the afternoon have
+  to be assigned.
+  Different vehicles will follow different routes,
+  with different duration, to collect and deliver 
+  children. A driver  assigned to two shifts (one in the morning,
+  the other in the afternoon) will be paid  based on the overall duration
+  of the two routes. In particular, it can be assumed that
+  the driver's duties correspond to a fixed salary, for working hours up
+  to a duration  :math:`D`, plus, possibly, an extra payment for
+  each additional hour of driving in the same day.
+
+  We can model this problem as a graph whose nodes are 
+  morning and  afternoon routes. It  is not
+  important  which driver will drive which route, but rather how
+  to match morning and afternoon  runs at the minimum total cost.
+  
+  Let :math:`d_{i}` denote the estimated duration of
+  route :math:`i`:  the cost associated with an arc :math:`(i, j)` will be 
+
+  .. math::
+     :nowrap:
+     
+     \[
+     \max \{0, d_{i} + d_{j} -D \},
+     \]
+  
+  which represents the number of overtime hours that the company
+  must pay to a driver who is assigned shift :math:`i`  in the
+  morning and  shift :math:`j` in the afternoon. The following data file shows
+  can be taken as an example:
+
+  .. literalinclude:: AMPL/sc-bus.dat
+     :caption: sc-bus.dat 
+     :language: ampl
+
+  Morning and afternoon routes have different durations;
+  the last part of the file contains the definition of the
+  overtime cost for every pair of routes. Running a linear optimization
+  solver on this simple example, the following solution is obtained:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \begin{array}{ccc}
+     AM & PM & Cost \\ \hline
+     AM1 & PM2  & 2 \\
+     AM2 & PM5 & 0 \\
+     AM3 & PM7 & 0 \\
+     AM4 & PM4 & 0 \\
+     AM5 & PM1 & 1 \\
+     AM6 & PM6 & 0 \\
+     AM7 & PM8 & 0 \\
+     AM8 & PM3 & 0 \\
+     \hline
+     \end{array}
+     \end{align*}
+
+  with a total number of overtime hours equal to 3.
+  This problem actually lends itself to a very simple solution,
+  through sorting. It is in fact possible to show
+  that an  optimal assignment can be obtained by sorting
+  morning routes in non decreasing order and afternoon ones in non
+  increasing order.
+  An optimal pairing can then be obtained from these two lists. In the example:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \begin{array}{ccc}
+     AM & PM & Cost \\ \hline
+     AM2  & PM1 & 1 \\
+     AM5 & PM2 & 1 \\
+     AM8 & PM3 & 0 \\
+     AM1 & PM5 & 1 \\
+     AM3 & PM6 & 0 \\
+     AM6  & PM7 & 0 \\
+     AM7 & PM8 & 0 \\
+     AM4 & PM4 & 0 \\ \hline
+     \end{array}
+     \end{align*}
+   
+  Although different from the one obtained before, it has the
+  same objective function value. 
+
+It is worth also to make an observation on  applications like this
+one, where  a specialized and efficient solution algorithm is
+available.
+Of course, were we interested in just solving this problem, it would
+be useless and inefficient to rely on a general purpose optimization
+solver and to the linear modeling expression. However it is very
+frequently the case in which a similar problem is a small part of a
+much larger and complex optimization one. In this case, when the main
+variables are linked to other variables in the problem, it is no more
+possible to rely on solution algorithms which can be applied only to a
+part of the model. To make this point clear, assume that not only we
+have to pair morning with afternoon shifts, but also we need to take
+into account drivers' preferences like, e.g., routes which they do not
+wish to cover, or bounds in the number of overtime hours they are
+willing to offer. In this case it is likely that the above problem
+would be a part of a larger one in which pairing decisions are
+influenced by assignment of pairs to workers. 
+
+
+   :application: :index:`Tracking of moving objects`
+
+   Another application of bi-partite matching corresponds to
+   the determination of the  movement of
+   objects in sequential frames. Assume that two frames, or pictures,
+   taken at within a short time interval one from the other, are
+   available.
+   The problem is to pair the two frames, matching objects  in order to
+   be able to track their position in time and space.
+   It can be seen that this problem is indeed an assignment one, in
+   which nodes of the sets in the bi-partite graph are associated to
+   objects in the two frames. Arcs connect objects in two different
+   frames, with the assumption that if an arc is chosen then the two
+   associated objects will be paired in the two frames.
+   If, as it is assumed here, the two frames have been obtained in a
+   quite short time interval, it is reasonable to assume that objects
+   did not move too much. So it is natural to associate to each arc a
+   cost equal to the euclidean distance between points in the two frames. 
+   In this case we
+   assume that the  objects are  moving at a speed which is low with
+   respect to the frame rate. Let
+   :math:`(\param{X}_i^k,\param{Y}_i^k)` be the coordinates of object :math:`i` in
+   frame :math:`k \in \{1,2\}`. The cost associated to an arc
+   between objects :math:`i,j` can be defined as
+
+   .. math::
+      :nowrap:
+
+      \begin{align*}
+      \var{c}_{ij} & = \sqrt{(\param{X}_i^1-\param{X}_j^2)^2 + (\param{Y}_i^1-\param{Y}_j^2)^2}
+      \end{align*}
+      
+   and the assignment model can be employed to find a matching which
+   minimizes the overall sum of euclidean displacements.
+
+   As an example, consider the following picture:
+
+   .. tikz::
+
+      \begin{tikzpicture}[scale=6]
+      \draw[help lines] (0,0) grid[step=0.1] (1,1);
+      \foreach \name / \x / \y in {1/0.012/0.236,
+      2/0.032/0.138,
+      3/0.044/0.383,
+      4/0.075/0.953,
+      5/0.121/0.911,
+      6/0.187/0.038,
+      7/0.211/0.707,
+      8/0.308/0.832,
+      9/0.393/0.606,
+      10/0.418/0.372,
+      11/0.431/0.972,
+      12/0.514/0.531,
+      13/0.606/0.814,
+      14/0.640/0.096,
+      15/0.702/0.905,
+      16/0.750/0.642,
+      17/0.853/0.023,
+      18/0.866/0.874,
+      19/0.876/0.541,
+      20/0.970/0.618}
+      \node[draw,circle,blue] (A\name) at (\x,\y) {};
+      \end{tikzpicture}
+
+   which represents the first frame, and the following one:
+
+   .. tikz::
+
+      \begin{tikzpicture}[scale=6]
+      \draw[help lines] (0,0) grid[step=0.1] (1,1.0001);
+      \foreach \name / \x / \y in {1/0.034/0.123,
+      2/0.036/0.392,
+      3/0.077/0.831,
+      4/0.173/0.055,
+      5/0.217/0.687,
+      6/0.244/0.218,
+      7/0.329/0.810,
+      8/0.415/0.586,
+      9/0.418/0.381,
+      10/0.453/0.876,
+      11/0.521/0.544,
+      12/0.621/0.093,
+      13/0.686/0.824,
+      14/0.741/0.645,
+      15/0.758/0.611,
+      16/0.783/0.635,
+      17/0.849/0.902,
+      18/0.860/0.334,
+      19/0.938/0.811,
+      20/0.973/0.929}
+      \node[draw,circle,orange] (B\name) at (\x,\y) {};
+      \node[circle,white] at (0.012,0.236) {}; %phantom
+      \node[circle,white] at (0.973,0.929) {}; %phantom
+      \end{tikzpicture}
+
+   for the second one. Solving the assignment model the following
+   tracking is obtained:
+
+   .. tikz::
+      
+      \begin{tikzpicture}[scale=6]
+      \draw[help lines] (0,0) grid[step=0.1] (1,1);
+      \foreach \name / \x / \y in {
+      1/0.012/0.236,
+      2/0.032/0.138,
+      3/0.044/0.383,
+      4/0.075/0.953,
+      5/0.121/0.911,
+      6/0.187/0.038,
+      7/0.211/0.707,
+      8/0.308/0.832,
+      9/0.393/0.606,
+      10/0.418/0.372,
+      11/0.431/0.972,
+      12/0.514/0.531,
+      13/0.606/0.814,
+      14/0.640/0.096,
+      15/0.702/0.905,
+      16/0.750/0.642,
+      17/0.853/0.023,
+      18/0.866/0.874,
+      19/0.876/0.541,
+      20/0.970/0.618}
+      \node[draw,circle,blue] (A\name) at (\x,\y) {};
+      
+      \foreach \name / \x / \y in {
+      1/0.034/0.123,
+      2/0.036/0.392,
+      3/0.077/0.831,
+      4/0.173/0.055,
+      5/0.217/0.687,
+      6/0.244/0.218,
+      7/0.329/0.810,
+      8/0.415/0.586,
+      9/0.418/0.381,
+      10/0.453/0.876,
+      11/0.521/0.544,
+      12/0.621/0.093,
+      13/0.686/0.824,
+      14/0.741/0.645,
+      15/0.758/0.611,
+      16/0.783/0.635,
+      17/0.849/0.902,
+      18/0.860/0.334,
+      19/0.938/0.811,
+      20/0.973/0.929}
+      \node[draw,circle,orange] (B\name) at (\x,\y) {};
+      \foreach \from / \to in
+      {1/6,2/1,3/2,4/3,5/10,6/4,7/5,8/7,9/8,10/9,11/13,12/11,13/14,14/12,15/17,16/15,17/18,18/20,19/16,20/19}  
+      \draw[thick,red,->] (A\from) -- (B\to);
+      \end{tikzpicture}
+      
+   This matching result was obtained by preparing a data file suitable
+   for the assignment model, as it can be seen in the following
+   example:
+
+
+   .. literalinclude:: AMPL/tracking.dat
+      :caption: tracking.dat
+      :language: ampl
+
+   As it can be seen, e.g., in the AMPL data file, some tricks had to be
+   used in order to be able to compute the cost coefficients. In a
+   more advanced setting, like, e.g., in the AMPLpy python/AMPL
+   interface, operations on data frames could be much more easily and
+   efficiently performed. Of course different matching solutions will
+   be found using a different distance function.
+ 
+      
+   The model just seen is based on the assumption that the number of
+   objects in the two frames does not change; if this is not the case,
+   simple modifications  would be needed in order to allow 
+   the case of objects which  are present in a frame, but absent
+   in the other one.
+
+|
+
+   :application: :index:`Determination of the karyotype of chromosomes`
+	      
+   The *karyotype*
+   is defined as a set of shape characteristics,
+   size, number and properties of the chromosomes of a species. In
+   humans, as an example, there are 23 pairs of  chromosomes,
+   22 of which are identical while one, for the male, contains the X-Y pair.
+   Each group of chromosomes has its own characteristics,
+   with different biological properties. In some clinical tests
+   the analysis and identification of all 46 chromosomes is required.
+   This analysis is done through the identification of a set of
+   characteristic parameters, such as, for example, the length,
+   or the set of so-called "band features".
+   Recognition is not error-free;
+   however, for each chromosome, it is possible to compute the
+   probability :math:`\param{p}_{ij}` that the :math:`i` -th
+   chromosome observed belongs to class :math:`j`. Given this
+   probability it is then possible to find the assignment which minimizes
+   the expected number of incorrect assignments:
+
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      \min \sum_{i = 1}^{46} \sum_{j = 1}^{23} (1-\param{p}_{ij}) \var{f}_{ij} \\
+      \sum_{j = 1}^{23} \var{f}_{ij} & = 1 & \forall \, i & = 1,46 \\
+      \sum_{i = 1}^{46} \var{f}_{ij} & = 2 & \forall \, j & = 1,23 \\
+      \var{f}_{ij} & \geq 0
+      \end{align*}
+   
+   This model is not strictly an assignment but more correctly a
+   transportation one.
+   The model above is for the case of a female cell, while for the male
+   it should be extend to take into consideration the X-Y pair.
+
+.. include:: closing.rst
+

@@ -1,0 +1,453 @@
+.. include:: preamble.rst
+
+.. _section:stochopt:
+
+====================================================
+Uncertainty modeling: Stochastic optimization models
+====================================================
+
+Dealing with unpredictable events is very hard, but worthwhile: many
+decisions can be significantly improved if uncertainty and, in
+particular, variability is taken into correct account. The field is
+very large and indeed complex, and it involves modeling aspects as
+well as algorithmic and deep theoretical analysis. In these pages we
+will just scrap the surface of this important theme, mainly
+to  show that it is indeed possible to take into
+consideration stochastic events and  also that, in some cases,
+the resulting models are still linear ones, obtained thanks to
+modification of standard, deterministic models.  
+
+.. _sect:probabilistic-constraints:
+
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Probabilistic constraints
+^^^^^^^^^^^^^^^^^^^^^^^^^
+ 
+In many applications  some data are not
+known with precision but, at best, an assumption can be made on a 
+probabilistic model. In other words, some data can be viewed as the 
+realization of a random variable. In these cases the traditional constraints
+cannot be used anymore. Consider the following  case:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_j \param{a}_j \var{x}_j \leq \param{\textbf{b}}
+   \end{align*}
+   
+where :math:`\param{\textbf{b}}` is  a random variable whose
+probability distribution
+
+.. math::
+   :nowrap:
+      
+   \[
+   F_{\param{\textbf{b}}} (y): = P (\param{\textbf{b}} \leq y)
+   \]
+
+is assumed to be known.
+
+When, as in this case, :math:`\param{\textbf{b}}` is a random variable, the constraint
+is no more well defined, since its right hand side is no more  a
+constant, but a function (recall that a 
+:index:`random variable` is a real-valued function from the event space).
+
+Often in these cases we can substitute the constraint
+with a probabilistic one, called a  :index:`chance constraint`: 
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   P \left (\sum_j \param{a}_j \var{x}_j \leq \param{\textbf{b}} \right) \geq \param{\beta} 
+   \end{align*}
+   
+where :math:`\param{\beta} \in [0,1]`.
+This constraint corresponds to the
+request that the constraint is satisfied with probability at least
+equal to  :math:`\param{\beta}`,  a given threshold. In general chance constraints are
+nonlinear and often it is impossible to write them in an explicit form. In
+some cases, however, it is possible to convert such a constraint into 
+an equivalent regular (deterministic) one. This happens in
+particular in  the present case, that is,  when the only random
+variable
+is the right hand side. In fact, assume that the
+:index:`probability distribution function` of the random variable is
+known and that, for the sake of simplicity,  :math:`\param{\textbf{b}}` 
+is a *continuous random variable* and, thus, that its distribution
+function :math:`F_\param{\textbf{b}}(\cdot)` is invertible. We obtain:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+      P \left (\sum_j \param{a}_j \var{x}_j \leq \param{\textbf{b}} \right) & = 1-P
+      \left (\param{\textbf{b}} <\sum_j \param{a}_j \var{x}_j \right)   \\
+      & = 1-P \left (\param{\textbf{b}} \leq \sum_j \param{a}_j \var{x}_j \right)  \\
+      & = 1-F_{\param{\textbf{b}}} \left (\sum_j \param{a}_j \var{x}_j \right)  
+      \geq \param{\beta} & \text{iff}  \\
+      \sum_j \param{a}_j \var{x}_j & \leq F_{\param{\textbf{b}}}^{-1} (1- \param{\beta})
+   \end{align*}
+ 
+The right-hand side of this equation is 
+deterministic, so the probabilistic constraint has been transformed
+into a
+traditional (and linear) constraint. As an example, if the
+distribution of :math:`\param{\textbf{b}}` can be assumed to be
+uniformly distributed  between two values  :math:`\param{b}_{\ell}`
+and :math:`\param{b}_{u}`, after easy calculations we can  deduce the
+deterministic equivalent constraint
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_j \param{a}_j \var{x}_j \leq \param{\beta} \param{b}_{\ell} +
+   (1- \param{\beta}) \param{b}_u 
+   \end{align*}
+ 
+If the term :math:`\param{\textbf{b}}`  was, instead, exponentially distributed with
+parameter :math:`\lambda`:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   P (\param{\textbf{b}} \leq y) & = 1 - \exp \left (- \param{\lambda} y \right)
+   \end{align*}
+
+for which it is easy to see that
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   F_{\param{\textbf{b}}}^{-1} (\param{\beta}) & = - \frac{1} {\param{\lambda}} \log (1 - \param{\beta})
+   \end{align*}
+   
+then   the  deterministic equivalent form of the
+constraint would become
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_j \param{a}_j \var{x}_j \leq - \frac{1} {\param{\lambda}} \log (1 - \param{\beta}).
+   \end{align*}
+ 
+
+In the frequent case in which the random variable is assumed to be
+normal (Gaussian) the procedure is exactly the same, although we need
+to resort to a numerical approximation of the inverse Gaussian
+distribution, whose analytical expression is not available. 
+
+Of course the situation becomes significantly more complex when  more
+than one
+coefficient of the same constraint (or of different constraints) is
+random; even more complex is the case in which it is not possible to
+assume stochastic independence among these variables.
+In these cases, it is often impossible to obtain a closed form of a
+deterministic equivalent of the original constraint.
+ 
+.. _sect:plstoc:
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Stochastic linear optimization models
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is not possible, in this volume, to present even  a very 
+superficial analysis of probabilistic  optimization models, even
+in the linear case.
+In this section we will just introduce 
+elementary models from which it will be possible to understand how, in some cases, it is
+possible to deal with stochastic decision problems using traditional
+optimization  models of the kind 
+presented in this volume and how to  solve them with standard 
+optimization tools. Of course, this is not always possible: in fact,
+in general,
+the optimization models which arise when 
+uncertainty is present can only be transformed  into complex nonlinear
+optimization models.
+
+Consider  any of the  problems described  up to here
+in the volume: as a typical case, consider  
+one of the problems described in section :ref:`Product Mix Models`.
+Assume, differently from what has been done there, that the demand for
+a product is not known a priori but can at best be
+estimated assuming that a finite set of possible scenarios might
+happen in the future. As an example, assume that a pessimistic
+scenario, a
+neutral, and an  optimistic one are the only possibilities we can
+foresee.
+In cases like this one, in which uncertainty is associated to a finite set
+of possible scenarios, it is possible to formulate a
+linear optimization model in order to optimize the expected value of
+the objective function (in this case, the expected gain). In order to 
+be able to formulate  a deterministic equivalent model, the usual
+technique consists in 
+introducing additional variables whose index is  associated with each
+of the possible scenarios.
+ 
+We start with the simplest possible case: consider a situation in
+which there is a finite set of different scenarios, indexed by  :math:`s \in
+\set{Scenarios}` and, to each scenario, we  associate a known
+probability :math:`\param{Prob}_s`. In the product mix example, let us
+also assume that the demand for a certain product is a function of the
+scenario: :math:`\param{Dem}_s`.
+The decision on how much to produce needs to be made before knowing
+which of the possible  scenarios will indeed occur, otherwise the
+problem would not be a stochastic one anymore.
+Thus we  have to face a
+decision problem under uncertainty. As in the deterministic case,
+we let :math:`\var{x}` denote  the quantity to be produced: this
+variable is not indexed by the scenario, as its value has to be
+decided a priori and in an independent way with respect to the future
+actual scenario.
+After the decision has been taken and the real scenario reveals
+itself, it might happen that the quantity produced is insufficient, or
+it might be too much. In the first case,  a penalty
+:math:`\param{PenIns}`  will be paid  for each unit of product which
+is  not available to 
+satisfy the actual demand; in the other case, a 
+penalty  :math:`\param{PenEcc}`  will be paid for the disposal of the
+quantity of  product which is in
+excess with respect to the demand.
+As it is not known which of  the scenarios will occur, we need to
+take into account the randomness of the demand by choosing a
+production  level which  minimizes a measure of the future uncertain
+cost. It is usual to employ, in these cases, the expected value of the cost of
+production, which is the sum of the cost associated to each possible scenario
+weighted by the probability that such scenario will actually
+occur. In this case,  the  product mix  model will remain
+exactly the same, except that in the objective function  an additional
+cost term appears:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \param{PenIns} \sum_{s \in \set{Scenarios}} \max (\param{Dem}_s- \var{x}, 0)
+   \param{Prob}_s & + \\
+   \param{PenEcc} \sum_{s \in \set{Scenarios}} \max (\var{x} - \param{Dem}_s, 0)
+   \param{Prob}_s 
+   \end{align*}
+
+If, as in the product mix general model, the objective is to maximize
+gain, the above cost should be subtracted from the original objective.
+
+Although the unknown variable 
+appears in a non-linear (even non-differentiable) function, it is easy
+to transform the expression into a fully linear one.
+It is indeed possible to "linearize" the
+model by introducing additional variables associated with the different
+scenarios. We can also easily extend the model to the usual case of
+more than one product. Let :math:`\var{Surplus}_{ps}` and
+:math:`\var{Slack}_{ps}`
+denote two new variable sets
+which, in the various scenarios, represent excess production or
+missing production with respect to  actual demand of a specific product :math:`p`. We can
+add the following constraints to the model:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \var{Surplus}_{ps} & \geq \var{x}_p - \param{Dem}_{ps} & \forall \, s
+   \in \set{Scenarios}, p \in \set{Products} \\
+   \var{Surplus}_{ps} & \geq 0 \\
+   \var{Slack}_{ps} & \geq \param{Dem}_{ps} - \var{x}_p & \forall \, s \in
+   \set{Scenarios}, p \in \set{Products}  \\
+   \var{Slack}_{ps} & \geq 0
+   \end{align*}
+
+and the cost term in the objective can now be reformulated  in a linear way:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_{s \in \set{Scenarios}, p \in \set{Products}} \param{Prob}_s  \left(
+   \param{PenEcc} \var{Surplus}_{ps} +  \param{PenIns}
+   \var{Slack}_{ps}\right) 
+   \end{align*}
+
+ 
+As an example consider a stochastic product mix problem with the
+following data:
+
+.. literalinclude:: AMPL/stoc-prodmix.dat
+   :caption: stoc-prodmix.dat
+   :language: ampl
+
+In this example there are three possible future scenarios which
+influence the demand for most products (indeed, product 3 has a
+constant forecasted demand, whichever the scenario). We assume that,
+once a quantity is chosen for each product, the scenario becomes known
+and there might be surplus or shortages. The a priori optimization
+problem can be implemented as in the following model:
+
+.. literalinclude:: AMPL/stoc-prodmix.mod
+   :caption: stoc-prodmix.mod
+   :language: ampl
+and, when run and solved through a linear optimization solver, we
+obtain the solution which maximizes the expected gain:
+
+.. literalinclude:: AMPL/stoc-prodmix.out
+   :caption: stoc-prodmix.out
+   :language: ampl
+
+If, as it is quite common a  practice, the demand in the different
+scenarios is averaged, we might try to solve a product mix problem
+using the expected demand in place of the real one. However, differently
+from the generic product mix problem introduced earlier in this
+volume, we should take into account the fact that some demand might be
+unsatisfied, as the limited availability of resources does not allow
+to produce all what is (expected) to be required. In this case we can
+modify the basic model and introduce a penalty for unsatisfied demand;
+on the other hand, in a deterministic product mix model there will be
+no surplus, as there would be no reason to produce in excess of the
+(expected) demand. Running this model we apparently obtain a gain
+which is superior to the expected one in the model seen before. But if
+we fix the order quantities and compute the expected gain under the
+three scenarios, we obtain the following:
+
+.. literalinclude:: AMPL/det-prodmix.out
+   :caption: det-prodmix.out
+   :language: ampl
+and we can see that indeed this produces a smaller expected gain: in
+general it is not wise to substitute the expected demand with the
+stochastic one. Among many other motivations, substituting the
+stochastic nature of a random variable with its expectation completely
+neglects the variability, which is one of the most relevant
+characteristics of stochastic variables. In general, taking into
+proper account probability distributions when dealing with stochastic
+phenomena generates much more reliable and efficient decisions.  
+Of course, this improved quality comes at the price of an increased
+complexity, both in data collection (as we need to retrieve
+information on all possible scenarios) and in model development and solution.
+
+The example just presented is very simple and concerns a deterministic
+decision which must be taken now, given possible future scenarios; in
+the example, no other decision is taken after the scenario
+reveals itself. There are indeed variables which depend on the scenario, but
+these are just direct consequences of the original choices and of the
+characteristics of the scenario.
+
+In many practical applications decisions are taken
+sequentially: a first decision is taken, as we did above, then a
+scenario occurs and a second-stage decision, possibly containing a
+correction to the previous one, is taken; after that another scenario
+will occur, and so on. This situation frequently occurs, e.g., in
+prime material procurement: in textile production, as an example, we
+might need to decide how much of some special tissue to buy right
+now, taking into account long lead and transportation  times. Then,
+after the buying agreement has been signed and possibly paid, some
+events, like fairs or exhibitions, take place and the situation of the
+future market might become less uncertain. At this point if, as an
+example, it is likely that the market is ready to buy more finished
+product than originally planned, new and usually more expensive prime
+material can be bought from nearby producers. This second stage
+decision depends on the original one and on the scenario which has
+been revealed. Eventually, the real demand is observed.
+
+Quite a similar situation happens in agriculture. Consider the
+following artificial example:
+
+   :application: :index:`Stochastic farm planning`
+
+   This application is taken from the introductory chapters of
+   :cite:`birge11` to which we address the reader interested in a very
+   good
+   introduction to the theory and methods of stochastic optimization.
+   Assume a farmer has a quantity of acres of land available and that a decision
+   has to be taken about how much of the available land to devote to Wheat, Corn, Beans.
+   This decision has to be taken now.
+   In order to run the farm and feed the cattle it would be necessary to harvest a
+   minimum quantity of wheat and corn (200t and 240t,
+   respectively). One of the difficulties is that the exact yield
+   is uncertain, due to possibly different future weather conditions;
+   however, in any case, the exact future yield
+   is related to the quantity of land devoted to that
+   cultivation. If needed, it is always possible to buy additional wheat
+   and corn, or it is possible  to sell it, if it is in excess. For what concerns
+   beans, these are possibly grown only for sale (they are not needed
+   for the cattle), so there is no
+   minimum requirement. 
+
+   We assume that future scenarios will be bad, average, good, and
+   that the scenario will directly influence the yield of each
+   product. In this simplified example, we assume prices are not
+   sensible to the scenarios, although it might be interesting to add
+   this possibility. The three scenarios are assumed to occur with
+   equal probability. The relevant data is contained in the following
+   data file:
+
+   .. literalinclude:: AMPL/stoc-farm.dat
+      :caption: stoc-farm.dat
+      :language: ampl
+
+   The model is again quite similar to a product mix. We choose to add
+   an extra variable to the model whose value is the
+   effective product quantity, as a function of the yield. This is not
+   necessary, indeed, but just increases the readability of the
+   model.
+   Moreover we introduce another
+   variable, :math:`\var{ExtraSell}`, in the balance equation  to model possible extra
+   production which cannot be sold, as the market is not capable of
+   absorbing it. In the example, this happens for Beans, for which a
+   maximum demand is imposed equal to 6000; if, based on the acres
+   devoted to Beans, in a scenario the yield turns out to be more than
+   this quantity, the excess production will not contribute to any
+   profit in the objective function: it will thus be a waste, a pure
+   cost.
+   
+   As it can be seen in the implementation, the main variable
+   is not  indexed by the  scenario, as the decision about land
+   subdivision is a *first stage* decision, to be taken now:
+
+   .. literalinclude:: AMPL/stoc-farm.mod
+      :caption: stoc-farm.mod
+      :language: ampl
+
+   After the main decision is taken and the scenario becomes known,
+   *second stage* or :index:`recourse actions` need to be taken:
+   depending on the actual yield, some product quantity will be
+   purchased or sold.  The constraints of the model are simply the
+   request not to exceed the total available land and a set of balance
+   equations for the definition of possibly excess or defect
+   production, with respect to the demand. The objective function is
+   the weighted average of the total gain (revenues minus costs) in
+   the scenarios, weighted with the probability of each scenario.
+
+   With these data, the optimal solution, taking into account the
+   randomness of scenarios, is the following:
+   
+   .. literalinclude:: AMPL/stoc-farm.out
+      :caption: stoc-farm.out
+      :language: ampl
+
+   It is possible to see that the second stage decision on how much to
+   buy or sell is quite easily understandable: we sell excess
+   production, and buy any product which is needed. So there is no
+   real difficulty, in this case, in planning the second stage
+   decision. What is really strategic is to be able to take these
+   recourse actions into due considerations so that the initial choice
+   is made in a profitable way. If we changed the conditions, e.g., to
+   that of an average scenario (this is simple to obtain by letting
+   the probability of this scenario to be 1), we obtain a land
+   destination of 120 acres to Wheat, 80 to Corn, the remaining 300 to
+   Beans, with an overproduction of 100t of Wheat to be sold. The
+   profit obtainable in this case is :math:`118\,600`, which apparently is
+   more convenient that the optimal one, obtained in the stochastic
+   case, :math:`108\,390`. However this is not true. If, in fact, the
+   unpredictable nature of scenarios is taken into correct account,
+   there is no more an advantage in using the average scenario. In
+   fact, fixing the quantity of land as in the average scenario, taking
+   into account the three different possibilities,   it turns out that
+   the expected return will be only 
+   :math:`103\,240.0154` with an expected loss of roughly 5\% with respect to
+   the stochastic decision. 
+
+.. include:: closing.rst
+

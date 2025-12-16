@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>4. Blending Models &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="5. Multi Period Models" href="MultiPeriodModels.html" />
+    <link rel="prev" title="3. Product Mix Models" href="ProductMixProblems.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="ProductMixProblems.html" title="Previous document"><span class="section-number">3. </span>Product Mix Models</a>
+        </li>
+        <li>
+          <a href="MultiPeriodModels.html" title="Next document"><span class="section-number">5. </span>Multi Period Models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="blending-models">
+<h1><span class="section-number">4. </span>Blending Models<a class="headerlink" href="#blending-models" title="Link to this heading">¶</a></h1>
+<p>Blending models deal with situations in which some raw material has to
+be  mixed in order to obtain a blend with specific quality
+requirements. An example has been already presented in the
+introduction for the case of blending aluminum from scrap (see
+<a class="reference internal" href="LinearModelsWeb.html#blending-al-scrap"><span class="std std-ref">application: Blending aluminum scrap</span></a>).</p>
+<p>The following table summarizes some of the most typical applications
+of blending models; each application is identified by the input
+“materials”, the quality to be taken into consideration, the desired
+output.</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array}{ll}
+inputs &amp; quality \\ \hline
+foods &amp; proteins, vitamins, fats, carbohydrates, \dots  \\
+feed &amp; proteins, vitamins, fats, carbohydrates, \dots
+\\
+crude\, oil &amp; octane\, number, volatility,
+lead \\
+scrap, pure\, metals &amp; Fe, Si,
+Mg, Mn, Al, \dots  \\
+grapes &amp; vintage, region\, of\, origin, grape\, variety
+\end{array}
+\end{align*}</div><p>A  classic and well–known example of blending  is the so-called
+<span class="target" id="index-0"></span>diet problem;
+this is also the first example of a non trivial
+linear optimization problem  solved by means of the simplex method
+(see <span id="id1">[<a class="reference internal" href="Bibliography.html#id3" title="George Bernard Dantzig. Linear Programming and Extensions:. RAND Corporation, 1963.">Dantzig, 1963</a>]</span>, <span id="id2">[<a class="reference internal" href="Bibliography.html#id2" title="George B. Dantzig. The Diet Problem. Interfaces, 20(4,):43–47, 1990.">Dantzig, 1990</a>]</span>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the early days of linear optimization, the father of the simplex
+method, George Dantzig, solved a  problem originally proposed to him by George
+Stigler (1982 Nobel prize winner in Economics) in the following
+form:</p>
+<p><em>“For a moderately active
+man weighing 154 pounds, how much of each of 77 foods should be eaten
+on a daily basis so that the man’s intake of nine nutrients will be
+at least equal to the recommended dietary allowances (RDAs) suggested
+by the National Research Council in 1943, with the cost of the diet
+being minimal?”</em></p>
+</div>
+<p>A list of available foods is given, along with associated
+characteristics, like  purchase price and
+nutritional characteristics (vitamins, proteins, carbohydrates, fat,
+calories, iron, …). It is required to find  a  minimum cost food blend
+which satisfies
+nutritional requirements (upper and/or lower bounds on each nutritional characteristics).
+A blending  model specialized for diets can be represented as follows:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">diet.mod</span><a class="headerlink" href="#id4" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="c1">#------------------------------------------------------#</span>
+<span class="c1">#     optimal food bleding problem                     #</span>
+<span class="c1">#------------------------------------------------------#</span>
+
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">FOODS</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">ELEMENTS</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">minQual</span><span class="p">{</span>ELEMENTS<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mf">0.</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">maxQual</span><span class="p">{</span>ELEMENTS<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">Infinity</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">compos</span><span class="p">{</span>ELEMENTS<span class="p">,</span>FOODS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">cost</span><span class="p">{</span>FOODS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">minReq</span><span class="p">{</span>FOODS<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mf">0.</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">maxReq</span><span class="p">{</span>FOODS<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">Infinity</span><span class="p">;</span>
+
+<span class="c1"># -----------------------------------------------------#</span>
+<span class="c1"># variable declaration and bounding</span>
+<span class="c1"># -----------------------------------------------------#</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">Buy</span><span class="p">{</span>f<span class="w"> </span><span class="kr">in</span><span class="w"> </span>FOODS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>minReq<span class="p">[</span>f<span class="p">],</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>maxReq<span class="p">[</span>f<span class="p">],</span><span class="w"> </span><span class="kt">integer</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">Content</span><span class="p">{</span>el<span class="w"> </span><span class="kr">in</span><span class="w"> </span>ELEMENTS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>minQual<span class="p">[</span>el<span class="p">],</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>maxQual<span class="p">[</span>el<span class="p">];</span>
+
+<span class="c1"># -----------------------------------------------------#</span>
+<span class="c1"># objective function</span>
+<span class="c1"># -----------------------------------------------------#</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">totalcost</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>f<span class="w"> </span><span class="kr">in</span><span class="w"> </span>FOODS<span class="p">}</span><span class="w"> </span>cost<span class="p">[</span>f<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>Buy<span class="p">[</span>f<span class="p">];</span>
+
+<span class="c1"># -----------------------------------------------------#</span>
+<span class="c1"># constraints</span>
+<span class="c1"># -----------------------------------------------------#</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">qual_def</span><span class="p">{</span>el<span class="w"> </span><span class="kr">in</span><span class="w"> </span>ELEMENTS<span class="p">}:</span>
+<span class="w">	</span>Content<span class="p">[</span>el<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>f<span class="w"> </span><span class="kr">in</span><span class="w"> </span>FOODS<span class="p">}</span><span class="w"> </span>compos<span class="p">[</span>el<span class="p">,</span>f<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>Buy<span class="p">[</span>f<span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<p>It can be immediately seen that, apart from some name changes included
+to make
+the model more readable, this is exactly the blending problem
+introduced in section <a class="reference internal" href="LinearModelsWeb.html#structured-linear-optimization-models"><span class="std std-ref">Structured linear optimization models</span></a>. The main
+difference is that, usually, in diet problems there is no constraint
+on the total quantity to be produced. However, a similar constraint
+might be needed when planning blends different from human food.
+In the above model some parameters default to 0, for lower bounds, or
+to <span class="math notranslate nohighlight">\(\infty\)</span>, for upper bounds. An infinite upper bound means
+that the corresponding constraint is absent from the model.</p>
+<p>Usually, the objective in blending models is
+cost minimization; however,  sometimes the objective  might be of a qualitative nature:
+for example, in a diet model, we might wish to minimize
+caloric contents, or, in  aluminum scrap blending, we might wish to
+minimize  iron.  It’s easy to modify the objective by suitably
+changing the cost parameter.</p>
+<p>When blending certain quantities of materials, each of them
+additively  contributes to the quality of the blend.
+E.g., if   100g of a given kind of pasta contains 73g  of
+carbohydrates and 14g  of proteins,
+while  100g of Parmesan cheese contains 15g of carbohydrate and 28g
+of proteins, in a blend of 100g of pasta and 20g of cheese the
+carbohydrate contents will be</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{100}{100} \times 73 + \frac{20}{100} \times 15 = 76\textrm{g}
+\]</div><p>while for what concerns proteins the blend will contain</p>
+<div class="math notranslate nohighlight">
+\[
+\frac{100}{100} \times 14 + \frac{20}{100} \times 28 = 19.6\textrm{g}
+\]</div><p>Some attention needs to be paid for the cases in which
+quality requirements are expressed not in terms of absolute quantities
+but of percentages. As an example, in an aluminum bending problem we
+usually require that iron is no more than 3%. Of course if a
+specific quantity, say 2000 kg, has to be produced, this can be
+readily transformed into an an absolute requirement: the blend should
+contain at most 60 kg of iron (3% of 2000). However when the
+quantity to be produced is itself a variable, the exact requirements
+cannot be determined <em>a priori</em>.</p>
+<p>When the lower and upper bounds <span class="math notranslate nohighlight">\(\param{minQual},
+\param{maxQual}\)</span> refer to a percentage, denoting by <span class="math notranslate nohighlight">\(\var{x}\)</span>
+the main variable of the problem and by <span class="math notranslate nohighlight">\(\param{Q}\)</span> the matrix
+containing the composition of foods, a formulation of the quality requirement
+might be:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\param{minQual}_i \leq \sum_{j \in \set{FOODS}} \param{Q}_{ij}
+\frac{\var{x}_j} {\sum_{k \in \set{FOODS}}
+\var{x}_k} \leq \param{maxQual}_i
+\end{align*}</div><p>However, in  this constraint some variables appear in the denominator
+and, therefore, the model is no more linear, something that, if
+at all possible, is strongly advisable to avoid. This constraint
+can be  easily  transformed into a linear equivalent one by
+multiplying both members by the denominator:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\param{minQual}_i \sum_{k \in \set{FOODS}} \var{x}_k \leq \sum_{j
+\in \set{FOODS}} \param{Q}_{ij} \var{x}_j
+\leq \param{maxQual}_i \sum_{k \in \set{FOODS}} \var{x}_k
+\end{align*}</div><p>or, equivalently,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j \in \set{FOODS}} (\param{Q}_{ij} - \param{minQual}_i) \var{x}_j &amp; \geq 0 \\
+\sum_{j \in \set{FOODS}} (\param{maxQual}_i- \param{Q}_{ij})
+\var{x}_j &amp; \geq 0.
+\end{align*}</div><p>The original Stigler  diet model included a list of 77 foods
+and nine types of nutrients, and was considered in order to find the
+minimal cost diet for subsistence. The diet problem was resolved by hand by a
+group of nine researchers in 1947; its solution required 120 man-days of
+calculation.  This model can
+now be solved to optimality  in a fraction of a second on any personal
+computer with free open source solvers.</p>
+<p>A  data file with some of the foods and the nutritional specifications from the original
+paper by Stigler  is reported in the following piece of code.
+Of course the example has the sole purpose of illustrating the
+modeling methodology and should not be considered as
+a realistic example of a diet model. As Stigler wrote on his paper,
+“No one recommends these diets for anyone, let alone everyone”.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">StiglerSmallDiet.dat</span><a class="headerlink" href="#id5" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="c1"># a reduced dataset from The Cost of Subsistence, George J. Stigler</span>
+<span class="c1"># Journal of Farm Economics, Vol. 27, No. 2 (May, 1945), pp. 303-314</span>
+<span class="c1"># The optimization problem requires a min cost diet for one year</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">FOODS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w">  </span>wheat<span class="w"> </span>cornmeal<span class="w"> </span>cannedmilk<span class="w"> </span>margarine<span class="w"> </span>cheese<span class="w">  </span>peanut<span class="o">-</span>b<span class="w"> </span>lard
+<span class="w">              </span>liver<span class="w"> </span>porkroast<span class="w"> </span>salmon<span class="w">  </span>greenbeans<span class="w"> </span>cabbage<span class="w"> </span>onions<span class="w">  </span>potatoes
+<span class="w">              </span>spinach<span class="w"> </span>sweet<span class="o">-</span>pot<span class="w"> </span>peaches<span class="w">  </span>prunes<span class="w">   </span>limabeans<span class="w"> </span>navybeans<span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">ELEMENTS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>calories<span class="w"> </span>protein<span class="w"> </span>calcium<span class="w"> </span>iron<span class="w"> </span>vitamin<span class="o">-</span>a<span class="w"> </span>vitamin<span class="o">-</span>b1
+<span class="w">                </span>vitamin<span class="o">-</span>b2<span class="w"> </span>niacin<span class="w"> </span>vitamin<span class="o">-</span>c<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">minQual</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w">           </span><span class="c1"># recommended daily allowances</span>
+calories<span class="w">   </span><span class="mi">3</span>
+protein<span class="w">   </span><span class="mi">70</span>
+calcium<span class="w">    </span><span class="mf">0.8</span>
+iron<span class="w">      </span><span class="mi">12</span>
+vitamin<span class="o">-</span>a<span class="w">  </span><span class="mi">5</span>
+vitamin<span class="o">-</span>b1<span class="w"> </span><span class="mf">1.8</span>
+vitamin<span class="o">-</span>b2<span class="w"> </span><span class="mf">2.7</span>
+niacin<span class="w">    </span><span class="mi">18</span>
+vitamin<span class="o">-</span>c<span class="w"> </span><span class="mi">75</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">compos</span><span class="w"> </span><span class="p">(</span>tr<span class="p">):</span><span class="w">      </span><span class="c1"># This table is transposed for better reading.</span>
+<span class="w">                        </span><span class="c1"># According to the original paper, this is the</span>
+<span class="w">                        </span><span class="c1"># nutritive value of  1 $ spent per food. So</span>
+<span class="w">                        </span><span class="c1"># actual nutritional contents is this one</span>
+<span class="w">                        </span><span class="c1"># multiplied by the cost</span>
+<span class="w">                        </span>
+<span class="w">             </span>calories<span class="w">   </span>protein<span class="w"> </span>calcium<span class="w"> </span>iron<span class="w">    </span>vitamin<span class="o">-</span>a
+<span class="w">               </span>vitamin<span class="o">-</span>b1<span class="w">     </span>vitamin<span class="o">-</span>b2<span class="w">      </span>niacin<span class="w">  </span>vitamin<span class="o">-</span>c<span class="w"> </span><span class="p">:</span><span class="o">=</span>
+wheat<span class="w">        </span><span class="mf">44.7</span><span class="w">       </span><span class="mi">1411</span><span class="w">    </span><span class="mi">2</span><span class="w">       </span><span class="mi">365</span>
+<span class="w">                                 </span><span class="mi">0</span><span class="w">       </span><span class="mf">55.4</span><span class="w">    </span><span class="mf">33.3</span><span class="w">    </span><span class="mi">441</span><span class="w">     </span><span class="mi">0</span>
+cornmeal<span class="w">        </span><span class="mi">36</span><span class="w">      </span><span class="mi">897</span><span class="w">     </span><span class="mf">1.7</span><span class="w">     </span><span class="mi">99</span>
+<span class="w">                                 </span><span class="mf">30.9</span><span class="w">    </span><span class="mf">17.4</span><span class="w">    </span><span class="mf">7.9</span><span class="w">     </span><span class="mi">106</span><span class="w">     </span><span class="mi">0</span>
+cannedmilk<span class="w">      </span><span class="mf">8.4</span><span class="w">     </span><span class="mi">422</span><span class="w">     </span><span class="mf">15.1</span><span class="w">    </span><span class="mi">9</span>
+<span class="w">                                 </span><span class="mi">26</span><span class="w">      </span><span class="mi">3</span><span class="w">       </span><span class="mf">23.5</span><span class="w">    </span><span class="mi">11</span><span class="w">      </span><span class="mi">60</span>
+margarine<span class="w">       </span><span class="mf">20.6</span><span class="w">    </span><span class="mi">17</span><span class="w">      </span><span class="mf">0.6</span><span class="w">     </span><span class="mi">6</span>
+<span class="w">                                 </span><span class="mf">55.8</span><span class="w">    </span><span class="mf">0.2</span><span class="w">     </span><span class="mi">0</span><span class="w">       </span><span class="mi">0</span><span class="w">       </span><span class="mi">0</span>
+cheese<span class="w">          </span><span class="mf">7.4</span><span class="w">     </span><span class="mi">448</span><span class="w">     </span><span class="mf">16.4</span><span class="w">    </span><span class="mi">19</span>
+<span class="w">                                 </span><span class="mf">28.1</span><span class="w">    </span><span class="mf">0.8</span><span class="w">     </span><span class="mf">10.3</span><span class="w">    </span><span class="mi">4</span><span class="w">       </span><span class="mi">0</span>
+peanut<span class="o">-</span>b<span class="w">        </span><span class="mf">15.7</span><span class="w">    </span><span class="mi">661</span><span class="w">     </span><span class="mi">1</span><span class="w">       </span><span class="mi">48</span>
+<span class="w">                                  </span><span class="mi">0</span><span class="w">       </span><span class="mf">9.6</span><span class="w">     </span><span class="mf">8.1</span><span class="w">     </span><span class="mi">471</span><span class="w">     </span><span class="mi">0</span>
+lard<span class="w">            </span><span class="mf">41.7</span><span class="w">    </span><span class="mi">0</span><span class="w">       </span><span class="mi">0</span><span class="w">       </span><span class="mi">0</span>
+<span class="w">                                  </span><span class="mf">0.2</span><span class="w">     </span><span class="mi">0</span><span class="w">       </span><span class="mf">0.5</span><span class="w">     </span><span class="mi">5</span><span class="w">       </span><span class="mi">0</span>
+liver<span class="w">           </span><span class="mf">2.2</span><span class="w">     </span><span class="mi">333</span><span class="w">     </span><span class="mf">0.2</span><span class="w">     </span><span class="mi">139</span>
+<span class="w">                                </span><span class="mf">169.2</span><span class="w">   </span><span class="mf">6.4</span><span class="w">     </span><span class="mf">50.8</span><span class="w">    </span><span class="mi">316</span><span class="w">     </span><span class="mi">525</span>
+porkroast<span class="w">       </span><span class="mf">4.4</span><span class="w">     </span><span class="mi">249</span><span class="w">     </span><span class="mf">0.3</span><span class="w">     </span><span class="mi">37</span>
+<span class="w">                                </span><span class="mi">0</span><span class="w">       </span><span class="mf">18.2</span><span class="w">    </span><span class="mf">3.6</span><span class="w">     </span><span class="mi">79</span><span class="w">      </span><span class="mi">0</span>
+salmon<span class="w">          </span><span class="mf">5.8</span><span class="w">     </span><span class="mi">705</span><span class="w">     </span><span class="mf">6.8</span><span class="w">     </span><span class="mi">45</span>
+<span class="w">                                </span><span class="mf">3.5</span><span class="w">     </span><span class="mi">1</span><span class="w">       </span><span class="mf">4.9</span><span class="w">     </span><span class="mi">209</span><span class="w">     </span><span class="mi">0</span>
+greenbeans<span class="w">      </span><span class="mf">2.4</span><span class="w">     </span><span class="mi">138</span><span class="w">     </span><span class="mf">3.7</span><span class="w">     </span><span class="mi">80</span>
+<span class="w">                                </span><span class="mi">69</span><span class="w">      </span><span class="mf">4.3</span><span class="w">     </span><span class="mf">5.8</span><span class="w">     </span><span class="mi">37</span><span class="w">      </span><span class="mi">862</span>
+cabbage<span class="w">         </span><span class="mf">2.6</span><span class="w">     </span><span class="mi">125</span><span class="w">     </span><span class="mi">4</span><span class="w">       </span><span class="mi">36</span>
+<span class="w">                                </span><span class="mf">7.2</span><span class="w">     </span><span class="mi">9</span><span class="w">       </span><span class="mf">4.5</span><span class="w">     </span><span class="mi">26</span><span class="w">      </span><span class="mi">5369</span>
+onions<span class="w">          </span><span class="mf">5.8</span><span class="w">     </span><span class="mi">166</span><span class="w">     </span><span class="mf">3.8</span><span class="w">     </span><span class="mi">59</span>
+<span class="w">                                </span><span class="mf">16.6</span><span class="w">    </span><span class="mf">4.7</span><span class="w">     </span><span class="mf">5.9</span><span class="w">     </span><span class="mi">21</span><span class="w">      </span><span class="mi">1184</span>
+potatoes<span class="w">        </span><span class="mf">14.3</span><span class="w">    </span><span class="mi">336</span><span class="w">     </span><span class="mf">1.8</span><span class="w">     </span><span class="mi">118</span>
+<span class="w">                                </span><span class="mf">6.7</span><span class="w">     </span><span class="mf">29.4</span><span class="w">    </span><span class="mf">7.1</span><span class="w">     </span><span class="mi">198</span><span class="w">     </span><span class="mi">2522</span>
+spinach<span class="w">         </span><span class="mf">1.1</span><span class="w">     </span><span class="mi">106</span><span class="w">     </span><span class="mi">0</span><span class="w">       </span><span class="mi">138</span>
+<span class="w">                              </span><span class="mf">918.4</span><span class="w">   </span><span class="mf">5.7</span><span class="w">     </span><span class="mf">13.8</span><span class="w">    </span><span class="mi">33</span><span class="w">      </span><span class="mi">2755</span>
+sweet<span class="o">-</span>pot<span class="w">       </span><span class="mf">9.6</span><span class="w">     </span><span class="mi">138</span><span class="w">     </span><span class="mf">2.7</span><span class="w">     </span><span class="mi">54</span>
+<span class="w">                              </span><span class="mf">290.7</span><span class="w">   </span><span class="mf">8.4</span><span class="w">     </span><span class="mf">5.4</span><span class="w">     </span><span class="mi">83</span><span class="w">      </span><span class="mi">1912</span>
+peaches<span class="w">         </span><span class="mf">8.5</span><span class="w">     </span><span class="mi">87</span><span class="w">      </span><span class="mf">1.7</span><span class="w">     </span><span class="mi">173</span>
+<span class="w">                               </span><span class="mf">86.8</span><span class="w">    </span><span class="mf">1.2</span><span class="w">     </span><span class="mf">4.3</span><span class="w">     </span><span class="mi">55</span><span class="w">      </span><span class="mi">57</span>
+prunes<span class="w">          </span><span class="mf">12.8</span><span class="w">    </span><span class="mi">99</span><span class="w">      </span><span class="mf">2.5</span><span class="w">     </span><span class="mi">154</span>
+<span class="w">                               </span><span class="mf">85.7</span><span class="w">    </span><span class="mf">3.9</span><span class="w">     </span><span class="mf">4.3</span><span class="w">     </span><span class="mi">65</span><span class="w">      </span><span class="mi">257</span>
+limabeans<span class="w">       </span><span class="mf">17.4</span><span class="w">    </span><span class="mi">1055</span><span class="w">    </span><span class="mf">3.7</span><span class="w">     </span><span class="mi">459</span>
+<span class="w">                                </span><span class="mf">5.1</span><span class="w">     </span><span class="mf">26.9</span><span class="w">    </span><span class="mf">38.2</span><span class="w">    </span><span class="mi">93</span><span class="w">      </span><span class="mi">0</span>
+navybeans<span class="w">       </span><span class="mf">26.9</span><span class="w">    </span><span class="mi">1691</span><span class="w">    </span><span class="mf">11.4</span><span class="w">    </span><span class="mi">792</span>
+<span class="w">                                </span><span class="mi">0</span><span class="w">       </span><span class="mf">38.4</span><span class="w">    </span><span class="mf">24.6</span><span class="w">    </span><span class="mi">217</span><span class="w">     </span><span class="mi">0</span>
+<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">cost</span><span class="p">:</span><span class="o">=</span><span class="w">            </span><span class="c1"># cost in $cent. per unit (prices as of 1939). </span>
+<span class="w">                        </span><span class="c1"># One unit: 1 lb unless differently specified</span>
+wheat<span class="w">           </span><span class="mi">36</span><span class="w">      </span><span class="c1"># 10 lb</span>
+cornmeal<span class="w">        </span><span class="mf">4.6</span>
+cannedmilk<span class="w">      </span><span class="mf">6.7</span><span class="w">     </span><span class="c1"># 14.5 oz</span>
+margarine<span class="w">       </span><span class="mf">16.1</span><span class="w">    </span>
+cheese<span class="w">          </span><span class="mf">24.2</span>
+peanut<span class="o">-</span>b<span class="w">        </span><span class="mf">17.9</span>
+lard<span class="w">            </span><span class="mf">9.8</span>
+liver<span class="w">           </span><span class="mf">26.8</span>
+porkroast<span class="w">       </span><span class="mf">24.2</span>
+salmon<span class="w">          </span><span class="mf">13.0</span><span class="w">    </span><span class="c1"># 16 oz</span>
+greenbeans<span class="w">      </span><span class="mf">7.1</span>
+cabbage<span class="w">         </span><span class="mf">3.7</span>
+onions<span class="w">          </span><span class="mf">3.6</span>
+potatoes<span class="w">        </span><span class="mi">34</span><span class="w">      </span><span class="c1"># 15 lb</span>
+spinach<span class="w">         </span><span class="mf">8.1</span>
+sweet<span class="o">-</span>pot<span class="w">       </span><span class="mf">5.1</span>
+peaches<span class="w">         </span><span class="mf">16.8</span><span class="w">    </span><span class="c1"># 2.5</span>
+prunes<span class="w">          </span><span class="mf">9.0</span>
+limabeans<span class="w">       </span><span class="mf">8.9</span>
+navybeans<span class="w">       </span><span class="mf">5.9</span>
+<span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="p">{</span>el<span class="w"> </span><span class="kr">in</span><span class="w"> </span>ELEMENTS<span class="p">,</span><span class="w"> </span>f<span class="w"> </span><span class="kr">in</span><span class="w"> </span>FOODS<span class="p">}</span><span class="w"> </span><span class="nv">compos</span><span class="p">[</span>el<span class="p">,</span>f<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>compos<span class="p">[</span>el<span class="p">,</span>f<span class="p">]</span><span class="w"> </span><span class="o">*</span>
+cost<span class="p">[</span>f<span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">100.</span><span class="p">;</span>
+
+<span class="c1"># this was added in order to transform original nutritional data in</span>
+<span class="c1"># the correct values. It was originally expressed in contents per</span>
+<span class="c1"># dollar</span>
+<span class="c1"># We might had kept that value. In this case, the cost would have been</span>
+<span class="c1"># chosen as 1 for every food and the variable Buy would represent how</span>
+<span class="c1"># much to spend in each food.</span>
+</pre></div>
+</div>
+</div>
+<p>Solving the diet problem with these data produces
+the following result:</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">StiglerSmallDiet.out</span><a class="headerlink" href="#id6" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>Gurobi<span class="w"> </span><span class="mf">9.1</span>.<span class="mi">1</span><span class="p">:</span><span class="w"> </span>optimal<span class="w"> </span><span class="kr">solution</span><span class="p">;</span><span class="w"> </span><span class="kr">objective</span><span class="w"> </span><span class="mf">10.86622782</span>
+<span class="mi">6</span><span class="w"> </span>simplex<span class="w"> </span>iterations
+Buy<span class="w"> </span><span class="p">[</span><span class="o">*</span><span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span>
+<span class="w">   </span>cabbage<span class="w">  </span><span class="mf">0.303093</span>
+<span class="w">     </span>liver<span class="w">  </span><span class="mf">0.00706178</span>
+<span class="w"> </span>navybeans<span class="w">  </span><span class="mf">1.03438</span>
+<span class="w">   </span>spinach<span class="w">  </span><span class="mf">0.061823</span>
+<span class="w">     </span>wheat<span class="w">  </span><span class="mf">0.0819974</span>
+<span class="p">;</span>
+
+<span class="p">:</span><span class="w">          </span><span class="nv">Content</span><span class="p">.</span><span class="kr">lb</span><span class="w">    </span>Content<span class="w">     </span><span class="p">:</span><span class="o">=</span>
+calcium<span class="w">         </span><span class="mf">0.8</span><span class="w">       </span><span class="mf">0.8</span>
+calorie<span class="w">         </span><span class="mi">3</span><span class="w">         </span><span class="mi">3</span>
+iron<span class="w">           </span><span class="mi">12</span><span class="w">        </span><span class="mf">60.4669</span>
+niacin<span class="w">         </span><span class="mi">18</span><span class="w">        </span><span class="mf">27.316</span>
+protein<span class="w">        </span><span class="mi">70</span><span class="w">       </span><span class="mf">147.414</span>
+vitamin<span class="o">-</span>a<span class="w">       </span><span class="mi">5</span><span class="w">         </span><span class="mi">5</span>
+vitamin<span class="o">-</span>b1<span class="w">      </span><span class="mf">1.8</span><span class="w">       </span><span class="mf">4.12044</span>
+vitamin<span class="o">-</span>b2<span class="w">      </span><span class="mf">2.7</span><span class="w">       </span><span class="mf">2.7</span>
+vitamin<span class="o">-</span>c<span class="w">      </span><span class="mi">75</span><span class="w">        </span><span class="mi">75</span>
+<span class="p">;</span>
+
+totalcost<span class="o">*</span><span class="mf">365.25</span><span class="o">/</span><span class="mi">100</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">39.6889</span>
+</pre></div>
+</div>
+</div>
+<p>The minimum cost diet has a  total yearly
+cost of 39.6889US$ (a very low price indeed, even considering it is
+referred to 1939).</p>
+<p>From the above table the nutritional contents of this “diet” can be
+observed along with the imposed lower bounds; it is evident that some
+nutrients are expensive and, thus, in the optimal diet they appear at
+their lower bound (Calcium, Calories, Vitamins A and C); others, on the
+contrary, are abundant in the diet, significantly over the lower
+bound.</p>
+<p>Diets built in this way suffer, typically, from a large set of
+defects. Sometimes it happens that a food appears in too large daily
+quantities (something we can easily put a remedy to by imposing an
+upper bound on the variables); frequently, as this case confirms,
+only a very small set of different foods appear in the solution.
+Moreover,
+it is usually undesirable to have non-integer values in the solution, as
+it is not possible to buy fractions of a single unit  for each
+food. This kind of constraints usually require the introduction of
+binary variables, a topic we will introduce later in the chapter devoted
+to <a class="reference internal" href="MIPModels.html#mixed-integer-linear-models"><span class="std std-ref">Mixed Integer Linear Models</span></a>.</p>
+<p>All of the above are constraints which we would like to add to the
+basic model in order to obtain an acceptable diet. By the way, this
+example shows that modeling is usually performed in iterative
+incremental steps: a simple model is formulated and solved, than the
+solution is critically analyzed and more refined models are possibly
+built until, eventually, the solution turns out to satisfy all of the requirements.</p>
+<p>Consider the toy diet example below:</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">AMPL/diet.dat</span><a class="headerlink" href="#id7" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> <span class="n">FOODS</span> <span class="o">:=</span>
+<span class="s2">&quot;Hamburger&quot;</span>
+<span class="s2">&quot;Cheeseburger&quot;</span>
+<span class="s2">&quot;Quarter Pounder w/ Cheese&quot;</span>
+<span class="s2">&quot;McLean Deluxe&quot;</span>
+<span class="s2">&quot;McLean Deluxe w/ Cheese&quot;</span>
+<span class="s2">&quot;Big Mac&quot;</span>
+<span class="s2">&quot;Filet-O-Fish&quot;</span>
+<span class="s2">&quot;McGrilled Chicken&quot;</span>
+<span class="s2">&quot;McChicken Sandwich&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>…</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;H-C Orange Drink (large)&quot;</span>
+<span class="p">;</span>
+
+<span class="nb">set</span> <span class="n">ELEMENTS</span> <span class="o">:=</span>  <span class="n">Cal</span>    <span class="n">CalFat</span>  <span class="n">Fat</span>     <span class="n">SatFat</span>  <span class="n">Chol</span>    <span class="n">Sodium</span>  <span class="n">Carbo</span>
+             <span class="n">Protein</span>    <span class="n">VitA</span>    <span class="n">VitC</span>    <span class="n">Calcium</span> <span class="n">Iron</span><span class="p">;</span> 
+
+<span class="n">param</span><span class="p">:</span>   <span class="n">minQual</span> <span class="n">maxQual</span> <span class="o">:=</span>
+<span class="n">Cal</span>     <span class="mi">2000</span>    <span class="mi">2000</span>
+<span class="n">CalFat</span>  <span class="mi">0</span>       <span class="mi">300</span>
+<span class="n">Fat</span>     <span class="mi">0</span>       <span class="mi">100</span>
+<span class="n">SatFat</span>  <span class="mi">0</span>       <span class="mi">30</span>
+<span class="n">Chol</span>    <span class="mi">0</span>       <span class="mi">375</span>
+<span class="n">Sodium</span>  <span class="mi">0</span>       <span class="mi">3000</span>
+<span class="n">Carbo</span>   <span class="mi">350</span>     <span class="mi">375</span>
+<span class="n">Protein</span> <span class="mi">55</span>      <span class="o">.</span>
+<span class="n">VitA</span>    <span class="mi">100</span>     <span class="o">.</span>
+<span class="n">VitC</span>    <span class="mi">100</span>     <span class="o">.</span>
+<span class="n">Calcium</span> <span class="mi">100</span>     <span class="o">.</span>
+<span class="n">Iron</span>    <span class="mi">100</span>     <span class="o">.</span>
+<span class="p">;</span>
+<span class="n">param</span> <span class="n">compos</span> <span class="p">(</span><span class="n">tr</span><span class="p">):</span>
+      <span class="n">Cal</span>       <span class="n">CalFat</span>  <span class="n">Fat</span>     <span class="n">SatFat</span>  <span class="n">Chol</span>    <span class="n">Sodium</span>  <span class="n">Carbo</span>
+      <span class="n">Protein</span>   <span class="n">VitA</span>    <span class="n">VitC</span>    <span class="n">Calcium</span> <span class="n">Iron</span> <span class="o">:=</span>
+<span class="s2">&quot;Hamburger&quot;</span>                     <span class="mi">255</span>     <span class="mi">80</span>      <span class="mi">9</span>       <span class="mi">3</span>       <span class="mi">35</span>      <span class="mi">490</span>
+                                <span class="mi">30</span>      <span class="mi">12</span>      <span class="mi">4</span>       <span class="mi">4</span>       <span class="mi">10</span>      <span class="mi">15</span>
+<span class="s2">&quot;Cheeseburger&quot;</span>                  <span class="mi">305</span>     <span class="mi">120</span>     <span class="mi">13</span>      <span class="mi">5</span>       <span class="mi">50</span>      <span class="mi">725</span>     
+                                 <span class="mi">30</span>      <span class="mi">15</span>     <span class="mi">8</span>       <span class="mi">4</span>       <span class="mi">20</span>      <span class="mi">15</span>
+<span class="s2">&quot;Quarter Pounder w/ Cheese&quot;</span>     <span class="mi">510</span>     <span class="mi">250</span>     <span class="mi">28</span>      <span class="mi">11</span>      <span class="mi">115</span>     <span class="mi">1110</span>    
+                                 <span class="mi">34</span>      <span class="mi">28</span>     <span class="mi">15</span>      <span class="mi">6</span>       <span class="mi">30</span>      <span class="mi">20</span>
+<span class="s2">&quot;McLean Deluxe&quot;</span>                 <span class="mi">320</span>      <span class="mi">90</span>     <span class="mi">10</span>      <span class="mi">4</span>       <span class="mi">60</span>      <span class="mi">670</span>
+                                 <span class="mi">35</span>      <span class="mi">22</span>     <span class="mi">10</span>      <span class="mi">10</span>      <span class="mi">15</span>      <span class="mi">20</span>
+<span class="s2">&quot;McLean Deluxe w/ Cheese&quot;</span>       <span class="mi">370</span>     <span class="mi">125</span>     <span class="mi">14</span>      <span class="mi">5</span>       <span class="mi">75</span>      <span class="mi">890</span>
+                                 <span class="mi">35</span>      <span class="mi">24</span>     <span class="mi">15</span>      <span class="mi">10</span>      <span class="mi">20</span>      <span class="mi">20</span>
+<span class="s2">&quot;Big Mac&quot;</span>                       <span class="mi">500</span>     <span class="mi">235</span>     <span class="mi">26</span>      <span class="mi">9</span>       <span class="mi">100</span>     <span class="mi">890</span>
+                                 <span class="mi">42</span>      <span class="mi">25</span>      <span class="mi">6</span>      <span class="mi">2</span>       <span class="mi">25</span>      <span class="mi">20</span>
+<span class="s2">&quot;Filet-O-Fish&quot;</span>                  <span class="mi">370</span>     <span class="mi">160</span>     <span class="mi">18</span>      <span class="mi">4</span>       <span class="mi">50</span>      <span class="mi">730</span>     
+                                 <span class="mi">38</span>      <span class="mi">14</span>      <span class="mi">2</span>      <span class="mi">0</span>       <span class="mi">15</span>      <span class="mi">10</span>
+<span class="s2">&quot;McGrilled Chicken&quot;</span>             <span class="mi">400</span>     <span class="mi">110</span>     <span class="mi">12</span>      <span class="mi">4</span>       <span class="mi">80</span>      <span class="mi">680</span>     
+                                 <span class="mi">42</span>      <span class="mi">31</span>      <span class="mi">8</span>      <span class="mi">15</span>      <span class="mi">15</span>      <span class="mi">8</span>
+<span class="s2">&quot;McChicken Sandwich&quot;</span>            <span class="mi">470</span>     <span class="mi">225</span>     <span class="mi">25</span>      <span class="mi">5</span>       <span class="mi">60</span>      <span class="mi">830</span>
+                                 <span class="mi">42</span>      <span class="mi">19</span>      <span class="mi">2</span>      <span class="mi">2</span>       <span class="mi">15</span>      <span class="mi">10</span>
+<span class="s2">&quot;Fries, small&quot;</span>                  <span class="mi">220</span>     <span class="mi">110</span>     <span class="mi">12</span>      <span class="mf">2.5</span>     <span class="mi">0</span>       <span class="mi">110</span>
+                                 <span class="mi">26</span>       <span class="mi">3</span>     <span class="mi">0</span>       <span class="mi">15</span>      <span class="mi">0</span>       <span class="mi">2</span>
+<span class="s2">&quot;Fries, large&quot;</span>                  <span class="mi">400</span>     <span class="mi">200</span>     <span class="mi">22</span>      <span class="mi">5</span>       <span class="mi">0</span>       <span class="mi">200</span>
+                                 <span class="mi">46</span>       <span class="mi">6</span>      <span class="mi">0</span>      <span class="mi">25</span>      <span class="mi">0</span>       <span class="mi">6</span>
+</pre></div>
+</div>
+<p>…</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;Sprite (small)&quot;</span>                <span class="mi">140</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">35</span>
+                                <span class="mi">37</span>      <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>
+<span class="s2">&quot;Sprite (medium)&quot;</span>               <span class="mi">205</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">50</span>
+                                <span class="mi">53</span>      <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>
+<span class="s2">&quot;Sprite (large)&quot;</span>                <span class="mi">300</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">70</span>
+                                <span class="mi">78</span>      <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>
+<span class="s2">&quot;H-C Orange Drink (small)&quot;</span>      <span class="mi">160</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">35</span>
+                                <span class="mi">42</span>      <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>
+<span class="s2">&quot;H-C Orange Drink (medium)&quot;</span>     <span class="mi">240</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">50</span>
+                                <span class="mi">60</span>      <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>
+<span class="s2">&quot;H-C Orange Drink (large)&quot;</span>      <span class="mi">350</span>     <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">75</span>
+                                <span class="mi">89</span>      <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>       <span class="mi">0</span>
+<span class="p">;</span>
+
+<span class="n">param</span> <span class="n">cost</span> <span class="o">:=</span>
+
+<span class="s2">&quot;Hamburger&quot;</span>             <span class="mf">0.59</span>
+<span class="s2">&quot;Cheeseburger&quot;</span>          <span class="mf">0.69</span>
+<span class="s2">&quot;Quarter Pounder w/ Cheese&quot;</span>             <span class="mf">1.84</span>
+<span class="s2">&quot;McLean Deluxe&quot;</span>         <span class="mf">2.09</span>
+<span class="s2">&quot;McLean Deluxe w/ Cheese&quot;</span>               <span class="mf">2.19</span>
+<span class="s2">&quot;Big Mac&quot;</span>               <span class="mf">1.84</span>
+<span class="s2">&quot;Filet-O-Fish&quot;</span>          <span class="mf">1.44</span>
+<span class="s2">&quot;McGrilled Chicken&quot;</span>             <span class="mf">2.29</span>
+<span class="s2">&quot;McChicken Sandwich&quot;</span>            <span class="mf">2.04</span>
+<span class="s2">&quot;Fries, small&quot;</span>          <span class="mf">0.77</span>
+<span class="s2">&quot;Fries, large&quot;</span>          <span class="mf">1.17</span>
+</pre></div>
+</div>
+<p>…</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;H-C Orange Drink (medium)&quot;</span>             <span class="mf">0.99</span>
+<span class="s2">&quot;H-C Orange Drink (large)&quot;</span>              <span class="mf">1.17</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+<p>The minimum cost diet turns out to be</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Buy</span> <span class="p">[</span><span class="o">*</span><span class="p">]</span> <span class="o">:=</span>
+  <span class="s2">&quot;1</span><span class="si">% Lo</span><span class="s2">wfat Milk&quot;</span>   <span class="mf">1.84868</span>
+  <span class="s2">&quot;Cheerios&quot;</span>   <span class="mf">2.26212</span>
+  <span class="s2">&quot;Cheeseburger&quot;</span>   <span class="mf">1.83187</span>
+  <span class="s2">&quot;Chunky Chicken Salad&quot;</span>   <span class="mf">0.0304813</span>
+  <span class="s2">&quot;Hamburger&quot;</span>   <span class="mf">0.24392</span>
+  <span class="s2">&quot;Honey&quot;</span>  <span class="mf">15.511</span>
+  <span class="s2">&quot;Orange Juice&quot;</span>   <span class="mf">0.408322</span>
+  <span class="s2">&quot;Sweet &#39;N Sour Sauce&quot;</span>   <span class="mf">4.32537</span>
+<span class="n">totalcost</span> <span class="o">=</span> <span class="mf">5.367956845</span>
+</pre></div>
+</div>
+<p>Even in a toy example like this one we can immediately see that this
+proposal is not acceptable; let us, for example, add a maximum of 2
+portions per food. The result changes as follows</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Buy</span> <span class="p">[</span><span class="o">*</span><span class="p">]</span> <span class="o">:=</span>
+  <span class="s2">&quot;Barbeque Sauce&quot;</span>  <span class="mi">2</span>
+  <span class="s2">&quot;Cheerios&quot;</span>  <span class="mf">1.81106</span>
+  <span class="s2">&quot;Chocolate Shake&quot;</span>  <span class="mi">2</span>
+  <span class="s2">&quot;Chunky Chicken Salad&quot;</span>  <span class="mf">0.212507</span>
+  <span class="s2">&quot;H-C Orange Drink (large)&quot;</span>  <span class="mf">0.73578</span>
+  <span class="s2">&quot;Hamburger&quot;</span>  <span class="mf">1.82403</span>
+  <span class="s2">&quot;Honey&quot;</span>  <span class="mi">2</span>
+  <span class="s2">&quot;Orange Juice&quot;</span>  <span class="mf">0.326808</span>
+  <span class="s2">&quot;Strawberry Shake&quot;</span>  <span class="mf">0.189541</span>
+  <span class="s2">&quot;Sweet &quot;</span><span class="n">N</span> <span class="n">Sour</span> <span class="n">Sauce</span><span class="s2">&quot;  2</span>
+<span class="n">totalcost</span> <span class="o">=</span> <span class="mf">7.168394112</span>
+</pre></div>
+</div>
+<p>As it can be  easily guessed,
+additional or more strict  constraints usually imply a cost
+increase. It is also worth observing that the request of an upper bound
+led to a modification not only in the quantity of the foods of the
+original solution, but also in the composition of the optimal diet,
+with new foods entering the blend.</p>
+<p>Imposing now integrality we obtain</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Buy</span> <span class="p">[</span><span class="o">*</span><span class="p">]</span> <span class="o">:=</span>
+  <span class="s2">&quot;1</span><span class="si">% Lo</span><span class="s2">wfat Milk&quot;</span>  <span class="mi">1</span>
+  <span class="s2">&quot;Barbeque Sauce&quot;</span>  <span class="mi">2</span>
+  <span class="s2">&quot;Cheerios&quot;</span>  <span class="mi">1</span>
+  <span class="s2">&quot;Chocolate Shake&quot;</span>  <span class="mi">1</span>
+  <span class="s2">&quot;Hamburger&quot;</span>  <span class="mi">1</span>
+  <span class="s2">&quot;Honey&quot;</span>  <span class="mi">1</span>
+  <span class="s2">&quot;Orange Juice&quot;</span>  <span class="mi">1</span>
+  <span class="s2">&quot;Strawberry Shake&quot;</span>  <span class="mi">2</span>
+  <span class="s2">&quot;Sweet &quot;</span><span class="n">N</span> <span class="n">Sour</span> <span class="n">Sauce</span><span class="s2">&quot;  2</span>
+  <span class="s2">&quot;Wheaties&quot;</span>  <span class="mi">2</span>
+<span class="n">totalcost</span> <span class="o">=</span>  <span class="mf">8.45</span>
+</pre></div>
+</div>
+<p>with a  cost 8.45, which, again, is higher than the previous one.
+We observe that the integer solution is not obtained by
+rounding the fractional ones, but by a quite different mix.</p>
+<p>The model presented here is so elementary  to be, in
+practice, of little practical use; however, it may be
+the basis for building more
+realistic ones. It is worth recalling that a slightly enriched version
+of the diet problem has been used, with success, in <span id="id3">[<a class="reference internal" href="Bibliography.html#id37" title="Koen Peters, Sérgio Silva, Tim Sergio Wolter, Luis Anjos, Nina van Ettekoven, Éric Combette, Anna Melchiori, Hein Fleuren, Dick den Hertog, and Özlem Ergun. UN World Food Programme: Toward Zero Hunger with Analytics. INFORMS Journal on Applied Analytics, 52(1):8–26, January 2022.">Peters <em>et al.</em>, 2022</a>]</span> to
+optimize food baskets for distribution to fight hunger. In cooperation
+with th World Food Program, a tool based also on the diet model has
+saved millions of lives.</p>
+<p>One of the constraints that often appears in real diets
+is  a limitation on the amount of
+some types of fats, both in absolute terms or as a percentage of other
+kinds of fat. When the requirement is absolute, then it can be modeled
+as above; when however it is relative, some care has to be taken.
+As an example, in a balanced diet it might be required that
+the calories from fat do not exceed 30% of the total calories.
+Based on available  data on the amount of calories from
+fat and the total for each food, the constraint
+is easily expressed as a linear inequality:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j \in \set{FOODS}} \param{CaloriesFromFat}_{j} \var{x}_{j}
+\leq \frac{30}{100} \sum_{j \in \set{FOODS}} \param{Calories}_{j}
+\var{x}_{j}
+\end{align*}</div><p>Many other nutritional requirements can be expressed in a similar way;
+however, it is not always possible, within the framework of linear
+optimization, to extend the model to account for different
+requirements. As an example, it frequently happens that the optimal
+diet consists of only a tiny number of different foods. This is a
+trivial consequence of the Fundamental Theorem of Linear Optimization
+and is connected with the fact that the solution returned by most
+solvers is a <em>basic</em> feasible solution. Imposing a threshold on the
+number of different foods  in the diet cannot be made in a linear
+optimization model, although it is quite easily done with the
+introduction of binary variables, as we will see.
+In chapter <a class="reference internal" href="MIPModels.html#mixed-integer-linear-models"><span class="std std-ref">Mixed Integer Linear Models</span></a> we will present modeling
+techniques  which
+allow for the  inclusion of similar constraints, as well as other, more general, logical ones.
+Constraints like, e.g., “if the diet prescribes to use food A, then it must not contain food B” or “either A
+or B should be in the diet, but not both”, or “either food A is
+not part of the optimal diet, or its quantity must be at least 2 portions” can indeed be
+formulated through linear models with binary variables and “logical
+constraints”.
+Suitable models will be presented in
+section <a class="reference internal" href="MIPModels.html#using-binary-variables-in-logical-constraints"><span class="std std-ref">Using binary variables in logical constraints</span></a>.</p>
+<p>The example just described might also be extended  over a time horizon:
+in this case each variable  will have an additional index
+associated to each day or time period;  there might be constraints on quality related
+to each single day as well as constraints on longer periods (e.g., the
+total calories  should not be more than, say, <span class="math notranslate nohighlight">\(3\,000\)</span> per
+day, while they should be no more than <span class="math notranslate nohighlight">\(2\,500\)</span>, on average, per
+week). In a multi-period scenario, moreover, there can be different
+costs per day or different availability of foods.</p>
+<p>It is also important to observe that, frequently, in blending problems
+costs are not linear but <em>piece-wise linear</em>, with decreasing slope. This
+way discounts for large quantities are included in the model.  A brief
+introduction on modeling techniques for piece-wise linear functions
+will be presented in section <a class="reference internal" href="Objectives.html#minimax-problems"><span class="std std-ref">Minimax problems</span></a>.</p>
+<p>Another observation concerns data quality:
+frequently most data
+(nutritional contents, chemical composition) are just
+estimates of real data, corresponding  to the composition of an “average”
+unit of material or food. The actual contents can be considered as the realization
+of a random variable.
+When some information is available or can be assumed on the
+probability distribution of these data,
+stochastic models can be considered, in which
+probabilistic constraints can be added. An example might be the
+requirement that the contents of iron in a blend should be no more
+than 2% with probability at least 98%. A very short introduction to the
+modeling aspects of probabilistic
+constraints will be given in section <a class="reference internal" href="StochasticOptimization.html#sect-plstoc"><span class="std std-ref">Stochastic linear optimization models</span></a>. Taking
+into account the distribution of data, and, in particular, variance,
+can lead to much more robust and reasonable decisions.</p>
+<section id="dual-of-blending-problems">
+<h2><span class="section-number">4.1. </span>Dual of  blending problems<a class="headerlink" href="#dual-of-blending-problems" title="Link to this heading">¶</a></h2>
+<p>The structure of many linear blending problems
+is that of a standard linear optimization problems, with equations for
+quality contents and, possibly, an equation associated to the quantity to be
+produced. In formulae:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j \param{c}_j \var{x}_j &amp;  \\
+\sum_j \param{A}_{ij} \var{x}_j &amp; = b_i  &amp; \forall\,i\\
+\sum_j \var{x}_j &amp; = 1 \\
+\var{x}_j &amp; \geq 0&amp; \forall\,j
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\param{c}_j\)</span> are  unit costs, <span class="math notranslate nohighlight">\(\param{A}_{ij}\)</span> represents
+the percentage of chemical element <span class="math notranslate nohighlight">\(i\)</span> contained in a unit of
+scrap <span class="math notranslate nohighlight">\(j\)</span>, and the total quantity produced is assumed to be one unit -
+see the beginning of this chapter for a description of the problem.</p>
+<p>Assume for now that the equation on the total quantity above is redundant
+and can be eliminated without changing the set of feasible
+solutions. By this we mean that this equation is a linear combination
+of the other equations in the model. The most frequent case is when
+the composition matrix <span class="math notranslate nohighlight">\(\param{A}\)</span> contains a complete chemical analysis, i.e. its rows are
+associated to all chemical elements in the blend. In practice this is
+the case when</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_i \param{A}_{ij} &amp;= \sum_i \param{b}_i = 1 &amp; \forall\,j
+\end{align*}</div><p>In this case the blending problem  can be represented as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j \param{c}_j \var{x}_j &amp; \\
+\sum_j \param{A}_{ij} \var{x}_j &amp; = \param{b}_i \\
+\var{x}_j &amp; \geq 0
+\end{align*}</div><p>The dual of this standard linear optimization  problem can be easily
+found, associating a dual variable to  each chemical element:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_i \param{b}_i \var{\lambda}_i &amp; \\
+\sum_i \param{A}_{ij} \var{\lambda}_i &amp; \leq \param{c}_j  &amp; \forall\,j
+\end{align*}</div><p>In order to interpret this model it is useful to refer
+to a numerical example. Consider a blending problem with the following
+data:</p>
+<div class="math notranslate nohighlight">
+\[
+\begin{array}{lrrrrrrrrrr}
+&amp;A&amp;B&amp;C&amp;D&amp;E&amp;F&amp;G&amp;H&amp;I&amp;\text{request} \\  \hline
+\text{Pb}&amp; 10 &amp; 10 &amp; 40 &amp; 60 &amp; 30 &amp; 30 &amp; 30 &amp; 50 &amp; 20 &amp; = 40\\
+\text{Zn} &amp; 10 &amp; 30 &amp; 50 &amp; 30 &amp; 30 &amp; 40 &amp; 20 &amp; 40 &amp; 30 &amp; = 30 \\
+\text{Sn} &amp; 80 &amp; 60 &amp; 10 &amp; 10 &amp; 40 &amp; 30 &amp; 50 &amp; 10 &amp; 50 &amp; = 30 \\ \hline
+\text{Cost}&amp;4.1 &amp; 4.3 &amp; 5.8 &amp; 6.0 &amp; 7.6 &amp; 7.5 &amp; 7.3 &amp; 6.9 &amp; 7.3 &amp; \min
+\end{array}
+\]</div><p>The dual of this problem, in explicit form, is:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max 40 \var{\lambda}_{\texttt{Pb}} + 30 \var{\lambda}_{\texttt{Zn}} +
+30 \var{\lambda}_{\texttt{Sn}} &amp; \\
+10 \var{\lambda}_{\texttt{Pb}} + 10 \var{\lambda}_{\texttt{Zn}} + +
+80 \var{\lambda}_{\texttt{Sn}} &amp; \leq 4.1 &amp; (A) \\
+10 \var{\lambda}_{\texttt{Pb}} + 30 \var{\lambda}_{\texttt{Zn}} + +
+60 \var{\lambda}_{\texttt{Sn}} &amp; \leq 4.3 &amp; (B) \\
+\ldots &amp; &amp;\ldots \\
+20 \var{\lambda}_{\texttt{Pb}} + 30 \var{\lambda}_{\texttt{Zn}} + +
+50 \var{\lambda}_{\texttt{Sn}} &amp; \leq 7.3 &amp; (I)
+\end{align*}</div><p>In order to proceed with an interpretation of this model, in the
+context of blending,  notice  that the primal problem requires the
+minimization of the blend cost. The objective function thus
+represents a monetary value, e.g. €. From  strong duality
+the optimal value of the dual problem, when it exists, is identical to
+that of the primal; it is therefore quite reasonable to assume that
+even for the dual objective function the unit of measurement is monetary.
+The coefficients of the dual objective are
+pure numbers (percentages of chemical elements), thus variables
+<span class="math notranslate nohighlight">\(\var{\lambda}\)</span> represent monetary values. We might
+interpret  the dual as follows: an hypothetical producer of
+pure metals wishes to fix the selling prices of Lead, Tin
+and Zinc. Knowing that the buyer requires  40, 30 and
+30 units of Lead, Zinc, Tin,
+the manufacturer can assume  to be able
+sell exactly 40 units  of Lead, 30 of Zinc and 30
+of Tin. The objective therefore corresponds to the maximization of the
+total revenue, given the prices of pure metal  <span class="math notranslate nohighlight">\(\var{\lambda}_{\texttt{Pb}}, \var{\lambda}_{\texttt{Zn}},
+\var{\lambda}_{\texttt{Sn}}\)</span>.</p>
+<p>For what concerns the constraints, the first one is</p>
+<div class="math notranslate nohighlight">
+\[
+10 \var{\lambda}_{\texttt{Pb}} + 10 \var{\lambda}_{\texttt{Zn}} +
+80 \var{\lambda}_{\texttt{Sn}} \leq 4.1
+\]</div><p>Assuming prices have been chosen for each pure metal, the left hand side
+represents the cost of a blend composed of
+10% Lead, 10% Zinc, 80% Tin: this is the price of a blend
+perfectly analogous to scrap A.
+Thus this constraint represents a competitive price fixing for scrap A: the
+manufacturer sets the price of pure  metals in such a way as to make it
+competitive or  equivalent with respect to one unit of
+type A scrap.
+Similarly, the other inequalities constrain the prices of pure
+metals to be set in order to be competitive with respect to each
+available scrap.
+Thus the dual of the blending problem is
+the problem faced by a producer of pure chemical elements
+who wishes to fix prices in such a way as to maximize the revenues
+while keeping the cost of synthetic equivalents lower than or equal to
+the market price for each scrap.
+So the manufacturer tries to
+persuade the buyer to use  pure metals
+by setting prices which apparently are competitive with those of
+the scrap market. However, duality theory guarantees that the cost
+of the optimal scrap blend is exactly equal to the maximum revenue of
+the producer: there is a perfect balance between supply and demand,
+of course as long as both players, the minimizer and
+the maximizer, know the optimal strategy.</p>
+<p>From the complementary slackness theorem, it can also be observed that,
+if a scrap is contained, at a non zero level, in an optimal blend,
+the corresponding dual constraint should be satisfied with zero
+slack (i.e., it should be <em>active</em>); but since the slack in the dual
+corresponds to  the margin of the
+manufacturer for that scrap, duality  implies that in the optimal solution,
+for every scrap whose purchase is
+worth, the manufacturer must fix the price in such a way that
+the  margin is zero. It is therefore quite evident
+that the optimal objectives will be identical: the manufacturer has the
+possibility to set apparently competitive prices only
+for materials that the blend purchaser would not buy at all.</p>
+<p>Returning to the original blending problem in which  equation
+<span class="math notranslate nohighlight">\(\sum_j \var{x}_j=1\)</span> is included, we may find an interpretation in
+the following way. Assume that the rows of <span class="math notranslate nohighlight">\(\param{A}\)</span> (and of <span class="math notranslate nohighlight">\(\param{b}\)</span>)
+<em>do not</em> sum to 1, otherwise the constraint would be
+redundant. The linear optimization dual of the problem is now</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_i \param{b}_i \var{\lambda}_i  + \var{\mu}\\
+\sum_i \param{A}_{ij} \var{\lambda}_i + \var{\mu }&amp; \leq \param{c}_j  &amp; \forall\,j
+\end{align*}</div><p>where a single dual variable <span class="math notranslate nohighlight">\(\var{\mu}\)</span> has been introduced as the
+Lagrange multiplier of the total request constraint. The original
+problem can be re-written, in equivalent form, by substituting the
+last equation with a linear combination:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j \param{c}_j \var{x}_j &amp; \\
+\sum_j \param{A}_{ij} \var{x}_j &amp; = \param{b}_i \\
+\sum_j (1 - \sum_i \param{A}_{ij}) \var{x}_j &amp; = 1 -\sum_i \param{b}_i \\
+\var{x}_j &amp; \geq 0
+\end{align*}</div><p>The last equation corresponds to the chemical balance of the remaining elements in the
+blend. The dual of this problem, introducing a variable
+<span class="math notranslate nohighlight">\(\var{\lambda}^\prime_{m+1}\)</span> for the last equation, is</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_i \param{b}_i \var{\lambda}^\prime_i  + \var{\lambda}^\prime_{m+1} (1
+- \sum_i \param{b}_i)\\
+  \sum_i \param{A}_{ij} \var{\lambda}^\prime_i + (1-\sum_i \param{A}_{ij}) \var{\lambda}^\prime_{m+1}&amp; \leq \param{c}_j  &amp; \forall\,j
+  \end{align*}</div><p>or, equivalently,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_i \param{b}_i (\var{\lambda}^\prime_i- \var{\lambda}^\prime_{m+1})  + \var{\lambda}^\prime_{m+1} \\
+\sum_i \param{A}_{ij} (\var{\lambda}^\prime_i - \var{\lambda}^\prime_{m+1}) + \var{\lambda}^\prime_{m+1}&amp; \leq \param{c}_j  &amp; \forall\,j
+\end{align*}</div><p>Comparing with the dual blending problem it is immediately seen that
+these dual formulations are identical provided we assume</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{\mu} &amp; = \var{\lambda}^\prime_{m+1} \\
+\var{\lambda}_i &amp; = \var{\lambda}^\prime_i  -\var{\mu}
+\end{align*}</div><p>Thus the dual of the generic blending problem can be interpreted
+exactly as before, provided that we associate a selling price also
+to the “remainder”, i.e. to a dummy chemical element which
+corresponds to what remains, in each scrap analysis, to reach 100%
+of the analysis.
+This sell price is the dual multiplier associated to the total
+requirement equation.
+The prices  of the ordinary chemical elements in the two
+formulations just differ by this quantity.</p>
+</section>
+<section id="dual-of-the-diet-model">
+<h2><span class="section-number">4.2. </span>Dual of the diet model<a class="headerlink" href="#dual-of-the-diet-model" title="Link to this heading">¶</a></h2>
+<p>A diet model is a blending problem,
+although in general
+there is no requirement on the total quantity. This has been already
+observed before, so no change is required. Moreover, in a typical diet
+problem  the constraints on nutrients take the form of inequalities:
+a  <span class="math notranslate nohighlight">\(\geq\)</span> inequality will be imposed
+for useful nutrients, while a <span class="math notranslate nohighlight">\(\leq\)</span> one will be used for
+harmful ones. Sometimes, both lower and upper bounds are imposed for
+some nutrient.
+The general diet model can be represented
+as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j \param{c}_j \var{x}_j &amp; \\
+\sum_j \param{A}_{ij} \var{x}_j &amp; \geq \param{\ell}_i &amp; \forall \, i \\
+\sum_j \param{A}_{ij} \var{x}_j &amp; \leq \param{u}_i &amp; \forall \, i \\
+\var{x}_j &amp; \geq 0
+\end{align*}</div><p>Denoting by <span class="math notranslate nohighlight">\(\var{\lambda}_i\)</span> and
+<span class="math notranslate nohighlight">\(\mathvar{\mu}_i\)</span>, respectively, the dual variables associated to
+the first and second group of constraints,
+the dual of the diet model can be written as:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_i (\mathvar{\lambda}_i \param{\ell}_i + \mathvar{\mu}_i \param{u}_i) &amp; \\
+\sum_i \param{A}_{ij} (\mathvar{\lambda}_i + \mathvar{\mu}_i) &amp; \leq \param{c}_j &amp; \forall \, j  \\
+\mathvar{\lambda}_i &amp; \geq 0 &amp; \forall \, i \\
+\mathvar{\mu}_i &amp; \leq 0 &amp; \forall \, i
+\end{align*}</div><p>It is understood that when one of the two limitations is absent also
+the corresponding dual variable does not enter the dual
+formulation. The interpretation is similar to that of the blending
+problem. We might notice that, assuming <span class="math notranslate nohighlight">\(\param{\ell}_i &lt; \param{u}_i\)</span>, in the optimal
+solution either <span class="math notranslate nohighlight">\(\mathvar{\lambda}_i = 0\)</span> or <span class="math notranslate nohighlight">\(\mathvar{\mu}_i =0\)</span>
+thanks to complementarity. Thus we may easily consider
+<span class="math notranslate nohighlight">\(\mathvar{\lambda}_i + \mathvar{\mu}_i\)</span> as the selling price of
+nutrient <span class="math notranslate nohighlight">\(i\)</span>. This price will be non negative for positive nutrients
+(those associated with a minimum requirement), while for harmful
+nutrients the selling price will be non positive: in order to “sell”
+those nutrients we should give them for free or even as a discount on
+the total synthetic diet cost.   The constraints in the dual thus just
+represent the usual competitiveness constraints of the seller of pure
+nutrients who would like to convince the diet buyer to choose pure
+nutrients in place of real foods. In the objective function, depending
+on the primal constraint, we will have either a price
+<span class="math notranslate nohighlight">\(\mathvar{\lambda}_i \param{\ell}_i\)</span> corresponding to selling <span class="math notranslate nohighlight">\(\param{\ell}_i\)</span> units
+of useful nutrients or a price <span class="math notranslate nohighlight">\(\mathvar{\mu}_i \param{u}_i\)</span> associated to the
+discount associated to the  inclusion of <span class="math notranslate nohighlight">\(\param{u}_i\)</span> units of harmful
+nutrients, or 0, for those nutrients whose contents, in the optimal
+diet, is neither at the lower not at the upper bound.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="ProductMixProblems.html" title="Previous document"><span class="section-number">3. </span>Product Mix Models</a>
+        </li>
+        <li>
+          <a href="MultiPeriodModels.html" title="Next document"><span class="section-number">5. </span>Multi Period Models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">4. Blending Models</a><ul>
+<li><a class="reference internal" href="#dual-of-blending-problems">4.1. Dual of  blending problems</a></li>
+<li><a class="reference internal" href="#dual-of-the-diet-model">4.2. Dual of the diet model</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="ProductMixProblems.html" title="previous chapter"><span class="section-number">3. </span>Product Mix Models</a></li>
+      <li>Next: <a href="MultiPeriodModels.html" title="next chapter"><span class="section-number">5. </span>Multi Period Models</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/BlendingModels.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

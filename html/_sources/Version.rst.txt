@@ -1,0 +1,35 @@
+===============
+Version history
+===============
+
+v.0.1 February 28, 2021: first public release of initial chapters
+
+v.0.2 March 15, 2021: first release of chapters on network flows
+
+v.0.3 March 30, 2021: first release of chapters on objectives
+
+v.0.4 April 8, 2021: added a chapter on modeling with binary variables
+
+v.0.5 April 30, 2021: added chapters on fixed charge and  knapsack problems
+
+v.0.6 May 7, 2021: added chapter on set covering
+
+v.0.7 May 14, 2021: added chapter on the TSP problem
+
+v.0.8 May 28, 2021: added chapter on the quadratic optimization and LP
+games; changed math to MathJax
+
+v.0.9 February, 2022: complete re-reading, small modifications
+
+v.0.99 August, 2023: general re-reading, error correction, added appendix and
+arc routing chapters, preparing for a printed version
+
+v. 1.0 February 2024: re-reading, added Vehicle Routing
+   chapter. Printed version now available
+
+v. 1.01 March 25, 2024: some errors corrected on the on line version
+
+v. 1.02 April 4, 2024: further errors corrected; errata corrige added
+   
+.. include:: closing.rst
+

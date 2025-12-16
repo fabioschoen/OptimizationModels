@@ -1,0 +1,383 @@
+.. include:: preamble.rst
+
+============
+Maximum Flow
+============
+ 
+The  maximum flow problem concerns finding
+a *feasible* flow in a network (i.e., a flow which satisfies upper and
+lower bounds on all arcs as well as the required balances at nodes)  in
+such a way as to maximize the total  
+quantity of flow entering or circulating in the network. While in  the
+formulation of the minimum cost path  problem a single unit of flow
+was considered, here
+the amount of the circulating flow is unknown and it is the objective
+we would like to maximize.
+As in the minimum cost path problem, also here it is assumed that the
+balance at every node is zero, with the only exception of the source
+and destination.
+
+Before 
+formulating the problem it is necessary to define 
+the quantity of flow circulating in a network. Assume
+there exist  a unique source and destination nodes, and that  the source
+has only outgoing arcs, while the destination has only entering arcs.
+The :index:`value` of the flow  circulating in such a  network is defined as the sum of
+flows out from the source.
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{val} & = \sum_{j: (s,j) \in E} \var{f}_{sj}
+   \end{align*}
+
+It is easy to proof that flow conservation law
+implies that this quantity is also equal to the total flow entering
+the destination node
+
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{val} & = \sum_{i: (i,t) \in E} \var{f}_{it}
+   \end{align*}
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=2.6, auto,swap]
+   \newcommand{\tvar}[1]{{\color{red}{\small{\mathbf{#1}}}}}
+   \newcommand{\tparam}[1]{{\color{blue}{#1}}}
+   \foreach \x / \y / \name in {0/1/s,1/2/A,1/0/B,2/1/t,0/-.5/i,2/-.5/j}
+   \node[vertex] (\name) at (\x,\y) {$\name$};
+   \foreach \source/\dest/\flow/\cap in
+   {s/A/4/4,s/B/5/8,A/B/2/5,A/t/2/7,B/t/7/7,i/j/$\tvar{f}_{ij}$/$\tparam{Fmax}_{ij}$} 
+   \path[arc] (\source) -- node[weight] {\flow:\cap} (\dest); 
+   \end{tikzpicture}
+
+In the network above labels represent a feasible flow and the upper
+bound (or capacity) on each arc. The total flow out from the source
+node is 9 (4 units on :math:`(s,A)`, 5 on  :math:`(s,A)`). The
+same quantity of flow can be measured at the destination node
+:math:`t`, with  a total of 9 units entering.
+
+ 
+Formally the problem can be represented as follows
+
+.. role:: model
+   :class: smallcaps
+	   
+:model: Maximum flow
+
+|
+   :model:`Sets:`
+|
+
+   * :math:`\set{V}`: nodes of the graph
+   * :math:`\set{E} \subseteq \set{V} \times \set{V}`: arcs
+
+|
+   :model:`Parameters:`
+|
+
+   * :math:`s \in V`: source node
+   * :math:`t \in V`: destination node
+   * :math:`\param{Fmin}_{ij}`: lower  capacity of
+     arc :math:`(i, j) \in E` - frequently this is equal to 0
+   * :math:`\param{Fmax}_{ij}`: maximum capacity of arc :math:`(i, j) \in E`
+
+|
+   :model:`Variables:`
+|
+     
+   * :math:`\var{f}_{ij}`: flow on arc :math:`(i, j)`
+   * :math:`\var{val}`: value of the flow
+
+|
+   :model:`Constraints:`
+|
+
+   * Flow conservation:
+
+   .. math::
+      :nowrap:
+
+      \begin{align*}
+      \sum_{(v, j) \in E} \var{f}_{vj} - \sum_{(i, v) \in E}
+      \var{f}_{iv} &=
+      \left\{
+      \begin{array}{rl}
+      \var{val} & \text{ if } v = s \cr
+      -\var{val} & \text{ if } v = t \cr
+      0 & \text{ otherwise}
+      \end{array}
+      \right. & \forall\, v \in V
+      \end{align*}
+
+   For nodes other than source and
+   destination this constraint represents  flow conservation:
+   total flow out from each node must be equal to the total incoming flow.
+   For the source node the constraint corresponds to  the definition
+   of the variable :math:`\var{val}` as the value of the flow.
+   Similarly  for the equation associated with the terminal node.
+   
+   * Bounds on the flows:
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      \param{Fmin}_{ij} \leq \var{f}_{ij} & \leq \param{Fmax}_{ij} &
+      \forall \, (i, j) \in E
+      \end{align*}
+
+|
+   :model:`Objective:`  maximize the flow value:
+|
+
+   .. math::
+      :nowrap:
+
+      \[
+      \max \var{val}
+      \]
+
+If there were multiple source nodes (or multiple
+destinations) in the network, it would be easy to
+build an equivalent single source -- single destination one 
+adding a dummy source node connected to
+each source node and a dummy destination node with arcs entering from
+all destinations; these added arcs should have no bound on maximum
+capacity.
+
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=2.6, auto,swap]
+   \foreach \x / \y / \name in {1/0/s1,2/0/A,3/0/t3,1/1/s2,2/1/t1,3/1/t2}
+   \node[vertex] (\name) at (\x,\y) {$\name$};
+   \foreach \x / \y / \name in {0.5/0/S1,1/1.5/S2,2/1.5/T1,3.5/0/T3,3.5/1/T2}
+   \node  (\name) at (\x,\y) {};
+   \foreach \source/\dest/\cap in
+   {s1/A/5,s1/t1/3,s1/s2/4,s2/t1/6,A/t1/3,A/t3/2,A/t2/4} 
+   \path[arc] (\source) -- node[weight] {\cap} (\dest); 
+   \foreach \source/\dest in
+   {S1/s1,t3/T3,S2/s2,t1/T1,t2/T2,t3/T3} 
+   \path[arc] (\source) -- node {} (\dest); 
+   \end{tikzpicture}
+
+Adding two dummy nodes the problem is equivalent to finding a maximum
+flow in the following network:
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=2.4, auto,swap]
+   \foreach \x / \y / \name in {0/0.5/s,3.5/1/t,1/0/s1,2/0/A,3/0.5/t3,1/1/s2,2/1/t1,3/0/t2}
+   \node[vertex] (\name) at (\x,\y) {$\name$};
+   %\foreach \x / \y / \name in {0.5/0/S1,1/1.5/S2,2/1.5/T1,3.5/0/T3,3.5/1/T2}
+   %node[vertex]  (\name) at (\x,\y) {};
+   \foreach \source/\dest/\cap in
+   {s1/A/5,s1/t1/3,s1/s2/4,s2/t1/6,A/t1/3,A/t3/2,A/t2/4} 
+   \path[arc] (\source) -- node[weight] {\cap} (\dest); 
+   \foreach \source/\dest in
+   {s/s1,t3/t,s/s2,t1/t,t2/t,t3/t} 
+   \path[arc] (\source) -- node[weight] {$\infty$} (\dest); 
+   \end{tikzpicture}
+
+   
+An alternative but equivalent way to define the maximum  flow problem
+is to connect the terminal node 
+back to the source node through an arc with unlimited maximum capacity:
+by imposing a zero flow balance on all nodes, including
+source and terminal, we get a "closed" network
+in which the circulating flow is conserved at every node; the value of
+the flow is the flow along the fictitious arc :math:`(t, s)` .
+ 
+Consider the example introduced at the beginning of this section: 
+we might represent the same example also as:
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=2.6, auto,swap]
+   \foreach \x / \y / \name in {0/1/s,1/2/A,1/0/B,2/1/t}
+   \node[vertex] (\name) at (\x,\y) {\name};
+   \foreach \source/\dest/\flow/\cap in
+   {s/A/4/4,s/B/5/8,A/B/2/5,A/t/2/7,B/t/7/7} 
+   \path[arc] (\source) -- node[weight] {\flow:\cap} (\dest);
+   \path[->,very thick,blue] (t) edge [bend right] node[weight] {9:$\infty$} (s);
+   \end{tikzpicture}
+
+where an arc has been added from the destination to the source node
+carrying all of the flow. A network of this kind is called  *circulation*
+network, and it is characterized by the fact that the balance is zero
+everywhere.
+
+The maximum flow model finds many direct applications to, e.g.,
+water  distribution networks, urban traffic flows, the design of
+emergency exits from public buildings.
+
+It is important to observe that the maximum flow model is indeed
+a special case of the minimum cost flow model: in fact,
+if we consider variable :math:`\var{val}` as the value of a flow
+along  arc :math:`(t, s)`, the constraints are the standard ones of the
+flow problems (with zero balance on all nodes); the objective function
+to be minimized can be associated to the maximum flow by imposing zero
+cost on every arc, with the exception of the fictitious
+arc :math:`(t, s)` to which a unit cost -1 is assigned.
+
+Denoting as usual by :math:`A` the incidence matrix of the graph, the
+problem can be written as
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \max_{\var{f},\var{val} } \var{val} \\
+   A \var{f} + (\mathbf{e}_t-\mathbf{e}_s) \var{val}  & = 0  \\
+   \param{Fmin } \leq \var{f} & \leq \param{Fmax}
+   \end{align*}
+
+From this equivalence it is 
+immediately seen that if the minimum and maximum capacities on arcs
+are integer valued, then all  basic feasible  solutions are integers, and, in particular,
+an optimal basic solution will be integer.
+
+--------------------------------
+Dual of the maximum flow problem
+--------------------------------
+
+The standard maximum flow problem
+contains two groups of constraints,  one corresponding to
+flow conservation, with an equation for each node of the
+network; the second one, associated to the maximum capacity,  with an
+inequality for each arc (we will omit minimum capacity in this part,
+assuming a simple non negativity constraint for every flow variable).
+
+In the dual there will be, thus, two groups of variables,
+associated respectively with the nodes and the arcs of the
+graph. Denoting by
+:math:`\mathvar{\lambda}` and :math:`\mathvar{\gamma}` the dual
+variables associated, respectively, with the balance and maximum flow
+constraints, the following dual is quite easily obtained:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_{(i, j) \in E} \param{Fmax}_{ij} \mathvar{\gamma}_{ij} &
+   \label{eq: dual-maxflow} \\ 
+   \mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} - \mathvar{\gamma}_{ij}
+   & \leq0 & \forall \, (i, j) & \in E \nonumber \\ 
+   \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t} & \geq1 \nonumber \\
+   \mathvar{\gamma}_{ij} & \geq0 & \forall \, (i, j) & \in E \nonumber
+   \end{align*}
+
+A possible interpretation of this dual is the following.
+Consider the design of an electrical circuit in which it is required
+to determine the maximum voltages associated with each arc. In
+particular, assume that  a tension with value  1 is applied
+between  nodes :math:`s` and :math:`t`; we wish to find an
+upper bound :math:`\mathvar{\gamma}_{ij}` to the voltage at the
+extremes of each arc. The cost of  each arc 
+is assumed to grow linearly with the difference of potential (or
+tension), with a coefficient
+:math:`\param{Fmax}_{ij}`.
+
+It can be shown that every basic feasible solutions of this problem, and, thus, also
+at least one optimal solution, is binary.
+
+Furthermore, it can be shown that in each basic  solution,
+the set  nodes of the graph for which 
+:math:`\mathvar{\lambda}_{i} = 1`  are associated to a so called
+:math:`s - t` - section. An :index:`section` is defined as
+a bi--partition of the set of nodes :math:`(W,\overline{W}): W \subset V`
+that separates the source
+from the terminal: :math:`s \in W, t \not\in W`.
+
+Any such bi-partition also "cuts" a certain
+number of arcs, some of which are "forward" arcs (with the first node
+in set :math:`W` and the other outside this set). Forward arcs cut by
+the bi-partition are arcs :math:`(i,j) \in E` such
+that :math:`i \in W, j \not\in W`.   Analogously, we might define
+"backward" arcs characterized by   :math:`i \not\in W, j \in W`.
+
+We define the  :index:`capacity`  of a
+cut as  the sum of the maximum capacities of the forward arcs
+across the section.
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \textrm{Cap}(W,\overline{W}) & = \sum_{(i,j) \in E: i \in W, j \not\in
+   W} \param{Fmax}_{i,j}
+   \end{align*}
+
+It is possible, although not trivial, to see  that the dual of the 
+maximum flow problem corresponds to the problem of determining a cut of
+minimum capacity; this cut is indeed a "bottleneck" in the
+network. That is, in the optimal solution  variables :math:`\mathvar{\lambda}`
+whose optimal value is equal to one  correspond to the indicator function of a
+minimum capacity
+bi-partition of nodes; the  arcs associated
+to variables :math:`\mathvar{\gamma}`  are the "forward" arcs
+from that section. From the theory on maximum flows, it can be proven
+that in an optimal cut all forward arcs carry the maximum possible
+flow, while all backward arcs are at their minimum. Extending the
+definition of flow through a section as the difference between the
+flows on forward arcs and the flows on backward arcs, it can be shown
+that this flow is constant and equal to the value of the flow through
+the network. The following figure pictorially represents the
+situation.
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=2.25]
+   \foreach \x / \y / \name / \colnode in
+   {0/1/s/green!25,1/2/A/green!25,1/0/B/green!25,3/2/C/green!25,3/0/D/red!50,4/1/t/red!50} 
+   \node[vertex,\colnode] (\name) at (\x,\y) {\textcolor{black}{\name}};
+   \foreach \source /  \dest / \flow / \capac in
+   {s/A/2/10,s/B/8/8,A/B/2/3,A/C/0/4,B/D/2/2,B/C/8/9,C/t/8/8,D/C/0/3,D/t/2/4} 
+   \path[arc] (\source) -- node[weight] {$\flow$ : \capac} (\dest); 
+   \node[vertex] (i) at (1,-1)  {$i$};
+   \node[vertex] (j) at (3,-1) {$j$};
+   \path[arc] (i) -- node[weight] {$f_{ij} : Fmax_{ij}$} (j);
+   \path[arc,red] (B) -- node[weight]  {\textcolor{black}{2 : 2}} (D);
+   \path[arc,red] (C) -- node[weight]  {\textcolor{black}{8 : 8}}(t);
+   \path[arc,yellow] (D)  -- node[weight]  {\textcolor{black}{0 : 3}} (C);
+   \draw[dotted] (.5,-1) -- (3.5,2);
+   \end{tikzpicture}
+
+Here the optimal (maximum) flow is 10 units; :math:`\{s,A,B,C\}` is
+a minimum capacity
+section, with forward arcs
+:math:`(C,t),(B,t)`, both carrying the maximum possible flow, and
+backward arc :math:`(D,C)` with a null flow. The capacity of this
+cut is 10 and it is quite evident that no additional unit of flow is
+feasible, as this cut limits the overall flow to a maximum of 10.
+
+
+The solution to the above example was found by solving a standard
+maximum flow problem, coded, e.g., as follows:
+   
+.. literalinclude:: AMPL/maxflow.mod
+   :caption: maxflow.mod
+   :language: ampl
+
+with the following data:
+   
+.. literalinclude:: AMPL/maxflow.dat
+   :caption: maxflow.dat
+   :language: ampl
+
+Here, again, it is worth remembering that solving maximum flow
+problems with linear optimization solvers is in general not a
+suggested practice, as much more advanced specialized algorithms do
+exist. However, being able to model this problem as a linear
+optimization one, might turn out to be  useful when dealing with more
+general applications which include a maximum flow component as a part
+of a larger model.
+   
+.. include:: closing.rst
+

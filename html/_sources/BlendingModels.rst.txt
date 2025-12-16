@@ -1,0 +1,686 @@
+.. include:: preamble.rst
+
+===============
+Blending Models
+===============
+
+Blending models deal with situations in which some raw material has to
+be  mixed in order to obtain a blend with specific quality
+requirements. An example has been already presented in the
+introduction for the case of blending aluminum from scrap (see
+:ref:`application: Blending aluminum scrap<blending_al_scrap>`).  
+ 
+The following table summarizes some of the most typical applications
+of blending models; each application is identified by the input
+"materials", the quality to be taken into consideration, the desired
+output.
+
+.. math::
+   :nowrap:
+
+   \begin{align*}   
+   \begin{array}{ll}
+   inputs & quality \\ \hline
+   foods & proteins, vitamins, fats, carbohydrates, \dots  \\
+   feed & proteins, vitamins, fats, carbohydrates, \dots 
+   \\
+   crude\, oil & octane\, number, volatility,
+   lead \\
+   scrap, pure\, metals & Fe, Si,
+   Mg, Mn, Al, \dots  \\
+   grapes & vintage, region\, of\, origin, grape\, variety 
+   \end{array}
+   \end{align*}
+
+A  classic and well--known example of blending  is the so-called
+:index:`diet problem`; 
+this is also the first example of a non trivial 
+linear optimization problem  solved by means of the simplex method
+(see :cite:`dantzig_linear_1963`, :cite:`george_b_dantzig_diet_1990`).
+
+.. note::
+   In the early days of linear optimization, the father of the simplex
+   method, George Dantzig, solved a  problem originally proposed to him by George
+   Stigler (1982 Nobel prize winner in Economics) in the following
+   form:
+   
+   *"For a moderately active
+   man weighing 154 pounds, how much of each of 77 foods should be eaten
+   on a daily basis so that the man's intake of nine nutrients will be
+   at least equal to the recommended dietary allowances (RDAs) suggested
+   by the National Research Council in 1943, with the cost of the diet
+   being minimal?"*
+
+A list of available foods is given, along with associated
+characteristics, like  purchase price and 
+nutritional characteristics (vitamins, proteins, carbohydrates, fat,
+calories, iron, ...). It is required to find  a  minimum cost food blend 
+which satisfies
+nutritional requirements (upper and/or lower bounds on each nutritional characteristics). 
+A blending  model specialized for diets can be represented as follows:
+
+.. literalinclude:: AMPL/diet.mod
+   :caption: diet.mod
+   :language: ampl
+
+
+It can be immediately seen that, apart from some name changes included
+to make
+the model more readable, this is exactly the blending problem
+introduced in section :ref:`Structured linear optimization models`. The main
+difference is that, usually, in diet problems there is no constraint
+on the total quantity to be produced. However, a similar constraint
+might be needed when planning blends different from human food.
+In the above model some parameters default to 0, for lower bounds, or
+to :math:`\infty`, for upper bounds. An infinite upper bound means
+that the corresponding constraint is absent from the model.
+
+Usually, the objective in blending models is
+cost minimization; however,  sometimes the objective  might be of a qualitative nature:
+for example, in a diet model, we might wish to minimize
+caloric contents, or, in  aluminum scrap blending, we might wish to
+minimize  iron.  It's easy to modify the objective by suitably
+changing the cost parameter.
+
+When blending certain quantities of materials, each of them
+additively  contributes to the quality of the blend.
+E.g., if   100g of a given kind of pasta contains 73g  of
+carbohydrates and 14g  of proteins,  
+while  100g of Parmesan cheese contains 15g of carbohydrate and 28g
+of proteins, in a blend of 100g of pasta and 20g of cheese the
+carbohydrate contents will be
+
+.. math::
+   :nowrap:
+   
+   \[
+   \frac{100}{100} \times 73 + \frac{20}{100} \times 15 = 76\textrm{g}
+   \]
+   
+while for what concerns proteins the blend will contain
+
+.. math::
+   :nowrap:
+   
+   \[
+   \frac{100}{100} \times 14 + \frac{20}{100} \times 28 = 19.6\textrm{g}
+   \]
+
+Some attention needs to be paid for the cases in which
+quality requirements are expressed not in terms of absolute quantities
+but of percentages. As an example, in an aluminum bending problem we
+usually require that iron is no more than 3%. Of course if a
+specific quantity, say 2000 kg, has to be produced, this can be
+readily transformed into an an absolute requirement: the blend should
+contain at most 60 kg of iron (3% of 2000). However when the
+quantity to be produced is itself a variable, the exact requirements
+cannot be determined *a priori*. 
+
+When the lower and upper bounds :math:`\param{minQual},
+\param{maxQual}` refer to a percentage, denoting by :math:`\var{x}`
+the main variable of the problem and by :math:`\param{Q}` the matrix
+containing the composition of foods, a formulation of the quality requirement
+might be:
+
+.. math::
+   :nowrap:
+   
+   \begin{align*}
+   \param{minQual}_i \leq \sum_{j \in \set{FOODS}} \param{Q}_{ij}
+   \frac{\var{x}_j} {\sum_{k \in \set{FOODS}} 
+   \var{x}_k} \leq \param{maxQual}_i 
+   \end{align*}
+
+However, in  this constraint some variables appear in the denominator
+and, therefore, the model is no more linear, something that, if
+at all possible, is strongly advisable to avoid. This constraint
+can be  easily  transformed into a linear equivalent one by
+multiplying both members by the denominator:
+
+.. math::
+   :nowrap:
+   
+   \begin{align*}
+   \param{minQual}_i \sum_{k \in \set{FOODS}} \var{x}_k \leq \sum_{j
+   \in \set{FOODS}} \param{Q}_{ij} \var{x}_j 
+   \leq \param{maxQual}_i \sum_{k \in \set{FOODS}} \var{x}_k
+   \end{align*}
+   
+or, equivalently,
+
+.. math::
+   :nowrap:
+   
+   \begin{align*}
+   \sum_{j \in \set{FOODS}} (\param{Q}_{ij} - \param{minQual}_i) \var{x}_j & \geq 0 \\
+   \sum_{j \in \set{FOODS}} (\param{maxQual}_i- \param{Q}_{ij})
+   \var{x}_j & \geq 0.
+   \end{align*}
+   
+The original Stigler  diet model included a list of 77 foods
+and nine types of nutrients, and was considered in order to find the
+minimal cost diet for subsistence. The diet problem was resolved by hand by a
+group of nine researchers in 1947; its solution required 120 man-days of
+calculation.  This model can
+now be solved to optimality  in a fraction of a second on any personal
+computer with free open source solvers.
+ 
+A  data file with some of the foods and the nutritional specifications from the original
+paper by Stigler  is reported in the following piece of code.
+Of course the example has the sole purpose of illustrating the
+modeling methodology and should not be considered as
+a realistic example of a diet model. As Stigler wrote on his paper, 
+"No one recommends these diets for anyone, let alone everyone".
+   
+.. literalinclude:: AMPL/StiglerSmallDiet.dat
+   :caption: StiglerSmallDiet.dat
+   :language: ampl
+
+Solving the diet problem with these data produces
+the following result:
+
+.. literalinclude:: AMPL/StiglerSmallDiet.out
+   :caption: StiglerSmallDiet.out
+   :language: ampl
+
+The minimum cost diet has a  total yearly
+cost of 39.6889US$ (a very low price indeed, even considering it is
+referred to 1939).
+
+From the above table the nutritional contents of this "diet" can be
+observed along with the imposed lower bounds; it is evident that some
+nutrients are expensive and, thus, in the optimal diet they appear at
+their lower bound (Calcium, Calories, Vitamins A and C); others, on the
+contrary, are abundant in the diet, significantly over the lower
+bound. 
+
+Diets built in this way suffer, typically, from a large set of
+defects. Sometimes it happens that a food appears in too large daily
+quantities (something we can easily put a remedy to by imposing an
+upper bound on the variables); frequently, as this case confirms, 
+only a very small set of different foods appear in the solution.
+Moreover,
+it is usually undesirable to have non-integer values in the solution, as
+it is not possible to buy fractions of a single unit  for each
+food. This kind of constraints usually require the introduction of
+binary variables, a topic we will introduce later in the chapter devoted
+to :ref:`Mixed Integer Linear Models`.
+     
+All of the above are constraints which we would like to add to the
+basic model in order to obtain an acceptable diet. By the way, this
+example shows that modeling is usually performed in iterative
+incremental steps: a simple model is formulated and solved, than the
+solution is critically analyzed and more refined models are possibly
+built until, eventually, the solution turns out to satisfy all of the requirements.
+
+Consider the toy diet example below:
+
+.. literalinclude:: AMPL/diet.dat
+   :caption:
+   :lines: 1-10
+
+...
+
+.. literalinclude:: AMPL/diet.dat
+   :lines: 64-108
+
+...
+
+.. literalinclude:: AMPL/diet.dat
+   :lines: 201-227
+
+...
+
+.. literalinclude:: AMPL/diet.dat
+   :lines: 278-280
+
+The minimum cost diet turns out to be
+
+.. code-block:: python
+		
+   Buy [*] :=
+     "1% Lowfat Milk"   1.84868
+     "Cheerios"   2.26212
+     "Cheeseburger"   1.83187
+     "Chunky Chicken Salad"   0.0304813
+     "Hamburger"   0.24392
+     "Honey"  15.511
+     "Orange Juice"   0.408322
+     "Sweet 'N Sour Sauce"   4.32537
+   totalcost = 5.367956845
+
+
+Even in a toy example like this one we can immediately see that this
+proposal is not acceptable; let us, for example, add a maximum of 2
+portions per food. The result changes as follows
+
+.. code-block:: python
+		
+   Buy [*] :=
+     "Barbeque Sauce"  2
+     "Cheerios"  1.81106
+     "Chocolate Shake"  2
+     "Chunky Chicken Salad"  0.212507
+     "H-C Orange Drink (large)"  0.73578
+     "Hamburger"  1.82403
+     "Honey"  2
+     "Orange Juice"  0.326808
+     "Strawberry Shake"  0.189541
+     "Sweet "N Sour Sauce"  2
+   totalcost = 7.168394112
+
+As it can be  easily guessed,
+additional or more strict  constraints usually imply a cost
+increase. It is also worth observing that the request of an upper bound
+led to a modification not only in the quantity of the foods of the
+original solution, but also in the composition of the optimal diet,
+with new foods entering the blend.
+
+Imposing now integrality we obtain
+
+.. code-block:: python
+		
+   Buy [*] :=
+     "1% Lowfat Milk"  1
+     "Barbeque Sauce"  2
+     "Cheerios"  1
+     "Chocolate Shake"  1
+     "Hamburger"  1
+     "Honey"  1
+     "Orange Juice"  1
+     "Strawberry Shake"  2
+     "Sweet "N Sour Sauce"  2
+     "Wheaties"  2
+   totalcost =  8.45
+
+with a  cost 8.45, which, again, is higher than the previous one.
+We observe that the integer solution is not obtained by 
+rounding the fractional ones, but by a quite different mix.
+  
+The model presented here is so elementary  to be, in
+practice, of little practical use; however, it may be 
+the basis for building more
+realistic ones. It is worth recalling that a slightly enriched version
+of the diet problem has been used, with success, in :cite:`ABW2022` to
+optimize food baskets for distribution to fight hunger. In cooperation
+with th World Food Program, a tool based also on the diet model has
+saved millions of lives.
+
+One of the constraints that often appears in real diets
+is  a limitation on the amount of
+some types of fats, both in absolute terms or as a percentage of other
+kinds of fat. When the requirement is absolute, then it can be modeled
+as above; when however it is relative, some care has to be taken.
+As an example, in a balanced diet it might be required that
+the calories from fat do not exceed 30% of the total calories.
+Based on available  data on the amount of calories from
+fat and the total for each food, the constraint
+is easily expressed as a linear inequality:
+
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \sum_{j \in \set{FOODS}} \param{CaloriesFromFat}_{j} \var{x}_{j}
+   \leq \frac{30}{100} \sum_{j \in \set{FOODS}} \param{Calories}_{j}
+   \var{x}_{j}
+   \end{align*}
+ 
+Many other nutritional requirements can be expressed in a similar way;
+however, it is not always possible, within the framework of linear
+optimization, to extend the model to account for different
+requirements. As an example, it frequently happens that the optimal
+diet consists of only a tiny number of different foods. This is a
+trivial consequence of the Fundamental Theorem of Linear Optimization
+and is connected with the fact that the solution returned by most
+solvers is a *basic* feasible solution. Imposing a threshold on the
+number of different foods  in the diet cannot be made in a linear
+optimization model, although it is quite easily done with the
+introduction of binary variables, as we will see.
+In chapter :ref:`Mixed Integer Linear Models` we will present modeling
+techniques  which 
+allow for the  inclusion of similar constraints, as well as other, more general, logical ones.
+Constraints like, e.g., "if the diet prescribes to use food A, then it must not contain food B" or "either A
+or B should be in the diet, but not both", or "either food A is
+not part of the optimal diet, or its quantity must be at least 2 portions" can indeed be
+formulated through linear models with binary variables and "logical
+constraints".
+Suitable models will be presented in
+section :ref:`Using binary variables in logical constraints`. 
+ 
+The example just described might also be extended  over a time horizon: 
+in this case each variable  will have an additional index
+associated to each day or time period;  there might be constraints on quality related
+to each single day as well as constraints on longer periods (e.g., the
+total calories  should not be more than, say, :math:`3\,000` per
+day, while they should be no more than :math:`2\,500`, on average, per
+week). In a multi-period scenario, moreover, there can be different
+costs per day or different availability of foods. 
+
+It is also important to observe that, frequently, in blending problems
+costs are not linear but *piece-wise linear*, with decreasing slope. This
+way discounts for large quantities are included in the model.  A brief
+introduction on modeling techniques for piece-wise linear functions
+will be presented in section :ref:`Minimax problems`.
+
+Another observation concerns data quality:
+frequently most data
+(nutritional contents, chemical composition) are just
+estimates of real data, corresponding  to the composition of an "average"
+unit of material or food. The actual contents can be considered as the realization
+of a random variable.
+When some information is available or can be assumed on the 
+probability distribution of these data, 
+stochastic models can be considered, in which
+probabilistic constraints can be added. An example might be the
+requirement that the contents of iron in a blend should be no more
+than 2% with probability at least 98%. A very short introduction to the
+modeling aspects of probabilistic
+constraints will be given in section :ref:`sect:plstoc`. Taking
+into account the distribution of data, and, in particular, variance,
+can lead to much more robust and reasonable decisions.
+
+--------------------------
+Dual of  blending problems
+--------------------------
+
+The structure of many linear blending problems
+is that of a standard linear optimization problems, with equations for
+quality contents and, possibly, an equation associated to the quantity to be
+produced. In formulae:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_j \param{c}_j \var{x}_j &  \\
+   \sum_j \param{A}_{ij} \var{x}_j & = b_i  & \forall\,i\\
+   \sum_j \var{x}_j & = 1 \\
+   \var{x}_j & \geq 0& \forall\,j
+   \end{align*}
+   
+where :math:`\param{c}_j` are  unit costs, :math:`\param{A}_{ij}` represents
+the percentage of chemical element :math:`i` contained in a unit of
+scrap :math:`j`, and the total quantity produced is assumed to be one unit -
+see the beginning of this chapter for a description of the problem.
+
+Assume for now that the equation on the total quantity above is redundant
+and can be eliminated without changing the set of feasible
+solutions. By this we mean that this equation is a linear combination
+of the other equations in the model. The most frequent case is when
+the composition matrix :math:`\param{A}` contains a complete chemical analysis, i.e. its rows are
+associated to all chemical elements in the blend. In practice this is
+the case when
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_i \param{A}_{ij} &= \sum_i \param{b}_i = 1 & \forall\,j 
+   \end{align*}
+
+
+In this case the blending problem  can be represented as
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_j \param{c}_j \var{x}_j & \\
+   \sum_j \param{A}_{ij} \var{x}_j & = \param{b}_i \\
+   \var{x}_j & \geq 0
+   \end{align*}
+ 
+The dual of this standard linear optimization  problem can be easily
+found, associating a dual variable to  each chemical element:
+
+.. math::
+   :nowrap:
+   
+   \begin{align*}
+   \max \sum_i \param{b}_i \var{\lambda}_i & \\
+   \sum_i \param{A}_{ij} \var{\lambda}_i & \leq \param{c}_j  & \forall\,j 
+   \end{align*}
+   
+In order to interpret this model it is useful to refer
+to a numerical example. Consider a blending problem with the following
+data:
+
+.. math::
+   :nowrap:
+      
+   \[
+   \begin{array}{lrrrrrrrrrr}
+   &A&B&C&D&E&F&G&H&I&\text{request} \\  \hline
+   \text{Pb}& 10 & 10 & 40 & 60 & 30 & 30 & 30 & 50 & 20 & = 40\\
+   \text{Zn} & 10 & 30 & 50 & 30 & 30 & 40 & 20 & 40 & 30 & = 30 \\
+   \text{Sn} & 80 & 60 & 10 & 10 & 40 & 30 & 50 & 10 & 50 & = 30 \\ \hline
+   \text{Cost}&4.1 & 4.3 & 5.8 & 6.0 & 7.6 & 7.5 & 7.3 & 6.9 & 7.3 & \min
+   \end{array}
+   \]
+
+The dual of this problem, in explicit form, is:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max 40 \var{\lambda}_{\texttt{Pb}} + 30 \var{\lambda}_{\texttt{Zn}} +
+   30 \var{\lambda}_{\texttt{Sn}} & \\
+   10 \var{\lambda}_{\texttt{Pb}} + 10 \var{\lambda}_{\texttt{Zn}} + +
+   80 \var{\lambda}_{\texttt{Sn}} & \leq 4.1 & (A) \\
+   10 \var{\lambda}_{\texttt{Pb}} + 30 \var{\lambda}_{\texttt{Zn}} + +
+   60 \var{\lambda}_{\texttt{Sn}} & \leq 4.3 & (B) \\
+   \ldots & &\ldots \\
+   20 \var{\lambda}_{\texttt{Pb}} + 30 \var{\lambda}_{\texttt{Zn}} + +
+   50 \var{\lambda}_{\texttt{Sn}} & \leq 7.3 & (I)
+   \end{align*}
+
+In order to proceed with an interpretation of this model, in the
+context of blending,  notice  that the primal problem requires the
+minimization of the blend cost. The objective function thus
+represents a monetary value, e.g. €. From  strong duality
+the optimal value of the dual problem, when it exists, is identical to
+that of the primal; it is therefore quite reasonable to assume that
+even for the dual objective function the unit of measurement is monetary.
+The coefficients of the dual objective are
+pure numbers (percentages of chemical elements), thus variables
+:math:`\var{\lambda}` represent monetary values. We might
+interpret  the dual as follows: an hypothetical producer of
+pure metals wishes to fix the selling prices of Lead, Tin
+and Zinc. Knowing that the buyer requires  40, 30 and
+30 units of Lead, Zinc, Tin,
+the manufacturer can assume  to be able
+sell exactly 40 units  of Lead, 30 of Zinc and 30
+of Tin. The objective therefore corresponds to the maximization of the
+total revenue, given the prices of pure metal  :math:`\var{\lambda}_{\texttt{Pb}}, \var{\lambda}_{\texttt{Zn}},
+\var{\lambda}_{\texttt{Sn}}`.
+ 
+For what concerns the constraints, the first one is
+
+.. math::
+   :nowrap:
+      
+   \[
+   10 \var{\lambda}_{\texttt{Pb}} + 10 \var{\lambda}_{\texttt{Zn}} +
+   80 \var{\lambda}_{\texttt{Sn}} \leq 4.1
+   \]
+
+Assuming prices have been chosen for each pure metal, the left hand side
+represents the cost of a blend composed of  
+10% Lead, 10% Zinc, 80% Tin: this is the price of a blend
+perfectly analogous to scrap A.
+Thus this constraint represents a competitive price fixing for scrap A: the
+manufacturer sets the price of pure  metals in such a way as to make it
+competitive or  equivalent with respect to one unit of
+type A scrap.
+Similarly, the other inequalities constrain the prices of pure
+metals to be set in order to be competitive with respect to each
+available scrap.
+Thus the dual of the blending problem is
+the problem faced by a producer of pure chemical elements
+who wishes to fix prices in such a way as to maximize the revenues
+while keeping the cost of synthetic equivalents lower than or equal to
+the market price for each scrap. 
+So the manufacturer tries to
+persuade the buyer to use  pure metals
+by setting prices which apparently are competitive with those of
+the scrap market. However, duality theory guarantees that the cost
+of the optimal scrap blend is exactly equal to the maximum revenue of
+the producer: there is a perfect balance between supply and demand,
+of course as long as both players, the minimizer and
+the maximizer, know the optimal strategy. 
+
+From the complementary slackness theorem, it can also be observed that,
+if a scrap is contained, at a non zero level, in an optimal blend,
+the corresponding dual constraint should be satisfied with zero
+slack (i.e., it should be *active*); but since the slack in the dual
+corresponds to  the margin of the
+manufacturer for that scrap, duality  implies that in the optimal solution,
+for every scrap whose purchase is
+worth, the manufacturer must fix the price in such a way that
+the  margin is zero. It is therefore quite evident
+that the optimal objectives will be identical: the manufacturer has the
+possibility to set apparently competitive prices only
+for materials that the blend purchaser would not buy at all.
+
+Returning to the original blending problem in which  equation
+:math:`\sum_j \var{x}_j=1` is included, we may find an interpretation in
+the following way. Assume that the rows of :math:`\param{A}` (and of :math:`\param{b}`) 
+*do not* sum to 1, otherwise the constraint would be
+redundant. The linear optimization dual of the problem is now
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_i \param{b}_i \var{\lambda}_i  + \var{\mu}\\
+   \sum_i \param{A}_{ij} \var{\lambda}_i + \var{\mu }& \leq \param{c}_j  & \forall\,j 
+   \end{align*}
+   
+where a single dual variable :math:`\var{\mu}` has been introduced as the
+Lagrange multiplier of the total request constraint. The original
+problem can be re-written, in equivalent form, by substituting the
+last equation with a linear combination:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_j \param{c}_j \var{x}_j & \\
+   \sum_j \param{A}_{ij} \var{x}_j & = \param{b}_i \\
+   \sum_j (1 - \sum_i \param{A}_{ij}) \var{x}_j & = 1 -\sum_i \param{b}_i \\
+   \var{x}_j & \geq 0
+   \end{align*}
+   
+The last equation corresponds to the chemical balance of the remaining elements in the
+blend. The dual of this problem, introducing a variable
+:math:`\var{\lambda}^\prime_{m+1}` for the last equation, is
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_i \param{b}_i \var{\lambda}^\prime_i  + \var{\lambda}^\prime_{m+1} (1
+   - \sum_i \param{b}_i)\\
+     \sum_i \param{A}_{ij} \var{\lambda}^\prime_i + (1-\sum_i \param{A}_{ij}) \var{\lambda}^\prime_{m+1}& \leq \param{c}_j  & \forall\,j 
+     \end{align*}
+     
+or, equivalently,
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_i \param{b}_i (\var{\lambda}^\prime_i- \var{\lambda}^\prime_{m+1})  + \var{\lambda}^\prime_{m+1} \\
+   \sum_i \param{A}_{ij} (\var{\lambda}^\prime_i - \var{\lambda}^\prime_{m+1}) + \var{\lambda}^\prime_{m+1}& \leq \param{c}_j  & \forall\,j 
+   \end{align*}
+
+Comparing with the dual blending problem it is immediately seen that
+these dual formulations are identical provided we assume
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \var{\mu} & = \var{\lambda}^\prime_{m+1} \\
+   \var{\lambda}_i & = \var{\lambda}^\prime_i  -\var{\mu}
+   \end{align*}
+
+Thus the dual of the generic blending problem can be interpreted
+exactly as before, provided that we associate a selling price also
+to the "remainder", i.e. to a dummy chemical element which
+corresponds to what remains, in each scrap analysis, to reach 100%
+of the analysis.
+This sell price is the dual multiplier associated to the total
+requirement equation. 
+The prices  of the ordinary chemical elements in the two
+formulations just differ by this quantity.
+
+----------------------
+Dual of the diet model
+----------------------
+
+A diet model is a blending problem,
+although in general 
+there is no requirement on the total quantity. This has been already
+observed before, so no change is required. Moreover, in a typical diet
+problem  the constraints on nutrients take the form of inequalities:
+a  :math:`\geq` inequality will be imposed 
+for useful nutrients, while a :math:`\leq` one will be used for
+harmful ones. Sometimes, both lower and upper bounds are imposed for
+some nutrient.
+The general diet model can be represented
+as
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_j \param{c}_j \var{x}_j & \\
+   \sum_j \param{A}_{ij} \var{x}_j & \geq \param{\ell}_i & \forall \, i \\
+   \sum_j \param{A}_{ij} \var{x}_j & \leq \param{u}_i & \forall \, i \\
+   \var{x}_j & \geq 0
+   \end{align*}
+ 
+Denoting by :math:`\var{\lambda}_i` and
+:math:`\mathvar{\mu}_i`, respectively, the dual variables associated to
+the first and second group of constraints,
+the dual of the diet model can be written as:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_i (\mathvar{\lambda}_i \param{\ell}_i + \mathvar{\mu}_i \param{u}_i) & \\
+   \sum_i \param{A}_{ij} (\mathvar{\lambda}_i + \mathvar{\mu}_i) & \leq \param{c}_j & \forall \, j  \\
+   \mathvar{\lambda}_i & \geq 0 & \forall \, i \\
+   \mathvar{\mu}_i & \leq 0 & \forall \, i 
+   \end{align*}
+
+It is understood that when one of the two limitations is absent also
+the corresponding dual variable does not enter the dual
+formulation. The interpretation is similar to that of the blending
+problem. We might notice that, assuming :math:`\param{\ell}_i < \param{u}_i`, in the optimal
+solution either :math:`\mathvar{\lambda}_i = 0` or :math:`\mathvar{\mu}_i =0`
+thanks to complementarity. Thus we may easily consider
+:math:`\mathvar{\lambda}_i + \mathvar{\mu}_i` as the selling price of
+nutrient :math:`i`. This price will be non negative for positive nutrients
+(those associated with a minimum requirement), while for harmful
+nutrients the selling price will be non positive: in order to "sell"
+those nutrients we should give them for free or even as a discount on
+the total synthetic diet cost.   The constraints in the dual thus just
+represent the usual competitiveness constraints of the seller of pure
+nutrients who would like to convince the diet buyer to choose pure
+nutrients in place of real foods. In the objective function, depending
+on the primal constraint, we will have either a price
+:math:`\mathvar{\lambda}_i \param{\ell}_i` corresponding to selling :math:`\param{\ell}_i` units
+of useful nutrients or a price :math:`\mathvar{\mu}_i \param{u}_i` associated to the
+discount associated to the  inclusion of :math:`\param{u}_i` units of harmful
+nutrients, or 0, for those nutrients whose contents, in the optimal
+diet, is neither at the lower not at the upper bound.  
+
+.. include:: closing.rst
+
+

@@ -1,0 +1,1446 @@
+.. include:: preamble.rst
+
+
+Similarly to what we did in the chapters devoted to pure linear
+optimization problems, here we start a group of sections devoted to
+specific models and applications. This way from one side we introduce
+important applications of mathematical optimization models and their
+formulations. On another side we aim at guiding the reader towards
+acquiring specific modeling skills. This way we hope that when
+modeling a complex real life problem the building blocks introduced in
+these chapters will form a rich enough set of modeling tools.  
+
+.. _sect:fixedcharge:
+
+************************
+The fixed charge problem
+************************
+ 
+In some applications although it is reasonable to assume the cost
+is  linear there might arise a problem of
+modeling a discontinuity at zero.
+Consider, as an example,  a production problem, like that
+already presented in chapter :ref:`Structured linear optimization models`.
+
+Production of a particular finished product, sometimes,
+involves a cost which is proportional to the quantity to be
+produced; this is often associated to labor time or  to the time
+spent consuming some of the available resources. But sometimes
+a "fixed charge"  is paid at the very start of production.
+This cost is a constant which needs to be paid only if the production
+level is strictly positive.
+As an example, often a machine needs some start-up or set-up time
+before being ready to produce. This time, which is non productive, can
+be associated to a cost which needs to be paid independently on the
+quantity to be produced, provided that this quantity is non zero.
+Examples might be  warming up a plant, staff training, or equipment or
+tool change
+in a machine. We can formally describe the contribution to the total cost
+due to the decision to produce :math:`\var{x}` units of a given  product
+as
+
+.. math::
+   :nowrap:
+   
+   \begin{align*}
+   C(\var{x}) = \left\{
+   \begin{array}[c]{ll}
+   c \var{x} + \param{K} & \text{ if } \var{x}> 0 \cr
+   0 & \text{ otherwise}
+   \end{array}
+   \right.
+   \end{align*}
+ 
+This function, if the fixed cost :math:`\param{K}` is non zero, is not continuous,
+although it can be proven to be *concave*.
+
+ .. tikz::
+      
+      \begin{tikzpicture}[scale=0.7]
+      \draw[help lines] (0,0) grid (10,7);
+      \draw[thick,->] (-0.2,0) -- (10.2,0) node[below right] {$x$};
+      \draw[thick,->] (0,-0.2) -- (0,7.2) node[above left] {$C(x)$};
+      \fill[blue] (0,0) circle(2pt);
+      \draw[blue, very thick]  (0,1.5) -- (10,6.5);
+      \draw[<->]  (-.3,0) -- node[above,rotate=90]  {$K$} (-.3,1.5);
+      \draw[dotted] (2,2.5) -- (3,2.5);
+      \draw[<->]  (3,2.5) -- node[right] {$c$} (3,3);
+      \end{tikzpicture}
+
+Through the introduction of an auxiliary 
+binary variable it is possible to correctly formulate such a  cost function.
+Taking into consideration the modeling examples introduced in chapter
+:ref:`Using binary variables in logical constraints` 
+a binary variable :math:`\mathvar{\delta}`  is introduced and the
+following is required:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \var{x} \leq \param{M} \mathvar{\delta}
+   \end{align*}
+   
+Here :math:`\param{M}` is a sufficiently large constant, e.g., an upper
+bound on the production quantity. This way we have formulated, in a
+linear way, the logical constraint
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \var{x} & \leq \param{M} \\
+   \var{x} > 0 & \implies \mathvar{\delta} = 1 
+   \end{align*}
+
+Thus the indicator variable :math:`\mathvar{\delta}` is forced to 1
+when the event :math:`\var{x}> 0` occurs. This binary variable might then
+be used in the objective function to switch on the fixed charge:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min  \sum_j c_j \var{x}_j + \sum_j \param{K}_j \mathvar{\delta}_j  \\
+   \var{x}_j & \leq \param{M}_j \mathvar{\delta}_j &  \forall \, j \\
+   \var{x}_j & \geq0 \\
+   \mathvar{\delta}_j & \in \{0,1\} \\
+   \var{x} &\in X
+   \end{align*}
+   
+where :math:`X` denotes other constraints  of the model.
+It is worth observing that this model is not "perfect":
+in fact, while the constraints correctly implement the logical
+constraint, 
+they are not
+enough to guarantee that if :math:`\var{x}_j = 0` then
+the corresponding :math:`\mathvar{\delta}_j = 0`.
+Thus, in this model it is possible to obtain feasible 
+solutions in which although there is no production for a certain
+product, nonetheless a fixed charge  is included
+(:math:`\var{x}_j = 0,  \mathvar{\delta}_j = 1`).
+
+This modeling error is
+irrelevant in this application. In fact, even if it is true that there can
+exist feasible solutions with zero production and not null  fixed charge,
+thanks to the  minimization of the objective function, these solutions will be
+discarded in favor of similar, cheaper, solutions with zero fixed charge.
+In other words, although the feasible set is larger then the feasible
+set of the original problem, the optimal solutions will be correct,
+thanks to the positivity of the fixed charge.
+
+In some cases, however, the role of the indicator variable in the model might be
+more complex; it might be involved in different constraints  and
+it might  not automatically be driven  to zero when production is null.
+
+In these cases,  an exact formulation of the fixed charge  model would be necessary
+and an additional logical constraint would be required:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \var{x} = 0 &\implies \mathvar{\delta} = 0
+   \end{align*}
+ 
+As we have already seen, this logical constraint cannot be exactly
+translated by means of a
+finite number of linear constraints. A
+solution, which is only partially satisfactory, consists in transforming the
+constraint :math:`\var{x}> 0` into
+:math:`\var{x} \geq \varepsilon`, where :math:`\epsilon> 0` is a 
+small enough constant.
+
+In this case it is possible to introduce a
+constraint that represents the logical implication
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \var{x} &\geq 0 \\
+   \mathvar{\delta} = 1 & \implies \var{x} \geq \epsilon
+   \end{align*}
+
+Choosing the upper bound :math:`\param{M}` requires some 
+additional care. From a purely logical point of view,   this
+constant plays the role of :math:`+ \infty`;  it is, in other words,
+a value large enough  to make the constraint
+:math:`\var{x} \leq \param{M}` redundant.
+From the computational point of view the
+choice of this constant might have an
+influence on the effective possibility
+of solving large scale problems in acceptable computational times.
+It is important to choose the value of the constant :math:`\param{M}` in
+such a way that, although it should be large enough not to limit in
+any way feasible solutions, it must nonetheless be the lowest possible
+in order not to generate too weak a relaxation.
+In fact, consider a simple example. Assume that in a fixed charge
+problem a production variable :math:`\var{x}` has an upper bound
+equal to, say, 5. Then each of the following logical constraints:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{x} & \leq 5 \mathvar{\delta} \\
+   \var{x} & \leq 10 \mathvar{\delta} \\
+   \var{x} & \leq 100 \mathvar{\delta} 
+   \end{align*}
+
+when coupled with :math:`0 \leq \var{x} \leq 5, \mathvar{\delta} \in
+\{0,1\}`
+produce exactly the
+same set of feasible solutions. However, when relaxing the integrality
+requirement on the binary variable the resulting polyhedra are
+different and, in particular, the first one is stronger, then the
+second, which is stronger than the third.
+
+
+ .. tikz::
+      
+      \begin{tikzpicture}[xscale=4]
+      \draw[help lines] (0,0) grid (1,6);
+      \draw[thick,->] (-0.2,0) -- (1.1,0) node[below right] {$\delta$};
+      \draw[thick,->] (0,-0.2) -- (0,6.2) node[above left] {$x$};
+      \draw[thick] (0,0) -- (1,0) -- (1,5) -- (0,5) -- (0,0);
+      \draw[red]  (0,0) -- (1,0) -- (1,5) -- (0,0);
+      \draw[blue]  (0,0) -- (1,0) -- (1,5) -- (0.5,5) -- (0,0);
+      \draw[cyan]  (0,0) -- (1,0) -- (1,5) -- (0.05,5) -- (0,0);
+      \draw[green, very thick] (1,0) -- (1,5);
+      \fill[green] (0,0) ellipse(0.5pt and 2pt);
+      \node[below left] at (0,0) {\small{O}}; 
+      \node[below] at (1,0) {\small{A}}; 
+      \node[above right] at (1,5) {\small{B}};
+      \node[above] at (.5,5) {\small{C}};
+      \node[above] at (.05,5) {\small{D}};
+      \end{tikzpicture}
+
+
+In the figure, the feasible set is represented in green and it
+consists of the origin O and the segment (A,B); the relaxed polyhedra
+associated to the three formulations above are, respectively, those
+with vertices  (O,A,B), (O,A,B,C), (O,A,B,D). (O,A,B** is ideal, as it
+is the smallest possible polyhedron including the feasible set.
+On the contrary, the other two polyhedra contain vertices which are
+not feasible.
+
+**********
+Lot sizing
+**********
+
+An immediate application of the fixed charge model can be found in
+production planning. The :index:`lot sizing` problem consists in
+deciding production levels (lot sizes) in order to be able to satisfy
+a known external demand, taking into account capacity and costs. The
+most basic lot sizing model is the following:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min & \sum_{t=1}^T  (\mathpar{p}_t \var{x}_t + \mathpar{q}_t
+   \mathvar{\delta}_t + \mathpar{h}_t 
+   \var{s}_t)  \\
+   \var{s}_{t-1} + \var{x}_t  & = \mathpar{d}_t + \var{s}_t & \forall\, &t\\
+   \var{s}_0 = \var{s}_T & = 0 \\
+   \var{x}_t & \leq  \param{M}_t \mathvar{\delta}_t & \forall\, &t\\
+   \var{x}_t & \geq 0 \\
+   \mathvar{\delta}_t & \in \{0,1\} \\
+   \var{s}_t & \geq 0
+   \end{align*}
+
+where (in the following, :math:`t` always denotes a time period
+within the time horizon):
+
+* :math:`T` is the finite time horizon, i.e., the planning period
+* :math:`\var{x}_t` is the production level at the beginning of
+  time period :math:`t`
+* :math:`\var{s}_t` is the inventory level at the end of the period
+* :math:`\mathvar{\delta}_t` is the fixed charge binary variable for the
+  period, used to add a fixed cost whenever the production
+  in a time period is different from zero
+* :math:`\mathpar{d}_t` is the (known or estimated) demand for the
+  period
+* :math:`\mathpar{p}_t,\mathpar{q}_t, \mathpar{h}_t` are, respectively,
+  the unit production cost, the fixed charge, the unit inventory cost
+* :math:`\mathpar{M}_t` is the upper bound required in order to
+  correctly formulate the fixed charge logical constraint at each
+  period.
+
+Classical lot sizing models are usually analyzed depending on a major
+assumption. In many cases the problems are assumed to be
+*uncapacitated*. By this we mean the fact that there is no strict
+limit on production capacity in any period, and, similarly, there are
+no constraints on inventories. The assumption of no limits on the
+production capacity might seem to be contradictory with respect to the
+inclusion, in the model, of an upper bound on production, which is
+necessary in order to correctly formulate the logical
+constraint. However, this upper bound, in uncapacitated models, is
+defined as
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \mathpar{M}_t & = \sum_{i=t}^T \mathpar{d}_i
+   \end{align*}
+
+This assumption derives from cost considerations: there is in fact no
+need to produce, at any time period, more than what will be demanded
+in the current and future periods. Any extra production, beyond this
+limit, would not be used to satisfy demand and will generate an
+additional cost. So, by using this parameter as an upper bound on
+production levels, a redundant constraint is generated. To be precise,
+the upper bound is redundant for any optimal solution. Using a similar
+upper bound does not really limit production: at any time period it is
+assumed that production can be set to any reasonable level, without
+any strict limitation. It can be easily seen that, thanks to this
+upper bound, also the inventory is limited. But, again, this is not a
+limited capacity constraint on the inventory, but simply a consequence
+of the assumption on the model.
+
+From a purely modeling point of view, including an upper bound on
+production or on the inventory would be quite trivial. However it is
+known that the  lot-sizing optimization problem is easy to solve
+in the uncapacitated case, while it becomes, in general, hard as soon
+as strict bounds on production or inventory levels are introduced.
+
+We are not going to go into much detail on the algorithmic aspects of
+lot-sizing. It seems worth recalling, however, that the uncapacitated
+case remains easily  solvable even when the objective function is
+*concave* in terms of production and inventory levels.
+
+We recall that concave functions are frequently encountered as cost
+functions in applied problems. Let us first give some definitions. A
+set :math:`S \subseteq \R^n` is called :index:`convex set` if
+
+.. math::
+   :nowrap:
+
+   \[
+   x\in S, y \in S \implies \lambda x + (1-\lambda y) \in S,
+   \forall\, \lambda \in [0,1]
+   \]
+
+A convex set is any set characterized by the fact that given any two
+elements in the set, also the segment connecting them belongs to the
+set.  A :index:`convex function` over a convex set :math:`S` is a
+function such that:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f(\lambda x + (1-\lambda)y) & \leq \lambda f(x) + (1-\lambda) f(y)
+   & \forall\,x,y, \in S, \lambda \in [0,1]
+   \end{align*}
+
+while a :index:`concave function` is any function such that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f(\lambda x + (1-\lambda)y) & \geq \lambda f(x) + (1-\lambda) f(y)
+   & \forall\,x,y, \in S, \lambda \in [0,1]
+   \end{align*}
+
+It can be easily seen that for concave functions (here we limit to
+functions of a single variable, but a more general result might be
+stated)
+the following holds:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f( x + 1) - f(x) & \leq  f(x) - f(x-1)
+   \end{align*}
+
+and this means that the *increment*  in the function is not increasing
+with its argument. This situation is very common in industrial cost
+functions where there usually is some sort of a scale effect which
+makes production, or inventory, display a marginal cost variation
+which is non increasing with the quantity. It is some sort of a
+quantity discount: one additional unit produced will marginally cost
+less as the production level increases.
+
+It is easy to proof that the fixed charge objective function is indeed
+a concave function over the set of non negative reals.
+
+A well known result in lot sizing theory is that, provided that the
+problem is uncapacitated, if the objective function is a concave
+function of the inventory and the production levels, then the optimal
+production policy can be efficiently found (i.e., in polynomial
+time). We suggest the interested reader to consult the fundamental
+book :cite:`pochet2006` on this subject. Here it might suffice to say
+that there exist many efficient algorithms to optimally solve the
+uncapacitated lot sizing problem, the best known of which is the
+:index:`Wagner-Within` algorithm, which is based on dynamic
+programming.
+
+It is also important to observe that  the problem is "easy"
+and can be efficiently solved for long time horizons even in a much
+more general form than the linear one considered here. However, the
+formulation given above is far from being ideal and, in general,
+solving a  problem of realistic size using  that model with a general
+purpose mixed integer linear optimization solver might be extremely
+demanding.
+We cannot here go into details on strong formulations for this
+problem. It is sufficient so say that a strong (ideal) formulation of
+the uncapacitated lot sizing problem can indeed be obtained. However,
+its formulation requires an exponential number of constraints in the
+space of the original variable (although ideal formulations of
+polynomial size exist when the problem is reformulated in a higher
+dimensional space). Thus,
+the direct use of such a formulation for a large scale problem is out
+of question. It is nonetheless possible to define a computational
+procedure which can be recursively called to sequentially add a small number of
+constraints to the original formulation until the optimal solution is
+found.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Branch and cut - dynamical simplex method
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  This kind of procedure is quite common in combinatorial
+  optimization and it is worth devoting a paragraph to a quick
+  description.
+  Assume a formulation of a
+  problem is given in  which constraints are partitioned into a set of
+  "easy" constraints, quite limited in number, and another set of
+  constraints, usually of huge cardinality.
+  
+  Let us denote these two sets by :math:`F_0, F`:
+  
+  .. math::
+     :nowrap:
+	
+     \begin{align*}
+     \min c^T \var{x}  & \\
+     a_i^T \var{x} & \leq b_i  & i \in F_0 \\
+     \alpha_i^T \var{x} & \leq \beta_i & i \in F
+     \end{align*}
+     
+  Usually, even if not necessarily,  integrality
+  requirements for a subset of variables might be present. The idea of the dynamical
+  simplex method, which is the basis of  the Branch and Cut algorithm, is to start by
+  solving a relaxation of the problem (possibly a good one) obtained by
+  eliminating the large family of constraints with index in
+  :math:`F` (and, possibly, the integrality requirement too).
+	
+  .. math::
+     :nowrap:
+     
+     \begin{align*}
+     x^\star_0 & \in \arg \min c^T \var{x}  \\
+     a_i^T \var{x} & \leq b_i  & i \in F_0 
+     \end{align*}
+  
+  The optimal solution of this problem might be a feasible solution or not. If
+  it is feasible, i.e., if it satisfies also all of the constraints
+  which have been eliminated, than it is an optimal solution to the
+  original problem. Otherwise, there must exist at least an inequality,
+  in family :math:`F`, which is not satisfied by the current
+  solution.
+
+  Assume we have available a procedure, called a :index:`separation
+  procedure` which, given a point :math:`\bar{x}`, either
+  
+  * certifies that :math:`\bar{x}` satisfies all of the inequalities
+    indexed by :math:`F`
+  * or returns at least an index :math:`\bar{\imath} \in F` such
+    that
+    
+    .. math::
+       :nowrap:
+       
+       \begin{align*}
+       \alpha_{\bar{\imath}}^T \bar{x} & > \beta_{\bar{\imath}}
+       \end{align*}
+    
+  (and possibly returns many of these indices and, if at all possible,
+  some of those associated to the "maximally violated" inequalities)
+  
+  Let us denote this procedure by :math:`CutGenerator(x,F)` and
+  assume it returns a set of indices of violated inequalities, if any
+  exists, or the empty set if all are satisfied.
+
+  Thus a cutting plane algorithm might be built this way:
+  
+  #.  let, as before, :math:`x_0^\star` be an optimal solution of the initial
+      relaxed problem
+  #.  let :math:`k:= 0`
+  #.  let :math:`F_1 = \emptyset`
+  #.  While :math:`C = CutGenerator(x_k^\star,F) \ne \emptyset`:
+  
+      a. let :math:`k := k+1`
+      b. let :math:`F_1 = F_1 \cup C`
+      c. let :math:`F = F \setminus C`
+      d. solve:
+      
+	 .. math::
+	    :nowrap:
+	    
+	    \begin{align*}
+	    x^\star_k & \in \arg \min c^T \var{x}  \\
+	    a_i^T \var{x} & \leq b_i  & i \in F_0  \\
+	    \alpha_i^T \var{x} & \leq \beta_i & i \in F_1
+	    \end{align*}
+     
+  #. End While
+  
+  
+  In the above algorithmic scheme, the CutGeneration procedure is
+  repeatedly called to separate the current solution. In fact, all of
+  the inequalities returned by this procedure are violated in the
+  current optimal solution. Thus, adding these inequalities to the pool
+  of current inequalities, will make that solution infeasible. Thus the
+  procedure, at every iteration, is granted to deliver a different
+  solution to the current relaxation. It is hoped, and this is what
+  happens in practice, that the whole algorithm will terminate well
+  before all of the inequalities of the original set :math:`F` have
+  been added.
+  
+  This has become the standard way to approach difficult combinatorial
+  optimization problems. What is needed is, from one side, a family of
+  valid inequalities, possibly describing the ideal formulation of the
+  problem or, at least, a subset of the inequalities defining such ideal
+  representation. This is clearly a modeling problem. From the
+  algorithmic point of view, it is necessary to have available a
+  CutGeneration procedure which avoids checking, one by one, all of the
+  inequalities in search of a violated one or of a proof of
+  feasibility. This, sometimes, can be done efficiently, while in some
+  other cases we must be satisfied by an heuristic CutGeneration
+  procedure, one which is not granted to find a violated inequality even
+  if one exists. An important result in computational complexity theory
+  states that an efficient separation procedure exists if and only if an
+  efficient optimization algorithm exists for the original problem.
+  In other words, if a problem is efficiently solvable, as it is the
+  case of the uncapacitated 
+  lot-sizing with linear costs and fixed charge, then there
+  should exist a formulation and an efficient cut generation algorithm
+  to solve it through the repeated execution of linear optimization
+  algorithms.
+
+  On the opposite side, if a problem is inherently difficult, as it is
+  the case, in general, for finite capacity production planning
+  problems, even if the ideal formulation might be known, finding a
+  violated inequality or checking they are all satisfied is in general
+  hard.
+
+  This negative result should not however be too much emphasized. Modern
+  exact optimization procedures do in fact use this kind of strategies,
+  in order to solve specific instances of hard problems. These are
+  worst-case results, and they do not prevent single problems to be
+  solved quite efficiently by using a similar scheme.
+
+  This framework is also a justification for presenting linear integer
+  models for problems, like the lot sizing, for which efficient
+  algorithms do exist which are somewhat unrelated to linear
+  optimization.
+
+  The reason is the following: if we just needed to solve an
+  uncapacitated lot sizing problem, it is quite out of question that the
+  best choice would be to use the Wagner-Within algorithm, or some
+  other, even more efficient,  available method. However, when trying to
+  solve more general lot-sizing problems, knowing a set of good quality
+  inequalities as well as a procedure to separate an infeasible solution
+  might prove extremely important in the solution of realistic large
+  size problems.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Advanced formulations for the lot sizing model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is not the case to present here the ideal formulation of the lot
+sizing model, for which we refer to the relevant literature on the
+subject. Introducing this formulation, in fact, would require us to
+make a quite long digression on valid inequalities for the problem,
+which seems to be out of scope in this notes, mainly devoted to
+modeling issues. Another reason for not introducing this formulation
+is the fact that, as a consequence of the exponential number of its
+constraints, it cannot be used as-is in a model, but included in a
+specialized algorithmic procedure of the kind briefly described
+above.
+
+It might be worth, however, to introduce a different model for the
+problem which is indeed ideal and not too large in dimension. The
+model is based on a *multi-commodity flow* formulation. When a decision
+on a production level is taken at a specific time instant, we might
+follow the material flow from production up to demand
+consumption. This flow usually will be split into some flow of
+production going directly to satisfy part of the current demand, and a
+set of flows that, passing through a few periods in the inventory,
+will eventually contribute to partially satisfy future demand. The
+idea of the multi-commodity flow formulation is to make these flows
+explicit. We label each production and each inventory variable with
+two indices: the current time period, and the time period at which the
+material will be delivered to satisfy the demand. Thus, e.g.,
+:math:`\var{x}_{3,5}` represents production in period 3 which will
+be used to satisfy (part of)
+the demand of period 5; :math:`\var{s}_{2,6}` is the quantity of
+material in the inventory at the end of period 2 which will be used to
+satisfy (part of) the demand of period 6.
+
+The following illustration might be useful to understand the
+formulation. Consider the following feasible flow in a 3 period
+planning problem:
+
+.. tikz::
+   
+   \begin{tikzpicture}[scale=1.5]
+   \node (x0) at (0,1) {};
+   \node (x1) at (2,1) {};
+   \node (x2) at (4,1) {};
+   \node (d0) at (0,-1) {};
+   \node (d1) at (2,-1) {};
+   \node (d2) at (4,-1) {};
+   \node[circle,fill=black!25,minimum size=10pt,inner sep=0pt]  (0)  at (0,0) {1};
+   \node[circle,fill=black!25,minimum size=10pt,inner sep=0pt]  (1)  at (2,0) {2};
+   \node[circle,fill=black!25,minimum size=10pt,inner sep=0pt]  (2)  at (4,0) {3};
+   \path[draw,thick,->] (0) -- (1); 
+   \path[draw,thick,->] (1) -- (2); 
+   \path[draw,thick,->] (x0) -- (0);
+   \path[draw,thick,->] (0) -- (d0) node[below]{7};
+   \path[draw,thick,->] (x1) -- (1);
+   \path[draw,thick,->] (1) --  (d1) node[below] {5};
+   \path[draw,thick,->] (x2) -- (2);
+   \path[draw,thick,->] (2) -- (d2) node[below] {7} ;
+   \path[draw,thick,->,color=cyan] (x0) -- node[left] {13} node[right]{$\textcolor{red}{x}_1$} (0);
+   \path[draw,thick,->,color=cyan] (0) -- node[above] {6}node[below]{$\textcolor{red}{s}_1$} (1)  ; 
+   \path[draw,thick,->,color=cyan] (1) -- node[above] {1}node[below]{$\textcolor{red}{s}_2$} (2)  ; 
+   \path[draw,thick,->,color=cyan] (0) -- node[left] {7} (d0) ;
+   \path[draw,thick,->,color=cyan] (1) -- node[left] {5} (d1);
+   \path[draw,thick,->,color=cyan] (x2) -- node[left] {6} node[right]
+   {$\textcolor{red}{x}_3$} (2) -- node[left] {7}  (d2);
+   \end{tikzpicture}
+
+Here, 13 units are produced at time 1, some which to satisfy the
+demand of period 1, some for period 2 and 1 for  the
+demand of period 3. Another production run is in period 3, in which 6
+units are produced to satisfy, with the inventory left over from
+previous periods, the demand of period 3.
+If we split the single origin/destination flows, we obtain:
+
+.. tikz::
+   
+   \begin{tikzpicture}[scale=1.5]
+   \node (x0) at (0,1) {};
+   \node (x1) at (2,1) {};
+   \node (x2) at (4,1) {};
+   \node (d0) at (0,-1) {};
+   \node (d1) at (2,-1) {};
+   \node (d2) at (4,-1) {};
+   \node[circle,fill=black!25,minimum size=10pt,inner sep=0pt]  (0)  at (0,0) {1};
+   \node[circle,fill=black!25,minimum size=10pt,inner sep=0pt]  (1)  at (2,0) {2};
+   \node[circle,fill=black!25,minimum size=10pt,inner sep=0pt]  (2)  at (4,0) {3};
+   \path[draw,thick,->] (0) -- (1); 
+   \path[draw,thick,->] (x0) -- (0);
+   \path[draw,thick,->] (0) -- (d0) node[below]{7};
+   \path[draw,thick,->] (x1) -- (1);
+   \path[draw,thick,->] (1) --  (d1) node[below] {5};
+   \path[draw,thick,->] (x2) -- (2);
+   \path[draw,thick,->] (2) -- (d2) node[below] {7} ;
+   \path[draw,thick,->,color=cyan] (x0) edge[bend right] node[above left] {\tiny{$\textcolor{red}{x}_{11} = 7$}} (0);
+   \path[draw,thick,->,color=green] (x0) edge[bend left] node[above
+   right] {\tiny{$\textcolor{red}{x}_{13} = 1$}}   (0);
+   \path[draw,thick,->,color=cyan] (0) edge node[left] {7} (d0);
+   \path[draw,thick,->,color=orange] (x0) node[above] {\tiny{$\textcolor{red}{x}_{12}=5$}}edge   (0);
+   \path[draw,thick,->,color=orange] (0) edge[bend right] node[below] {\tiny{$\textcolor{red}{s}_{12}=5$}} (1) ; 
+   \path[draw,thick,->,color=green] (0) edge node[above] {\tiny{$\textcolor{red}{s}_{13}=1$}} (1); 
+   \path[draw,thick,->,color=green] (1) edge node[above] {\tiny{$\textcolor{red}{s}_{23}=1$}} (2); 
+   \path[draw,thick,->,color=orange] (1) -- node[right] {5} (d1);
+   \path[draw,thick,->,color=red] (x2) -- node[right]
+   {\tiny{$\textcolor{red}{x}_{33}=6$}} (2) -- node[right,color=red] {6} (d2); 
+   \path[draw,thick,->,color=green] (2) edge[bend right] node[left] {1} (d2); 
+   \end{tikzpicture}    
+
+
+Denoting by :math:`\param{d}_{s,t} = \sum_{p=s}^t \mathpar{d}_s` the cumulative
+demand between periods :math:`s`  and  :math:`t`, the model can be
+written as:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min &\sum_{s=1}^T \sum_{t=s}^T (\mathpar{p}_s \var{x}_{st}  + \mathpar{h}_s
+   \var{s}_{st}) + \sum_{t=1}^T \mathpar{q}_t \mathvar{\delta}_t  \\
+   \var{s}_{s-1,t} + \var{x}_{s,t}  & =  \var{s}_{st} &
+   \forall\, &1 \leq s < t \leq T\\
+   \var{s}_{t-1,t} + \var{x}_{t,t}  & = \mathpar{d}_t &
+   \forall\, &1 \leq t  \leq T\\
+   \var{x}_{st} & \leq \param{d}_{t,T} \mathvar{\delta}_s & \forall\, &s
+   \leq t\\
+   \var{x}_{st} & \geq 0 \\
+   \mathvar{\delta}_t & \in \{0,1\} \\
+   \var{s}_{st} & \geq 0
+   \end{align*}
+
+The model follows quite closely the standard one, and the link between
+the two is obtained by considering the relations
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{x}_i & = \sum_{t=i}^T \var{x}_{it} \\
+   \var{s}_i & = \sum_{t=i+1}^T \var{s}_{it}
+   \end{align*}
+
+In the above model it is assumed that the initial inventory is 0;
+in any case, if  the initial inventory is  no more than
+:math:`\mathpar{d}_1` it can  be reduced to  zero,
+partially compensating the initial demand. Under the assumption of
+zero initial inventory, it is also required to add some border
+constraints on the inventory variables associated to the initial
+period:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{s}_{0i} & = 0 & \forall\,i & = 1, T
+   \end{align*}
+
+and the following one for the impossibility of having a storage "going
+back in time" (recall that we used to define the storage at the end of
+the period):
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \var{s}_{ii} & = 0  & \forall\,i
+   \end{align*}
+ 
+In the model above, the objective is quite immediately recognized as
+perfectly equivalent to the original one.  The first group of
+constraints represents the flow of inventories inside the network,
+before their exit as partial demand satisfaction. Those constraint
+states that the inventory flow of products whose destination is a
+future demand either comes from current production or from the
+previous period, all with the same destination in the future. The
+second group of constraints is associated to demand satisfaction, and
+it states that all of the demand of a period needs to be satisfied
+with the current production destined to current demand, or with the
+products stored in the inventory and destined to satisfy current
+demand. No inventory can be left over at this stage.
+The following constraint is a set of logical constraints imposing that
+at any time period, if there is a non null production, whichever the
+destination, then the logical variable of that time period needs to be
+set to 1. This variable is then used to add the fixed charge cost to
+the objective.
+
+This *multi commodity* formulation has a larger number of variables
+and constraints: :math:`O(T^2)` instead of :math:`O(T)` of the
+original formulation. However, it can be proven that this formulation
+is *ideal*: relaxing the integrality constraints on the logical
+variables, every (optimal) basic feasible solution satisfies also the
+binary constraints. Thus it is possible to solve to optimality this
+problem  with a single execution of a linear optimization algorithm
+like, e.g., the simplex method.  It is worth recalling that, if our
+aim was to solve an instance of this problem, even this ideal
+formulation might not be a good choice, in particular for large time
+horizons. In fact efficient specialized algorithms exist which allow
+for a very fast solution even at large size. However, when there are
+complicating constraints, like, e.g., finite capacity or additional
+logical constraints, it might be useful to add those constraints to a
+good formulation, like this one, and to start from this for a branch
+and bound algorithm. We recall again, however, that it is possible to
+obtain an ideal representation of the problem in the original variable
+space, without the necessity of squaring the number of variables and
+constraints.
+
+The following code contains an example of implementation of the
+original lot
+sizing model:
+
+.. literalinclude:: AMPL/LS-U.mod
+   :caption: LS-U.mod
+   :language: ampl
+
+while the following one is an implementation using the multi-commodity
+flow formulation (notice we have not imposed integrality on the
+logical variables):
+
+.. literalinclude:: AMPL/LS-U-multicommodity.mod
+   :caption: LS-U-multicommodity.mod
+   :language: ampl
+   
+If we run both models with the following data:
+
+.. literalinclude:: AMPL/LS-U-big.dat
+   :caption: LS-U-big.dat
+   :language: ampl
+   :lines: 1-10
+:math:`\dots`
+      
+.. literalinclude:: AMPL/LS-U-big.dat
+:language: ampl
+   :lines: 54-77
+   
+the first model returns:
+
+.. literalinclude:: AMPL/LS-U.out
+   :caption: LS-U.out
+   :language: ampl
+
+while the multi-commodity flow based one:
+
+.. literalinclude:: AMPL/LS-U-multicommodity.out
+   :caption: LS-U.out
+   :language: ampl
+It must be said that modern solvers employ a large set of
+preprocessing techniques in order to strengthen the initial
+formulation and transform it into one which is as close as reasonably
+possible to the ideal one. This is why, employing a state-of-the-art
+solver like, in this case, Gurobi, the difference between the two is
+not striking. However we can observe that with the original
+formulation a step of branch and bound is required, while with the
+second  one the simplex method is enough.  The number of simplex
+iterations in the second run is much lower than the analogous one in
+the first. It must be said, however, that the first formulation has a
+much smaller number of variables and constraints, so the real winner
+in this case is not so evident. If we tried an older solver like,
+e.g., glpsol, then the difference in the two runs would have been very significant.
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Variants of production planning models
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this part we would like to briefly list some additional modeling
+possibilities and some extensions of the basic model, useful in
+realistic production scenarios.
+
+* Backlogs
+
+  The first modeling variant we introduce is that related to allowing
+  for part of the demand not to be satisfied in the period it was
+  requested. It is possible, sometimes, to delay the delivery of part
+  of the demand; of course, any delay will involve an additional
+  cost. In order to model this situation, it is possible to consider
+  the fact that this is quite symmetrical to the situation of the
+  inventory. In the case of inventory, in fact, we are producing in
+  advance with respect to the demand period; and the earlier we
+  produce, the higher the storage cost will be. This is modeled through an
+  inventory variable, with a cost, which models the flow of produced
+  material "towards the future". In a completely analogous way,
+  :index:`backlog` (which is the delayed delivery of products) can be
+  thought of as an inventory which, from future production periods,
+  flows "back" towards the satisfaction of a past demand. Every unit
+  in this backward flow will have an associated backlog cost. Of
+  course, products never travel back in time, but a backlog can be
+  used to model production delayed by a few periods. A model with
+  backlog is the following:
+  
+
+  .. math::
+     :nowrap:
+      
+     \begin{align*}
+     \min & \sum_{t=1}^T  (\mathpar{p}_t \var{x}_t + \mathpar{q}_t
+     \mathvar{\delta}_t + \mathpar{h}_t 
+     \var{s}_t + \mathpar{b}_t \var{r}_t)  \\
+     \var{s}_{t-1} + \var{x}_t  + \var{r}_t& = \mathpar{d}_t + \var{s}_t +
+     \var{r}_{t-1}& \forall\, &t\\
+     \var{s}_0 = \var{s}_T & = 0 \\
+     \var{x}_t & \leq  \param{M}_t \mathvar{\delta}_t & \forall\, &t\\
+     \mathvar{\delta}_t & \in \{0,1\} \\
+     \var{x}_t, \var{s}_t, \var{r}_t & \geq 0
+     \end{align*}
+
+  Here we have included a new variable, :math:`\var{r}_t` to
+  represent the quantity of material produced after period :math:`t`
+  which is available either to satisfy the current demand or to go
+  backward in time to satisfy previous demand.
+
+  The following schematic representation should help understanding the
+  balance equations:
+
+  .. tikz::
+     
+     \begin{tikzpicture}[radius=3cm,auto,minimum height =1cm,scale=0.9]
+     \newcommand{\tvar}[1]{{\color{red}{\mathbf{#1}}}}
+     %\node (0) at (0,0) {\phantom{$T$}};
+     \node[circle,draw] (1) at (2,0) {1};
+     \node (a1) at (2,2) {};
+     \node (b1) at (2,-2) {};
+     \node[circle,draw] (2) at (4,0) {2};
+     \node (a2) at (4,2) {};
+     \node (b2) at (4,-2) {};
+     \node[circle] (3) at (6,0) {\phantom{$T$}};
+     \node[circle,draw] (T1) at (8,0) {\tiny{$T-1$}};
+     \node[circle,draw] (T) at (10,0) {\tiny{$T$}};
+     \node (at) at (10,2) {};
+     \node (bt) at (10,-2) {};
+     \path[draw,thick,blue,->] (1)  to[bend left] node
+     {\tiny{$\tvar{s}_1$}}(2);
+     \path[draw,thick,purple,->] (2)  to[bend left] node {\tiny{$\tvar{r}_1$}}(1);
+     \path[draw,thick,blue,->,dotted] (2) to[bend left] node
+     {\tiny{$\tvar{s}_2$}} (3);
+     \path[draw,thick,purple,->,dotted] (3)  to[bend left] node
+     {\tiny{$\tvar{r}_2$}}(2); 
+     \path[draw,thick,blue,->,dotted] (3) to[bend left]
+     node{\tiny{$\tvar{s}_{T-2}$}} (T1);
+     \path[draw,thick,purple,->,dotted] (T1)  to[bend left] node {\tiny{$\tvar{r}_{T-2}$}}(3);
+     \path[draw,thick,blue,->] (T1) to[bend left] node
+     {\tiny{$\tvar{s}_{T-1}$}}(T);
+     \path[draw,thick,purple,->] (T)  to[bend left] node
+     {\tiny{$\tvar{r}_{T-1}$}}(T1); 
+     \path[draw,->] (a1) -- node {\tiny{$\tvar{x}_1$}} (1);
+     \path[draw,->] (1) -- node {\tiny{$d_1$}} (b1);
+     \path[draw,->] (a2) -- node {\tiny{$\tvar{x}_2$}} (2);
+     \path[draw,->] (2) -- node {\tiny{$d_2$}} (b2);
+     \path[draw,->] (at) -- node {\tiny{$\tvar{x}_T$}} (T);
+     \path[draw,->] (T) -- node {\tiny{$d_T$}} (bt);
+     \end{tikzpicture}
+
+  The backward arcs in the picture represent the flow of material
+  produced after the demand period. It is in general assumed that on
+  the borders of the planning periods, the backlog variable is zero.
+
+  This model, similarly to the standard one, can be very easily solved
+  when there is no strict constraint on finite capacities. Also for
+  this model there exist alternative formulations, either in a larger
+  dimensional space, similar to what has been introduced in the
+  multi-commodity formulation above, or in the same space of variables,
+  but with an ideal formulation with an exponential number of
+  constraints.
+
+* Startup cost
+
+  We have already seen how to model a *setup* cost which is to be paid
+  whenever production is positive. A :index:`startup cost` is
+  different in that it is a cost to be paid whenever production is
+  positive after a null production period.  Startup cost, in other
+  words, is paid whenever production changes its state from zero to
+  positive. It is quite common in plants with continuous production
+  and represents a cost to be paid in order to take the production
+  plant from a quiet state to an active state. On the contrary, setup
+  costs can be thought of as similar costs, but for a plant which is
+  always switched off at the end of the period, so that it needs to be
+  paid at every production period, of course if there is any positive
+  production.
+  It is the case, as an example, of
+  production plants working for 8 hours a day, which, every morning,
+  need to be set up in order to be able to start production.
+
+  A possibility to model startup costs is to introduce an additional
+  binary variable, :math:`\var{z}_t` and to link it in such a way
+  as to represent this change of state:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \mathvar{\delta}_{t-1}=0 \land      \mathvar{\delta}_{t}=1  &
+     \implies \var{z}_t = 1
+     \end{align*}
+
+  This is equivalent to the logical expression:
+  
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \mathvar{\delta}_{t-1}=1 \lor  \mathvar{\delta}_{t}=0 \lor
+      \var{z}_t = 1
+     \end{align*}
+
+  which can be formulated as the constraint
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     (1-\mathvar{\delta}_{t-1}) +      \mathvar{\delta}_{t}
+     + \var{z}_t  & \geq 1
+     \end{align*}
+
+  or, simplifying, 
+  
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \var{z}_t  & \geq \mathvar{\delta}_{t-1} - \mathvar{\delta}_{t}
+     \end{align*}
+
+  The opposite implication :math:`\var{z}_t = 1 \implies
+  \mathvar{\delta}_{t-1}=0 \land      \mathvar{\delta}_{t}=1` is not
+  in general required, as the cost associated to the startup variable
+  will forbid :math:`\var{z}_t` to be 1 if there is no startup situation.
+
+  It might also be observed that, here, we used
+  :math:`\mathvar{\delta}_t=0` as an indicator that in that period
+  production is zero. But, we recall, in the original lot sizing model
+  this implication was not imposed, as it was automatically true in
+  optimal solutions, due to a similar reasoning as above: it is costly
+  to set the variable to 1 when it is not necessary. In this case,
+  however, some care needs to be taken, as we should consider whether
+  it is still true that there is no incentive, in optimal solutions,
+  to have :math:`\mathvar{\delta}_t=1` even when production is
+  zero. And, indeed, now this might happen, in particular when the
+  startup cost is significantly high: it might be convenient to set
+  this variable to 1 just to avoid paying a startup cost. This is
+  incorrect and, in this model, we need to add the requirement:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \var{x}_t = 0 & \implies \mathvar{\delta}_t = 0
+     \end{align*}
+
+  which can be approximately formulated as
+
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \var{x}_t &\geq  \varepsilon \mathvar{\delta}_t
+     \end{align*}
+
+* Startup time
+
+  Another quite frequent effect of startup is that, not only a cost is
+  incurred, but also production capacity is reduced, due to the time
+  spent in starting the engine. We report here the example for
+  startup,  because for setup the situation is easier. In fact, if,
+  say, one hour of production is lost for setup, we can simply change
+  the capacity of the production plant, reducing it to take into
+  account this one hour loss. With startup the situation is different,
+  as production capacity will be full for every period, except for
+  those periods which immediately follow a change of state.
+
+  Le us assume now that the startup cost model has been included, so that we
+  can use variable :math:`\var{z}_t`  to indicate startup
+  periods. If production capacity is denoted by :math:`\mathpar{C}_t`
+  and the loss of production capacity due to startup is denoted by
+  :math:`\mathpar{ST}_t`, then the logical constraint linking binary
+  variables to production can be written as
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \var{x}_t & \leq \mathpar{C}_t \mathvar{\delta}_t - \mathpar{ST}_t \var{z}_t
+     \end{align*}
+     
+  This way, when startup occurs, the upper bound on production is
+  reduced accordingly.
+
+* Minimum production levels
+
+  In some production planning cases, when production is active, a
+  minimum production level might be imposed. Take into account that,
+  usually, an effect of the presence of setup costs is the fact that
+  when production is active, production levels are non  negligible, to
+  compensate for the setup cost. If, nonetheless, a minimum production
+  level :math:`\mathpar{LB}_t` is required, this can be easily introduced  through a linear
+  inequality:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \var{x}_t & \geq \mathpar{LB}_t \mathvar{\delta}_t
+     \end{align*}
+
+  By the way, when present, this lower bound can take the place of the
+  :math:`\varepsilon` parameter we had to introduce to model some of
+  the logical constraints in previous sections. If we put together the
+  maximum and minimum level requirements, the constraint turns out to
+  be:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \mathpar{LB}_t \mathvar{\delta}_t & \leq \var{x}_t \leq \mathpar{C}_t
+     \mathvar{\delta}_t
+     \end{align*}
+
+  from which it is immediately seen that either the production is zero
+  or otherwise it is within the interval :math:`[\mathpar{LB}_t, \mathpar{C}_t]`
+
+* Safety stock
+
+  A similar lower bound is frequently imposed on inventories too, in
+  order to protect from uncertainties (in the demand, in the
+  production, ...). The difference is that usually a safety stock is
+  always required, and does not depend on other events or binary
+  variables. It can thus be trivially imposed via
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \var{s}_t  & \geq \mathpar{SS}_t
+     \end{align*}
+
+* Unsatisfied demand.
+
+  We have always assumed demand as a quantity to
+  be delivered exactly, possibly with some delay, as we have seen
+  before. However, we might as well turn the balance constraint into a
+  "soft" one by allowing the demand not to be exactly satisfied. Of
+  course this will imply a penalty in the objective function. The
+  standard way to soften an equality can be used to obtain equations
+  like the following one:
+
+  .. math::
+     :nowrap:
+
+     \begin{align*}
+     \var{s}_{t-1} + \var{x}_t & = \mathpar{d}_t + \var{s}_t  -
+     \var{y}_t \\
+     \var{y}_t & \geq 0
+     \end{align*}
+
+  The  non negative variable :math:`\var{y}_t`  subtracted on the
+  right hand side represents the quantity of available product which
+  is not used to satisfy the demand or to feed the inventory. If, as
+  it is required, a positive cost is imposed on this variable in the
+  objective function, then, if at all possible and convenient, demand will be
+  satisfied and this variable will be left equal to zero. Otherwise,
+  either for cost considerations, or in order to cope with
+  limited production capacity in this and earlier periods, it might be
+  convenient to use this variable, paying a cost, and avoid full
+  demand satisfaction. Of course, an upper bound might be imposed to
+  this variable in order to avoid too large a fraction of the demand
+  not to be satisfied.
+     
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Advanced lot sizing models
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We will not go too much into details, in this chapter, on generalized
+lot sizing models. But we would like to introduce at least a few formulation of realistic
+production situations. In fact, real production planning problems
+require us to take into account many different aspects, from the
+multiplicity of products, to the different production phases, to the
+availability of resources. In this part we will define a few such
+models, in order to show the power of linear constraints to model even
+very complex realistic situations. Of course, modeling is not solving,
+and the computational aspects behind the possibility of actually
+solving these models are complex and out of scope in this volume. In any case
+we would like to recall that  modeling the whole
+production planning problem as a single model might be extremely
+beneficial, from a cost point of view; typical practical approaches in
+this field proceed by decomposing the problem into sub-problems, easier
+to solve, but whose interactions are neglected. This usually leads to
+far from optimal solutions, and, thus, inefficiencies.
+Small scale problems can be solved already from the models we will
+introduce here, with general purpose mixed integer linear optimization
+tools. Larger scale problems might require advanced algorithmic
+implementations, or, possibly, improved formulations.
+
+
+-----------------------------------
+Master Production Scheduling models
+-----------------------------------
+
+:index:`MPS` (:index:`Master Production Scheduling`) models consist of a quite
+straightforward generalization of lot sizing to take into account
+
+*  limited resource availability
+*  multiple products
+
+These are two major extensions of the basic model. From one side,
+multiple products are considered and their flow through the planning
+period must be managed separately one from the other. It actually is
+a multi-commodity flow problem. Having different products to consider would not be
+a problem if they were completely independent. On the contrary,
+dependence among decisions is needed, as, in general, these different
+product flows need to access some limited resources. These might be
+shared machines, personnel, prime material, budget ... In what follows we
+formulate  a basic linear model to take into account both multiple
+products as well as resources. We consider also some resource
+consumption due to setup.
+
+Let:
+
+* :math:`i=1,\ldots,m` denote the  indices of different products to
+  be planned simultaneously on the same plant
+* :math:`k =1, \ldots,K` denote the set of indices of a set of
+  resources which are shared among different products. These
+  resources are available with only finite capacity, so conflicts
+  arise for their usage, up to capacity
+* :math:`\mathpar{L}_t^k` is the maximum available quantity of
+  resource :math:`k` during period  :math:`t`. Depending on the
+  resource consumption of various products, this amount cannot be
+  exceeded during any single time period
+* :math:`\mathpar{\alpha}^{ik}`:   the amount of resource :math:`k` which
+  is necessary in order to produce one unit  of  product :math:`i`
+* :math:`\mathpar{\beta}^{ik}` amount of resource :math:`k`  required for
+  production setup relative to product  :math:`i`. Here it is
+  assumed that each product type will generate a setup cost when its
+  production is non zero. Different situations might be dealt with in
+  quite  a similar way.
+
+Given these parameters, a model might be formulated as follows, where
+the superscript on variables denotes each product type:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min &\sum_{t=1}^T \sum_{i=1}^m (\mathpar{p}^i_t \var{x}^i_t +
+   \mathpar{q}^i_t \mathvar{\delta}^i_t + \mathpar{h}^i_t \var{s}^i_t)  \\
+   \var{s}^i_{t-1} + \var{x}^i_t  & = \mathpar{d}^i_t + \var{s}^i_t & \forall\, &i,t\\
+   \var{x}^i_t & \leq  \mathpar{M}^i_t \mathvar{\delta}^i_t & \forall\, &i,t\\
+   \sum_i \mathpar{\alpha}^{ik} \var{x}^i_t + \sum_i \mathpar{\beta}^{ik}
+   \mathvar{\delta}^i_t & \leq \mathpar{L}^k_t
+   & \forall\,&t,k\\\var{x} & \in \R^{mn}_{+} \\
+   \mathvar{\delta} & \in \{0,1\}^{mn} \\
+   \var{s} & \in \R^{m(n+1)}_{+}
+   \end{align*}
+
+The first equation above is the standard inventory balance equation,
+the only difference being the fact that it is replicated for each
+product type: each product has its own production, inventory,
+demand. The following inequalities are the logical constraints which
+force the binary variable, for a product in a specific period, to
+become 1 when the production of that product in that period is non
+zero. Up to now, there was no linking between the different products:
+up to here, different products are independent. The following
+constraints, however, introduce the dependence: at every time period,
+for each of the resources considered, the total amount of resources
+consumed cannot be more than the available quantity. Resources are
+consumed when production is non zero, and the consumption has been
+assumed to be proportional to the quantity produced, with a
+proportionality constant which depends on the product type. Moreover,
+when there is a non zero production, there might be also a fixed
+consumption of a resource due to setup.
+
+A simple example of implementation, along with a small dataset is
+reported in what follows:
+
+.. literalinclude:: AMPL/MPS.mod
+   :caption: MPS.mod
+   :language: ampl
+
+.. literalinclude:: AMPL/MPS.dat
+   :caption: MPS.dat
+   :language: ampl
+   
+Running a mixed integer linear optimization algorithm with these data,
+the following solution is obtained:
+
+.. tikz::
+
+     \begin{tikzpicture}
+     \node (S0) at (0,4) {\small{Shoes}};
+     \node (T0) at (0,1) {\small{Shirts}};
+     \foreach \t in {1,2,3,4,5} {
+     \node[circle,draw] (S\t) at (\t,4) {\t};
+     \node[circle,draw] (T\t) at (\t,1) {\t};
+     }
+     \foreach \t/\x/\d in {1/50/50,2/50/20,3/0/30,4/80/80,5/40/40}{
+     \draw[->] (\t,5) node[above] {\tiny{\x}} -- (S\t);
+     \draw[->] (S\t) -- (\t,3) node[below] {\tiny{\d}};
+     }
+     \draw[->] (S2) -- node[above]{\tiny{30}} (S3);
+     %
+     \foreach \t/\x/\d in {1/30/20,2/30/40,3/63/40,4/27/40,5/0/10}{
+     \draw[->] (\t,2) node[above] {\tiny{\x}} -- (T\t);
+     \draw[->] (T\t) -- (\t,0) node[below] {\tiny{\d}};
+     }
+     \draw[->] (T1) -- node[above]{\tiny{10}} (T2);
+     \draw[->] (T3) -- node[above]{\tiny{23}} (T4);
+     \draw[->] (T4) -- node[above]{\tiny{10}} (T5);
+     \end{tikzpicture}
+		   
+From the picture above it is immediate to see that many properties
+enjoyed by the standard lot sizing model here are no more valid. In
+uncapacitated lot sizing it can be proven that at each period either
+there exist a positive production or a positive inventory, but never
+both. Here this is no more true.  A consequence of the basic property
+of uncapacitated lot sizing is that production is always equal to the
+sum of a set of future consecutive demands, which, again, is false in
+a model like this one.
+
+For what concerns resource consumption, the situation is the
+following:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \textrm{Machine} \\
+   \begin{array}{r|rrrrr}
+   \hline \\
+   t & 1 & 2 & 3 & 4 & 5 \\ \hline
+   \textrm{Actual} & 93 & 93 & 71 & 120 & 45 \\
+   \textrm{Avail}  & 100 & 140 & 100 & 120 & 60 \\ \hline
+   \end{array}
+   \\
+   \textrm{Personnel} \\
+   \begin{array}{r|rrrrr}
+   \hline\\
+   t & 1 & 2 & 3 & 4 & 5 \\ \hline
+   \textrm{Actual} & 80 & 80 & 63 & 107 & 40 \\
+   \textrm{Avail}  & 150 & 80 & 70 & 120 & 60 \\ \hline
+   \end{array}
+   \end{align*}
+
+from which it can be seen the both the Machine as well as the
+Personnel resource are in some time periods used at maximum capacity.
+
+-----------------------------
+Material Requirement Planning
+-----------------------------
+
+The models presented above concern production planning with somewhat
+monolithic and independent products. By this we mean that the unique
+interaction among different products is due to the scarcity of some
+resources, which are needed for different products.
+
+In many situations, however, the situation is highly more
+complex. Frequently a product is made through an assembling of several
+intermediate products or parts. Sometimes production proceeds in
+sequential stages (:index:`series production models`). In these cases
+we might think, for each product, to a graph consisting of a single
+path of successive productions, the final product at one stage being
+the required material for the following one:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \node[vertex,fill=red!25]  (0)  at (0,0) {1};
+   \node[vertex,fill=red!25]  (1)  at (2,0) {2};
+   \node[vertex,fill=red!25]  (2)  at (4,0) {3};
+   \node[vertex,fill=green!25] (3) at (6,0) {\textcolor{blue}{4}};
+   \path[arc] (0) -- (1); 
+   \path[arc] (1) -- (2); 
+   \path[arc] (2) -- (3); 
+   \end{tikzpicture}
+
+To cope with this situation, along with the usual balance constraints
+for each (intermediate and final) product, temporal sequences need to
+be taken into account, as production at downhill stages cannot be
+started until the required production uphill has been completed.
+
+In a more general situation, a final product might be composed of a
+more complex set of intermediate products. The following picture
+graphically represents a part assembly production model:
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=0.8]
+   \foreach \name / \xx / \yy in {a/1/6,b/4/6,c/7/6,d/1/4,e/1/1,
+   f/4/2.5,g/7/2.5,h/9/4}
+   \node[vertex,fill=red!25]  (\name)  at (\xx,\yy) {\textcolor{blue}{\name}};
+   \node[vertex,fill=green!25] (i) at (12,4) {i};
+   \foreach \from / \to in {a/b,b/c,c/h,d/f,e/f,f/g,g/h,h/i}
+   \path[arc] (\from) -- (\to); 
+   \end{tikzpicture}
+
+In an even more general situation, the same product or the same
+intermediate product might be obtained following different production
+paths, and a choice of the most convenient one needs to be
+done. Moreover, each product, either final or intermediate, might need
+a different quantity of parts from the upper production levels, like
+we depict in the following figure:
+
+.. tikz::
+
+   \begin{tikzpicture}[auto,swap,scale=0.8]
+   \foreach \name / \xx / \yy in {a/1/6,b/4/6,c/7/6,d/1/4,e/1/1,
+   f/4/2.5,g/7/2.5,h/9/4}
+   \node[vertex,red!25]  (\name)  at (\xx,\yy) {\textcolor{blue}{\name}};
+   \node[vertex,green!25] (i) at (12,4) {\textcolor{blue}{i}};
+   \foreach \from / \to / \lab in
+   {a/b/1,b/c/3,c/h/2,d/f/3,e/f/1,f/g/1,g/h/2,h/i/2,d/b/2,f/c/4} 
+   \path[arc] (\from) -- node[above] {\lab} (\to); 
+   \end{tikzpicture}
+
+
+In a complex situation like those described here we may assume that a
+graph :math:`G=\langle V,E \rangle` is available to represent the
+flow of material and of parts required for the assembly.
+Let us denote with :math:`\mathpar{r}^{ij}` the number of products of type
+:math:`i` required as input to product :math:`j`. Let
+:math:`\mathpar{\gamma}^i`  the *lead time* for the production of one unit of
+:math:`i`. This is considered as an integer number of time periods
+between the start of production and the time by which the part becomes
+available.
+
+A possibility for the formulation of this model is the following:
+  
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min &\sum_{t=1}^T  \sum_{i=1}^m (\mathpar{p}^i_t \var{x}^i_t +
+   \mathpar{q}^i_t \mathvar{y}\delta^i_t + \mathpar{h}^i_t  \var{s}^i_t)  \\
+   \var{s}^i_{t-1} + \var{x}^i_{t - \mathpar{\gamma}^i}  & =
+   \mathpar{d}^i_t +
+   \sum_{j: (i,j) \in E} \mathpar{r}^{ij}
+   \var{x}^j_t + \var{s}^i_t & \forall\, &i,t\\
+   \var{x}^i_t & \leq  \mathpar{M}^i_t \mathvar{\delta}^i_t & \forall\, &i,t\\
+   \sum_i \mathpar{\alpha}^{ik} \var{x}^i_t + \sum_i \mathpar{\beta}^{ik}
+   \mathvar{\delta}^i_t & \leq \mathpar{L}^k_t 
+   & \forall\,&t,k\\
+   \var{x}, \var{s} & \geq 0\\
+   \mathvar{\delta} & \in \{0,1\}^{mn} \\
+   \end{align*}
+
+This model, again, inherits many of the basic building blocks of
+previously seen models, with some important variations.  In the first
+set of equations, we can recognize the basic structure of balance
+equations. However, in the left hand side, the set of "ready" products
+of type :math:`i` can be seen to be composed either of items in the
+inventory at the end of the previous time period, as usual, plus
+the quantity of produced items which are available. However, in order
+to take into account the lead time, i.e., the time between actual
+production start and the availability of the product, the temporal
+index is not the actual period, but is shifted backward
+:math:`\mathpar{\gamma}_i` time units. This way we can take into
+account the fact that production is not instantaneous, and, in
+particular, production started in a period does not necessarily lead
+to a finished product in the same period, ready to satisfy the demand.
+
+On the right hand side, the output side, we have the demand, which is
+the real, exogenous, demand for that product at that time period; as
+usual, we have the final inventory too. However, now, there is another
+important component of the flow out of period :math:`t`: this is
+composed of all of the material, ready to ship in this period, which
+is required as an input in later production stages. The term
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \sum_{j: (i,j) \in E} \mathpar{r}^{ij}
+   \var{x}^j_t 
+   \end{align*}
+
+corresponds to all of the internal requirement for this product. The
+sum is extended to all production nodes in the MRP graph which require
+parts of type :math:`i` for their assembly. The number of parts
+required is :math:`\mathpar{r}^{ij}`. This way we model both the
+satisfaction of external demand, as well as the demand which arises
+from other production stages within the same plant. The main
+difference between the two demand types is that while the external
+demand may be assumed to be known, or at least, estimated, the
+internal demand is part of the decision process itself, and is linked
+with all of the other variables of the problem.
+
+Of course, this is a basic building block; it might be generalized in
+several ways, taking, e.g., into account some of the extensions we
+have seen before.
+We might have, e.g., some deadlines, which we might model through a
+backlog,  and impose penalties for late delivery.
+It is important to recall that solving problems like
+this one, while computationally difficult, might be extremely
+beneficial in terms of the solution quality.
+
+.. include:: closing.rst
+

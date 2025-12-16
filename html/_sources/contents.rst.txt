@@ -1,0 +1,48 @@
+.. OptimizationModels documentation master file, created by
+   sphinx-quickstart on Sat Feb  6 10:40:56 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Optimization Models
+==============================================
+
+.. toctree::
+   :maxdepth: 4
+   :caption: Table of Contents:
+   :numbered:
+
+   OptimizationModels
+   LinearModels
+   ProductMixProblems
+   BlendingModels
+   MultiPeriodModels
+   NetworkFlow
+   ShortestPath
+   MaximumFlow
+   Transportation
+   Assignment
+   Dynamic
+   Objectives
+   Constraints
+   StochasticOptimization
+   MIPModels
+   StructuredMIPmodels
+   Knapsack.rst
+   SetCovering.rst
+   TravelingSalesPerson.rst
+   Arcrouting.rst
+   Quadratic.rst
+   Appendix
+   Bibliography
+   Version
+   errata
+   
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+.. include:: closing.rst
+

@@ -1,0 +1,705 @@
+.. include:: preamble.rst
+
+.. _set-covering:
+
+--------------------------------
+Set covering, packing, partition
+--------------------------------
+
+Problems in this section are widely used and give rise, in some
+application fields, to huge dimensional optimization problems. All
+these problems can be formalized as the choice of subsets of a ground
+set which satisfy some constraints.
+
+The :index:`set covering` problem is formally defined  as follows: 
+Consider a finite set :math:`\mathcal{S}` and a collection of 
+subsets:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \mathcal{C}  & = \{C_1,C _2, \ldots, C_k\}
+    \subseteq 2^{\mathcal{S}}
+   \end{align*}
+
+where with :math:`2^{\mathcal{S}}` we denote the :index:`power set` of
+:math:`\mathcal{S}`, i.e. the set of all of its subsets.
+
+A :index:`covering` of :math:`\mathcal{S}` with sets in the collection
+:math:`\mathcal{C}` is defined as  a set of sets
+:math:`C_{i_1}, \ldots, C_{i_h} \in \mathcal{C}` such that
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \cup_{j = 1}^{h} C_{i_j} = \mathcal{S}
+   \end{align*}
+ 
+A :index:`packing`  is defined as a collection of pairwise *disjoint*
+sets:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   C_{\ell} \cap C_{k} & = \emptyset  & \forall\, \ell,k \in \{i_1,
+   \ldots, i_h\}
+   \end{align*}
+ 
+A :index:`partitioning` is a collection of subsets which is,
+simultaneously, both a covering and a packing. In other words, every
+element in the ground set is contained in one and only one of the sets
+of the chosen collection.
+
+The formal definition perhaps does not allow to immediately appreciate
+the importance of these models. Some  relevant applications will be
+presented later in this paragraph. We now present a formulation of the
+problem as an integer linear optimization model. 
+
+.. role:: model
+   :class: smallcaps
+   
+:model: Set Covering
+
+|
+   :model:`Sets:`
+|
+   
+   *  :math:`\set{Requests}`: a set of requests which are to be covered;
+   *  :math:`\set{Resources}`: a set of potentially available resources
+   *  :math:`\set{Pairs} \subseteq \set{Requests} \times
+      \set{Resources}`: a
+      pair :math:`(i, j)` belongs to the set :math:`\set{Pairs}`,
+      with :math:`i \in \set{Requests}`
+      and :math:`j \in \set{Resources}`,  if and only if the
+      activation of
+      resource :math:`i` is sufficient to cover the request
+      :math:`j`.
+      It is possible to think of this set as a set of arcs that
+      connect resources and requests.
+
+|
+   :model:`Parameters:`
+|
+
+   * :math:`\param{Cost}_j` the cost of activating  resource
+     :math:`j \in \set{Resources}`; 
+
+|
+   :model:`Variables:`
+|
+
+   * :math:`\mathvar{\delta}_{j}`: binary variable, with  value one
+     if and only if  resource
+     :math:`j \in \set{Resources}` is activated;
+
+|
+   :model:`Constraints:`
+|
+
+   * Covering constraint: every request must be covered by *at least*
+     an active  resource:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+	\sum_{j \in \set{Resources}: (i, j) \in \set{Pairs}} \mathvar{\delta}_{j}& \geq 1
+	& \forall \, i \in \set{Requests}
+	\end{align*}
+
+|
+   :model:`Objective:` 
+|
+
+   * Minimization of the total activation cost:
+
+   .. math::
+      :nowrap:
+      
+      \[
+      \min \sum_{j \in \set{Resources}} \param{Cost}_j \mathvar{\delta}_j
+      \]
+ 
+The model just seen corresponds to the formal definition of
+set-covering. In fact, the set :math:`\mathcal{S}` in the abstract
+definition corresponds
+to the set :math:`\set{Requests}`; for what concerns the subsets,
+these are implicitly defined through the set of :math:`\set{Pairs}`:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   C_j &= \left \{i \in \set{Requests}: (i, j) \in \set{Pairs} \right \}
+   & \forall \, j \in \set{Resources}.
+   \end{align*}
+
+The following is a possible implementation of the model, almost a
+verbatim copy of the above model:
+
+.. literalinclude:: AMPL/setCovering.mod
+   :caption: setCovering.mod
+   :language: ampl
+
+As an example, consider the application of this model to emergency
+planning.
+
+
+   :application: :index:`Localization of emergency facilities`
+
+   In planning for emergency situations, it often happens that we need
+   to decide the location of critical facilities in such a way that
+   the population which might be affected by an emergency will find
+   the necessary equipment or the required support as close as
+   possible. Examples concern the localization of fire stations to
+   respond to large scale fires, the localization of parking places
+   for ambulances, ready to serve nearby population, the choice of
+   emergency inventories (for medicines, medical devices, protective
+   devices, ...). In these cases we can assume that the population is
+   represented as a discrete set of nodes (cities, provinces, blocks
+   in  a city,...); the resources to be activated might be localized
+   in another (possibly, in the same) set of nodes. Between any pair
+   of population nodes and potential resource nodes, a closeness
+   measure has been computed. As an example, given the location of
+   each node, a shortest path model can be solved, for every 
+   origin/destination pair, to determine the travel length between the
+   nodes. This length might be a mileage, or an average travel time.
+   After this pre-processing step, we might consider a threshold on the
+   maximum distance (in space or travel time) between a request node
+   (a population) and a resource node. As an example, we might decide
+   that no more than 20' should be necessary to travel between a
+   resource node and the request node.  Given this threshold, we can
+   state that a resource node covers a request node if the distance
+   between the two nodes is below this threshold.  Given this, we
+   usually look for the smallest number of resources to activate so
+   that all request nodes are within the  maximum travel time
+   from the closest activated
+   resource node. In the example below we refer to a set of
+   municipalities in the Tuscany region, and we consider all of them
+   to be both a requesting node as well as a candidate location for a
+   resource. The following data file, partially displayed, was used to generate the
+   instance, which is based on official statistics on travel times and
+   distance:
+   
+   .. literalinclude:: AMPL/Pistoia.dat
+      :caption: Pistoia.dat (partial)
+      :lines: 1-20
+      :language: ampl
+
+   In order to solve the problem we first need to define requests and
+   resources and to connect them with arcs, if their distance is below
+   the chosen threshold:
+
+   .. literalinclude:: AMPL/setCovering.run
+      :caption: setCovering.run
+      :lines: 1-26
+      :language: ampl
+
+   The following picture graphically displays the solution obtained by
+   running the model with threshold: 20':
+
+   .. tikz::
+
+      \begin{tikzpicture}
+      \node{\includegraphics[scale=0.5]{/home/schoen/git.schoen/teaching/MyBooks/OADS/Sphinx/source/pistoia.png}};
+      %  \draw[help lines,blue] (-5,-5) grid[step=0.5] (5,5);
+      %  \draw[help lines,thick,red] (-5,-5) grid (5,5);
+      %  \draw[help lines,thick,black] (-5,-5) grid[step=5] (5,5);
+      \foreach \i/\x/\y/\name in
+      {1/-3.5/3.65/Abetone,
+      2/2.6/-1.9/Agliana,
+      3/-2/-2.5/Buggiano,
+      4/-2.2/-3.2/Chiesina,
+      5/-2.2/3.5/Cutigliano,
+      6/1/-4/Lamporecchio,
+      7/.5/-3.5/Larciano,
+      8/-1/-.5/Marliana,
+      9/-1.5/-1.5/MassaCozzile,
+      10/-.25/-2.75/Monsummano,
+      11/3/-.5/Montale,
+      12/-1.2/-2/Montecatini,
+      13/-2.5/-.5/Pescia,
+      14/-.75/-2.5/PieveNievole,
+      15/1/0/Pistoia,
+      16/-1.5/1/Piteglio,
+      17/-1.5/-3.5/PonteBugg,
+      18/2/-3/Quarrata,
+      19/2.5/2.25/SambucaP,
+      20/-.5/2.25/SanMarcello,
+      21/.5/-2.25/SerravalleP,
+      22/-2.35/-2.2/Uzzano}
+      {\node (\i) at (\x,\y) {};
+      %\node (\i) at (\x,\y) {\tiny{\name}}; 
+      % \draw (\i) circle(2pt);
+      };
+      \draw[->] (5)  -- (1);
+      \draw[->] (12)  -- (2);
+      \draw[->] (18)  -- (2);
+      \draw[->] (12)  -- (3);
+      \draw[->] (12)  -- (4);
+      \draw[->] (12)  -- (6);
+      \draw[->] (18)  -- (6);
+      \draw[->] (12)  -- (7);
+      \draw[->] (18)  -- (7);
+      \draw[->] (12)  -- (8);
+      \draw[->] (12)  -- (9);
+      \draw[->] (12)  -- (10);
+      \draw[->] (18)  -- (11);
+      \draw[->] (12)  -- (13);
+      \draw[->] (12)  -- (14);
+      \draw[->] (12)  -- (15);
+      \draw[->] (18)  -- (15);
+      \draw[->] (5)  -- (16);
+      \draw[->] (12)  -- (17);
+      \draw[->] (5)  -- (20);
+      \draw[->] (12)  -- (21);
+      \draw[->] (12)  -- (22);
+      \fill (5)  circle(2pt);
+      \fill (12)  circle(2pt);
+      \fill (18)  circle(2pt);
+      \fill (19)  circle(2pt);
+      \end{tikzpicture}
+
+   The next picture shows how the solution would change if the
+   threshold was chosen as 25':   
+
+   .. tikz::
+
+      \begin{tikzpicture}
+      \node{\includegraphics[scale=0.5]{/home/schoen/git.schoen/teaching/MyBooks/OADS/Sphinx/source/pistoia.png}};
+      %  \draw[help lines,blue] (-5,-5) grid[step=0.5] (5,5);
+      %  \draw[help lines,thick,red] (-5,-5) grid (5,5);
+      %  \draw[help lines,thick,black] (-5,-5) grid[step=5] (5,5);
+      \foreach \i/\x/\y/\name in
+      {1/-3.5/3.65/Abetone,
+      2/2.6/-1.9/Agliana,
+      3/-2/-2.5/Buggiano,
+      4/-2.2/-3.2/Chiesina,
+      5/-2.2/3.5/Cutigliano,
+      6/1/-4/Lamporecchio,
+      7/.5/-3.5/Larciano,
+      8/-1/-.5/Marliana,
+      9/-1.5/-1.5/MassaCozzile,
+      10/-.25/-2.75/Monsummano,
+      11/3/-.5/Montale,
+      12/-1.2/-2/Montecatini,
+      13/-2.5/-.5/Pescia,
+      14/-.75/-2.5/PieveNievole,
+      15/1/0/Pistoia,
+      16/-1.5/1/Piteglio,
+      17/-1.5/-3.5/PonteBugg,
+      18/2/-3/Quarrata,
+      19/2.5/2.25/SambucaP,
+      20/-.5/2.25/SanMarcello,
+      21/.5/-2.25/SerravalleP,
+      22/-2.35/-2.2/Uzzano}
+      {\node (\i) at (\x,\y) {};
+      %\node (\i) at (\x,\y) {\tiny{\name}}; 
+      % \draw (\i) circle(2pt);
+      };
+      \draw[->] (16)  -- (1);
+      \draw[->] (15)  -- (2);
+      \draw[->] (21)  -- (2);
+      \draw[->] (15)  -- (3);
+      \draw[->] (21)  -- (3);
+      \draw[->] (15)  -- (4);
+      \draw[->] (21)  -- (4);
+      \draw[->] (16)  -- (5);
+      \draw[->] (21)  -- (6);
+      \draw[->] (15)  -- (7);
+      \draw[->] (21)  -- (7);
+      \draw[->] (15)  -- (8);
+      \draw[->] (21)  -- (8);
+      \draw[->] (15)  -- (9);
+      \draw[->] (21)  -- (9);
+      \draw[->] (15)  -- (10);
+      \draw[->] (21)  -- (10);
+      \draw[->] (15)  -- (11);
+      \draw[->] (21)  -- (11);
+      \draw[->] (15)  -- (12);
+      \draw[->] (21)  -- (12);
+      \draw[->] (21)  -- (13);
+      \draw[->] (15)  -- (14);
+      \draw[->] (21)  -- (14);
+      \draw[->] (21)  -- (15);
+      \draw[->] (15)  -- (17);
+      \draw[->] (21)  -- (17);
+      \draw[->] (15)  -- (18);
+      \draw[->] (21)  -- (18);
+      \draw[->] (15)  -- (19);
+      \draw[->] (16)  -- (20);
+      \draw[->] (15)  -- (21);
+      \draw[->] (15)  -- (22);
+      \draw[->] (21)  -- (22);
+      \fill (15)  circle(2pt);
+      \fill (16)  circle(2pt);
+      \fill (21)  circle(2pt);
+      \end{tikzpicture}
+   
+A matrix formulation of the set-covering problem is easily
+obtained. In fact let :math:`A` denote the :index:`adjacency matrix`
+of the requests/resources pairs, i.e. a binary matrix 
+whose generic element :math:`a_{ij}` is 1 if and only if resource
+:math:`j` covers the request of node :math:`i`.
+
+Consider an instance of the set covering problem  represented in the following
+figure:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \foreach \i/\x/\y in
+   {1/1/5,2/3/5,3/5/5,4/1/3,5/3/3,6/5/3,7/1/1,8/3/1,9/5/1}
+   \node[white,diamond,fill=cyan] (\i) at (\x,\y) {\i};
+   \foreach \i/\x/\y in
+   {A/2/6,B/2/4,C/4/4,D/2/2,E/4/2}
+   \node[circle,fill=yellow] (\i) at (\x,\y) {\i};
+   \foreach \f/\t  in
+   {A/1,A/2,A/3,B/1,B/2,B/4,B/5,B/8,C/2,C/3,C/5,C/6,D/1,D/4,D/5,D/7,D/8,
+   E/5,E/6,E/8,E/9}
+   \draw[->] (\f) -- (\t);
+   \end{tikzpicture}
+   
+In this figure, yellow circle nodes are potential resources,  while
+light blue diamond nodes are requests and arcs connect feasible pairs.
+The adjacency matrix of this instance is
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   A = \begin{array} {||r|ccccc||}
+   \hline
+     & A & B & C & D & E \\ \hline
+   1 & 1 & 1 & 0 & 1 & 0 \\
+   2 & 1 & 1 & 1 & 0 & 0 \\
+   3 & 1 & 0 & 1 & 0 & 0 \\
+   4 & 0 & 1 & 0 & 1 & 0 \\
+   5 & 0 & 1 & 1 & 1 & 1 \\
+   6 & 0 & 0 & 1 & 0 & 1 \\
+   7 & 0 & 0 & 0 & 1 & 0 \\
+   8 & 0 & 1 & 0 & 1 & 1 \\
+   9 & 0 & 0 & 0 & 0 & 1 \\ \hline
+   \end{array}
+   \end{align*}
+
+Reading this matrix by rows, we can immediately see, for example,
+that node 1 can be covered by resources A. B, D, while node 2 can be
+covered by A, B, C.
+Defining a  vector of variables :math:`\mathvar{\delta}`, the
+problem can be formalized as
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min c^T \mathvar{\delta}  & \\
+   A \mathvar{\delta} & \geq  1 \\
+   \mathvar{\delta} & \in  \{0,1\}^n
+   \end{align*}
+   
+Set-covering problems, when analyzed as is usual in complexity theory,
+in the worst case, have an exponential computational complexity. No
+efficient algorithm is known to solve these problems efficiently.
+However it can be shown that the
+optimal (binary) solution is always a basic solution of the
+linear relaxation of the problem, i.e., a vertex of the linear
+relaxation of the problem. So it can happen, and indeed,
+in practice, it happens quite frequently, that the
+linear relaxation already generates the optimal binary solution or that,
+at most, a few iterations of the Branch and Bound method are
+sufficient. Thus, although theoretically very difficult, these
+problems, quite often, are easily solved in practice.
+
+The bottleneck, in many case, is their  huge size, which makes even
+the solution of the  linear relaxation computationally hard.
+Frequently, set covering examples encountered in practical
+applications have millions of variables.
+
+   :application: :index:`Shift planning`
+
+   One of the fields in which the
+   set covering model finds its widest use is that of
+   shift planning (for hospital staff, flights,
+   trains, etc.). In this case the needs to be covered are given
+   by the number of nurses, pilots, locomotives respectively,
+   that must be present in a given period of time on a date, at a 
+   location or on a given route. The resources available are 
+   given by possible shifts.
+   Any shift will cover some of the available needs.
+   The greatest complexity of these models consists in the
+   fact that often the number of different allowed shifts is huge. These are
+   all possible  work/no work combinations which satisfy
+   specific regulations (such as laws, 
+   union contracts, local preferences,...).
+   In planning  air personnel shifts, it is normal
+   to have covering  problems with millions of variables.
+   In the following  example, we
+   consider a generalization of the set-covering model, in 
+   which, for each requirement, a minimum request  of employees
+   is given; this request might be more than one, differently from
+   standard covering
+   problems. Moreover for each resource type which, in this case,
+   represents a possible shift type, an integer number of resources
+   might be chosen, not necessarily binary as in the standard set
+   covering problem.
+
+   The code below implements these small variations:
+   
+   .. literalinclude:: AMPL/shifts.mod
+      :caption: shifts.mod
+      :language: ampl
+
+   It can be immediately seen that this model is pretty similar to the
+   set covering one. We decided to describe the feasible pairs (shifts
+   - covered time slots) through the adjacency matrix instead of the
+   usual list of pairs, for compactness reasons only.
+
+   The following file describes a realistic instance, inspired by a
+   small healthcare facility, operating 7/24, with different
+   requirements during different days and different parts of the
+   day. Each day is divided into 4 time slots: 08-12, 12-16, 16-20,
+   20-08. A minimum request is given for each of these time slots. We
+   assume here that feasible shifts have been generated according to
+   the following rule:
+   
+   #. each week has two days off (V)
+   #. each day only one shift type is possible among: 08-16, 12-20, 20-08
+   #. the day after a night shift is a rest period and no other shift can
+      be assigned
+   #. no more than 2 nights per week are allowed
+   #. shifts are to be considered as cyclical, so that if a night is
+      allocated to Sunday, Monday should be a rest day.
+
+   Applying in an exhaustive way these rules, 1316 possible shifts are
+   obtained. For what concerns the cost, we considered each activate
+   shift with only day shifts to cost 1, each weekly shift with one
+   night to cost 2 and a week with two night shift to cost 5. 
+   The following is a tiny excerpt from the data file representing this
+   instance:
+    
+   .. literalinclude:: AMPL/shifts.dat
+      :caption: shifts.dat
+      :lines: 1-20
+      :language: ampl
+
+   ...
+   
+   .. literalinclude:: AMPL/shifts.dat
+      :lines: 1323-1338
+      :language: ampl
+
+   It is seen that, for example, the first shift type, VVAAAAA,
+   consists in having Monday and Tuesday as a vacation, and work the
+   rest of the week in AM shifts, which means 08-16. The row in the
+   adjacency matrix, thus, has a 1 corresponding to We0812, We1216,
+   Th0812, Th1216, and so on.
+
+   An optimal solution found is reported here:
+
+   .. literalinclude:: AMPL/shifts.out
+      :caption: shifts.out
+      :language: ampl
+
+   This problem is of moderately large size, with 1316 integer
+   variables; however, a good solver could find the provably optimal
+   solution in a fraction of a second, requiring 103 simplex
+   iterations and exploring only one node in the branch and bound
+   tree, confirming what has been previously stated: set covering
+   problems are, quite often, easy to solve to optimality.
+
+   From the output file it can be seen that in some time slots the
+   active personnel is quite larger than that required. This is due,
+   in particular, to the fact the two day shifts both cover the time
+   period 12-16, which turns out in extra workers in these periods.
+
+Another very relevant application of set covering models is in
+solving difficult combinatorial problems by choosing suitable
+components in the solution. Consider the problem of a delivery service
+which needs to serve a set of customers with some trucks. If we are
+allowed to list all possible subsets of customers served by a single
+feasible route, than a set covering approach will choose which subset
+of routes is the most convenient one and covers all of the deliveries.
+
+   :application: :index:`Set Covering approach to Vehicle routing`
+
+   :index:`Vehicle routing` is a very difficult combinatorial optimization
+   problem; a short introduction to the problem will be presented in
+   Chapter :ref:`Vehicle Routing`.
+   A special case, with a single available vehicle,
+   will be analyzed in Chapter :ref:`Sequencing problems: the
+   Traveling Salesperson Problem`.  In the
+   example here, assume routes have to be planned in order to cover at
+   most three cities in the region we already used (file
+   :math:`\texttt{Pistoia.dat}`). Routes might consists of single visits from the start
+   node, which we assume to be the city of Pistoia; or they might be
+   composed of two visits and, in this case, the order of visit is
+   irrelevant, as we assume costs are symmetric. Or a route might
+   consist of three cities to be visited. In this case, the order is
+   relevant and, given three cities :math:`i,j,k`, the optimal route
+   covering them has a cost which can be computes as the minimum of:
+
+   .. math::
+      :nowrap:
+
+      \begin{align*}
+      c_{si}+c_{ij}+ c_{jk}+ c_{ks} \\
+      c_{si}+c_{ik}+ c_{kj}+ c_{js} \\
+      c_{sj}+c_{ji}+ c_{ik}+ c_{ks} 
+      \end{align*}
+
+   We, again, slightly revise the basic model to account for some
+   peculiarities of this case (e.g., the Start node should not be
+   covered, as it is to be considered as a depot):
+  
+   .. literalinclude:: AMPL/VrpCovering.mod
+      :caption: VrpCovering.mod
+      :language: ampl
+   
+   Using data from file Pistoia.dat, we can run the set covering model
+   by executing the following script:
+  
+   .. literalinclude:: AMPL/VrpCovering.run
+      :caption: VrpCovering.run
+      :language: ampl
+
+   In the code, each route cost, corresponding to the total travel
+   time from the start node, to the delivery nodes and back, is
+   augmented with a constant (100 in the example) to promote the usage
+   of a smaller number of trucks. It is a sort of fixed charge for
+   using the truck. Solving this model requires a non negligible time,
+   mostly devoted to generating the set of all feasible routes, which
+   turn out out be 8421. Then, the real optimization is concluded in a
+   very limited amount of time and results in the following route choice:
+   
+  
+   .. tikz::
+
+      \begin{tikzpicture}
+      \node{\includegraphics[scale=0.5]{/home/schoen/git.schoen/teaching/MyBooks/OADS/Sphinx/source/pistoia.png}};
+      \foreach \i/\x/\y/\name in
+      {1/-3.5/3.65/Abetone,
+      2/2.6/-1.9/Agliana,
+      3/-2/-2.5/Buggiano,
+      4/-2.2/-3.2/Chiesina,
+      5/-2.2/3.5/Cutigliano,
+      6/1/-4/Lamporecchio,
+      7/.5/-3.5/Larciano,
+      8/-1/-.5/Marliana,
+      9/-1.5/-1.5/MassaCozzile,
+      10/-.25/-2.75/Monsummano,
+      11/3/-.5/Montale,
+      12/-1.2/-2/Montecatini,
+      13/-2.5/-.5/Pescia,
+      14/-.75/-2.5/PieveNievole,
+      15/1/0/Pistoia,
+      16/-1.5/1/Piteglio,
+      17/-1.5/-3.5/PonteBugg,
+      18/2/-3/Quarrata,
+      19/2.5/2.25/SambucaP,
+      20/-.5/2.25/SanMarcello,
+      21/.5/-2.25/SerravalleP,
+      22/-2.35/-2.2/Uzzano}
+      {\node (\i) at (\x,\y) {};
+      %\node (\i) at (\x,\y) {\tiny{\name}}; 
+      % \draw (\i) circle(2pt);
+      };
+      \draw[-,blue] (15)  -- (18) -- node[sloped,blue,below]{\tiny{39.8}} (2) -- (11) -- (15);
+      \draw[-,red] (15)  -- (3) -- node[sloped,blue,below]{\tiny{52.63}} (4) -- (17) -- (15);
+      \draw[-,green] (15) -- (5) --  node[sloped,blue,below]{\tiny{97.86}} (1) -- (16) -- (15);
+      \draw[-,cyan] (15)  -- (10) --  node[sloped,blue,below]{\tiny{52.95}} (7) -- (6) -- (15);
+      \draw[-,brown] (15)  -- (9) --  node[sloped,blue,below]{\tiny{64.52}} (13) -- (22) -- (15);
+      \draw[-,black] (15)  -- (19) --  node[sloped,blue,below]{\tiny 100.41} (20) -- (8) -- (15);
+      \draw[-,white] (15)  -- (21) --  node[sloped,blue,below]{\tiny{41.99}} (14) -- (12) -- (15);
+      \end{tikzpicture}
+
+   The optimal routes thus found cover all of the request and have a
+   duration, in minutes of traveling, which is displayed in the
+   figure.
+
+   The example above is very important as it shows how a very difficult
+   combinatorial optimization can sometimes be solved by a clever
+   implementation of a set covering model. Vehicle routing problems are
+   notoriously extremely hard to solve in practice;
+   solving these models by exact linear optimization models is out of
+   question except for tiny examples. The example above is an important
+   exception: if                 single routes can be in some way
+   enumerated, then what remains is to pack routes together to cover the
+   demand.
+   A possibility, which is exploited in some real world applications, is
+   to have some heuristic procedure generate a huge amount of feasible
+   routes and then to delegate to the set covering model the choice of
+   the best possible subset.
+   It is worth also considering the fact that the above approach might
+   easily be extended to even more challenging problems. Consider, for
+   example, the case when there are additional constraints: an
+   example are :index:`time windows`: each delivery should occur within a specific
+   time frame. In the approach above, we can simply eliminate from the
+   list those sets of visit nodes which do not satisfy these
+   constraints,
+   although many more routes need to be generated as in this case
+   symmetry does not hold anymore. 
+   Of course the difficulty should also be apparent: already
+   limiting the nodes to be visited in a route to a maximum of three, in
+   a small example like the one in the example we obtained more than eight
+   thousand possible routes. Extending the number of nodes in a route
+   will cause this number to explode. This is however not a hopeless
+   strategy: methods do exist in which this enormous set of routes is
+   only implicitly enumerated, without the need to exhaustively list all
+   of them; a procedure is designed to check whether the current solution
+   in a sequential algorithm is indeed the best one or if one of the
+   routes not yet considered might be profitably included; thus the set
+   of routes among which we choose is dynamically expanded. This subject
+   is however out of topic for this modeling book.
+
+Here we have just seen the most common model, set covering. The other
+models we mentioned in this chapter are also very relevant in
+applications.  The :index:`set packing` problem
+
+.. math::
+   :nowrap:
+	   
+   \begin{align*}
+   \max \sum_{j \in \set{R}} c_j \mathvar{\delta}_j & \\
+   \sum_{j \in \set{R}: (i, j) \in \set{Pairs}} \mathvar{\delta}_{j}& \leq 1
+   & \forall \, i \in \set{U} \\
+   \mathvar{\delta}_j & \in \{0,1\} & \forall\, j \in \set{R}
+   \end{align*}
+
+is concerned with placing a set of facilities, with the highest
+possible value, so that no user (set :math:`\set{U}`) is covered by
+more than one of these. An example application might be the
+localization of some facilities which creates some disturbance to the
+population: as an example, locating base stations for radio
+transmission, so that interference is kept at a minimum. We might
+think to a set of points where the signals are measured and all these
+points should not be reached by more than one signal. This is a
+maximization problem, as the constraints try to avoid placing too many
+resources, so that the objective should try to contrast
+this and promote the maximum compatible set to be chosen. The
+objective function coefficients might be, e.g., a measure of the
+population reached by a good quality signal.
+
+Finally, the :index:`set partitioning` problem is both a set covering as
+well as a packing:
+
+.. math::
+   :nowrap:
+	   
+   \begin{align*}
+   \min \sum_{j \in \set{R}} c_j \mathvar{\delta}_j & \\
+   \sum_{j \in \set{R}: (i, j) \in \set{Pairs}} \mathvar{\delta}_{j}& = 1
+   & \forall \, i \in \set{U} \\
+   \mathvar{\delta}_j & \in \{0,1\} & \forall\, j \in \set{R}
+   \end{align*}
+
+As an example, the vehicle routing problem  described above as an
+application of the set covering model, is, indeed, a set partitioning,
+as we wish every parcel to be delivered by exactly one and only one
+truck.
+
+.. include:: closing.rst
+

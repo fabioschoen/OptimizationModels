@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>9. The transportation model &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="10. Assignment or bi-partite matching" href="Assignment.html" />
+    <link rel="prev" title="8. Maximum Flow" href="MaximumFlow.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="MaximumFlow.html" title="Previous document"><span class="section-number">8. </span>Maximum Flow</a>
+        </li>
+        <li>
+          <a href="Assignment.html" title="Next document"><span class="section-number">10. </span>Assignment or bi-partite matching</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="the-transportation-model">
+<h1><span class="section-number">9. </span>The transportation model<a class="headerlink" href="#the-transportation-model" title="Link to this heading">¶</a></h1>
+<p>The transportation problem is a classic
+network flow problem, used frequently in
+planning  shipments from various sources
+(producers) to different recipients (wholesalers, shops,
+distributors, warehouses, final customers).
+Assume that between some source and some destination
+an arc is present, which represents the possibility of shipping from
+that source to the specific destination. Assume also that the cost of shipping a
+certain commodity is proportional to the shipped quantity.
+Then the problem arises of how to allocate available products
+to the recipients so that the total transport cost
+is minimized. The constraints typically represent the finite
+production or shipping capacity of each source node and the demand to
+be satisfied at each destination node. Sometimes there is also a limit
+on the flow over specific arcs.</p>
+<p>This problem is the simplest possible version of a very relevant
+logistic problem. The most important simplification in this model
+concerns the cost structure: here it is assumed that the
+costs are proportional to the quantity of shipped goods. This is
+reasonable only in certain contexts: for example, if the
+transport consists in data shipment over a telecommunication
+network, then, as a first approximation, it might be
+reasonable to imagine that the assumption is
+valid, as doubling the  amount of transmitted data might correspond,
+on average, to doubling the transmission time or the
+bandwidth used and, frequently, the cost that
+the user is charged for the usage  of the
+communication line increases proportionally to time or bandwidth. Similarly, when
+shipping is made through external couriers (third parties) who charge in proportion
+to the  traveled distance and the mass of the transported material. Or, in a different
+context, it might be reasonable to apply this cost model to
+decisions on the electricity supply: the cost
+connected with the transport of energy might be assumed to be  proportional to
+the distance traveled and the amount of carried energy.</p>
+<p>A radically different situation happens if the optimal
+plan  needs to take into account
+the cost of trucks used in transportation: in many cases, usage of  a
+truck implies different costs: the cost of transportation might be
+considered as more or less  constant, or just weakly increasing (as
+a consequence of the fact that the higher the transported mass the
+higher will be the consumption of fuel); this proportionality will have a
+break, a discontinuity, as soon as the
+shipped quantity will exceed the truck transportation capacity: in
+this case a new truck would need to be acquired, or rent, with a
+sudden increase on costs.
+In cases like this one the problem is no longer the
+classical transportation problem, but it is known as
+the <a class="reference internal" href="TravelingSalesPerson.html#vehicle-routing"><span class="std std-ref">Vehicle Routing</span></a> problem.</p>
+<p>Consider a <em>bipartite</em> graph <span class="math notranslate nohighlight">\(G = \langle V, E \rangle\)</span>; recall that
+a graph is called <em>bipartite</em> if its nodes  can be divided
+into two disjoint subsets (a bi-partition) <span class="math notranslate nohighlight">\(V_{1}, V_{2}\)</span> so that
+each arc has the start node in the first set and the end node in the
+second one. That is, the bipartition of nodes must be such that:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+V_{1} \cup V_{2} &amp; = V \\
+V_{1} \cap V_{2} &amp; = \emptyset \\
+(i, j) \in E &amp; \implies i \in V_{1}, j \in V_{2}
+\end{align*}</div><p>For the transportation problem, the two sets correspond to the
+source and destination nodes. The linear transportation model has the
+following form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Transportation model</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{Orig}\)</span>:  origin nodes</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{Dest}\)</span>:  destination nodes</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{E} \subseteq \set{Orig} \times \set{Dest}\)</span>: set
+of  direct connections between origins and destinations</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\param{Pr}_i\)</span>: upper bound on the production capacity
+(or on the available quantity of finished products)
+of node <span class="math notranslate nohighlight">\(i \in \set{Orig}\)</span>;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Dem}_j\)</span>: demand of destination <span class="math notranslate nohighlight">\(j \in
+\set{Dest}\)</span>;
+it represents the exact quantity
+of goods that recipient <span class="math notranslate nohighlight">\(j\)</span> requires;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Cost}_{ij}\)</span>: unit  transportation cost along arc <span class="math notranslate nohighlight">\((i, j)
+\in \set{E}\)</span></p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{f}_{ij}\)</span>: quantity of goods to be shipped along
+arc <span class="math notranslate nohighlight">\((i, j) \in \set{E}\)</span></p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Demand satisfaction:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{i \in \set{Orig}: (i, j) \in \set{E}} \var{f}_{ij} =
+\param{Dem}_j &amp;&amp; \forall \, j \in \set{Dest}
+\end{align*}</div><p>It is assumed here that all the  demand needs to be satisfied,
+although it would be simple to modify
+the model to include  the possibility of partially unsatisfied demand;</p>
+</li>
+<li><p>Maximum production constraint:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j \in \set{Dest}: (i, j) \in \set{E}} \var{f}_{ij} \leq \param{Pr}_i
+&amp;&amp; \forall \, i \in \set{Orig}
+\end{align*}</div><p>(goods shipped from each producer cannot exceed the
+maximum production, or the availability)</p>
+</li>
+<li><p>Non negativity:
+<span class="math notranslate nohighlight">\(\var{f}_{ij} \geq 0\)</span> for every arc;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Minimization of the overall transport cost:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_{(i, j) \in E} \param{Cost}_{ij} \var{f}_{ij}
+\end{align*}</div></li>
+</ul>
+</div></blockquote>
+<p>Although it might not be immediately apparent, this
+model falls within the class of minimum cost flow models.
+In fact, the objective function  is the same as that of the minimum
+cost flow  problem.
+For what concerns balance constraints, those associated to the demand
+are exactly flow balances (for nodes with no outgoing arc). However,
+the constraints on production nodes are inequalities.
+But if we add a slack to transform them into equivalent equations:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j \in \set{Dest}: (i, j) \in \set{E}} \var{f}_{ij}
++ \var{s}_{i} &amp; = \param{Pr}_i
+ &amp; \forall \, i \in \set{Orig}
+\end{align*}</div><p>then it is possible to interpret this as a balance constraint,  with
+the slack variable <span class="math notranslate nohighlight">\(\var{s}_i\)</span> representing a flow that, at zero
+cost, goes from node <span class="math notranslate nohighlight">\(i\)</span>  to a virtual deposit
+whose demand is equal to the difference between the
+maximum total production and overall satisfied demand. Thanks to this
+interpretation, the model inherits all properties of  the minimum
+cost flow model, including the integrality of optimal solutions if
+maximum productions and demands are integer.
+This property, which is very desirable in general, is particularly
+important here as it implies that no parcel needs to be subdivided
+into parts.</p>
+<p>It is also possible
+to formulate the same problem introducing, as we
+did in the mixed <span class="xref std std-ref">Production and distribution</span>
+example, a single source node
+connected with all sources, with arcs whose maximum capacity
+corresponds to the limit on the productive capacity of each node.</p>
+<dl class="field-list">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-0"></span>Transport of electricity</p>
+<p>An energy company owns various plants,
+located in different areas of a region, and wants to determine
+a minimum cost shipping plan of the produced energy
+to the main cities of the region. Assume that the company
+owns three plants whose maximum production (in
+megawatt/hour) is given by the following table:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array} {| lc |} \hline
+\textrm{Plant} &amp; \textrm{Max production} \\\hline
+\textrm{P} 1 &amp; 40 \\
+\textrm{P} 2 &amp; 50 \\
+\textrm{P} 3 &amp; 40 \\\hline
+\end{array}
+\end{align*}</div><p>while the destination cities have the following demand</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array} {| lc |} \hline
+\textrm{City} &amp; \textrm{Request} \\\hline
+\textrm{C} 1 &amp; 45 \\
+\textrm{C} 2 &amp; 20 \\
+\textrm{C} 3 &amp; 30 \\
+\textrm{C} 4 &amp; 30 \\\hline
+\end{array}
+\end{align*}</div><p>Finally, the shipping cost of one
+megawatt / hour from the plants to the destination  cities is reported in
+table:</p>
+<div class="math notranslate nohighlight">
+\[
+\begin{array} {| lcccc |} \hline
+&amp; \textrm{C} 1 &amp; \textrm{C} 2 &amp; \textrm{C} 3 &amp; \textrm{C} 4 \\\hline
+\textrm{P} 1 &amp; 8 &amp; 6 &amp; 10 &amp; 9 \\
+\textrm{P} 2 &amp; 9 &amp; 12 &amp; 13 &amp; 7 \\
+\textrm{P} 3 &amp; 14 &amp; 9 &amp; 16 &amp; 5 \\\hline
+\end{array}
+\]</div><p>This transportation problem can be graphically represented as
+follows:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-8bc4e3c4d143ba34e37474d9aef62cda03fe025b.png" alt="Figure made with TikZ" /></p>
+</div><p>In the above graph an infinite upper capacity limit has been
+omitted. Inequality constraints on the maximum production levels
+have been represented through the introduction of a dummy source
+node connected to each plant by means of an arc whose maximum
+allowed flow is the upper bound on the capacity.</p>
+<p>By solving the problem, an optimal solution can be obtained, with a
+total cost of 1005, with the following structure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-c0fd53cd96425bf7698f4aaa94933dd8a1289685.png" alt="Figure made with TikZ" /></p>
+</div><p>where it can be seen that plant 3 does not use its full production
+capacity.</p>
+</dd>
+</dl>
+<p>As we have seen, in the transportation model, each shipment
+takes place from producers to consumers: the graph of
+the transportation network is indeed bi-partite. Some variants of the model are possible
+which allow cumulative transport
+to multiple destinations. In this case it could be
+convenient to send a quantity from a single origin
+to satisfy the demand  of two or more destinations, allowing for the
+delivery to one of them and then to the others. In this
+extension there will be transportation arcs
+connecting multiple destinations. Similarly,
+we might think of the case where goods are  loaded in a
+plant and, before delivery to customers,  goods
+produced in other plants are collected: there are therefore arcs
+which connect origin nodes. The inclusion of these arcs turns the transportation problem into
+a generic minimum cost flow one.</p>
+<p>Another very important variant arises when considering
+temporal dynamics, a
+transportation model in which planning includes several
+days or different periods; decisions associated to two consecutive
+time periods are connected through an inventory. The quantity produced in a
+period <span class="math notranslate nohighlight">\(t\)</span> which is not sent to any destination becomes an input, ready
+for shipping, for period <span class="math notranslate nohighlight">\(t + 1\)</span>.
+In a similar way, it might be useful to model situations in which the
+demand cannot be satisfied by current production or by the available
+inventory. In this case the demand constraint becomes a “soft” one,
+which can be violated, although at a cost. This can be represented in
+a network by adding transportation arcs which run “backward” in time
+from production nodes to destination ones: an arc from a producer at
+time <span class="math notranslate nohighlight">\(t+1\)</span> to a destination at time <span class="math notranslate nohighlight">\(t\)</span> represents a
+demand which can be satisfied with one period delay, if
+needed. Usually these backward arcs have a higher unit cost to
+represent penalties for demand which is satisfied after the correct period.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="MaximumFlow.html" title="Previous document"><span class="section-number">8. </span>Maximum Flow</a>
+        </li>
+        <li>
+          <a href="Assignment.html" title="Next document"><span class="section-number">10. </span>Assignment or bi-partite matching</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="MaximumFlow.html" title="previous chapter"><span class="section-number">8. </span>Maximum Flow</a></li>
+      <li>Next: <a href="Assignment.html" title="next chapter"><span class="section-number">10. </span>Assignment or bi-partite matching</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/Transportation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,346 @@
+.. include:: preamble.rst
+
+========================
+The transportation model
+========================
+
+The transportation problem is a classic
+network flow problem, used frequently in 
+planning  shipments from various sources 
+(producers) to different recipients (wholesalers, shops,
+distributors, warehouses, final customers).
+Assume that between some source and some destination
+an arc is present, which represents the possibility of shipping from
+that source to the specific destination. Assume also that the cost of shipping a
+certain commodity is proportional to the shipped quantity.
+Then the problem arises of how to allocate available products
+to the recipients so that the total transport cost
+is minimized. The constraints typically represent the finite
+production or shipping capacity of each source node and the demand to
+be satisfied at each destination node. Sometimes there is also a limit
+on the flow over specific arcs.
+ 
+This problem is the simplest possible version of a very relevant
+logistic problem. The most important simplification in this model
+concerns the cost structure: here it is assumed that the
+costs are proportional to the quantity of shipped goods. This is
+reasonable only in certain contexts: for example, if the
+transport consists in data shipment over a telecommunication
+network, then, as a first approximation, it might be 
+reasonable to imagine that the assumption is
+valid, as doubling the  amount of transmitted data might correspond,
+on average, to doubling the transmission time or the 
+bandwidth used and, frequently, the cost that
+the user is charged for the usage  of the
+communication line increases proportionally to time or bandwidth. Similarly, when
+shipping is made through external couriers (third parties) who charge in proportion
+to the  traveled distance and the mass of the transported material. Or, in a different
+context, it might be reasonable to apply this cost model to
+decisions on the electricity supply: the cost
+connected with the transport of energy might be assumed to be  proportional to
+the distance traveled and the amount of carried energy.
+
+A radically different situation happens if the optimal
+plan  needs to take into account
+the cost of trucks used in transportation: in many cases, usage of  a
+truck implies different costs: the cost of transportation might be
+considered as more or less  constant, or just weakly increasing (as
+a consequence of the fact that the higher the transported mass the
+higher will be the consumption of fuel); this proportionality will have a
+break, a discontinuity, as soon as the
+shipped quantity will exceed the truck transportation capacity: in
+this case a new truck would need to be acquired, or rent, with a
+sudden increase on costs.
+In cases like this one the problem is no longer the
+classical transportation problem, but it is known as
+the :ref:`Vehicle Routing` problem.
+
+
+Consider a *bipartite* graph :math:`G = \langle V, E \rangle`; recall that
+a graph is called *bipartite* if its nodes  can be divided
+into two disjoint subsets (a bi-partition) :math:`V_{1}, V_{2}` so that
+each arc has the start node in the first set and the end node in the 
+second one. That is, the bipartition of nodes must be such that:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   V_{1} \cup V_{2} & = V \\
+   V_{1} \cap V_{2} & = \emptyset \\
+   (i, j) \in E & \implies i \in V_{1}, j \in V_{2}
+   \end{align*}
+
+   
+For the transportation problem, the two sets correspond to the 
+source and destination nodes. The linear transportation model has the
+following form:
+
+     
+.. role:: model
+   :class: smallcaps
+	   
+:model: Transportation model
+
+|
+   :model:`Sets:`
+|
+
+   * :math:`\set{Orig}`:  origin nodes
+   * :math:`\set{Dest}`:  destination nodes
+   * :math:`\set{E} \subseteq \set{Orig} \times \set{Dest}`: set
+     of  direct connections between origins and destinations
+
+|
+   :model:`Parameters:`
+|
+
+   * :math:`\param{Pr}_i`: upper bound on the production capacity
+     (or on the available quantity of finished products)
+     of node :math:`i \in \set{Orig}`;
+   * :math:`\param{Dem}_j`: demand of destination :math:`j \in
+     \set{Dest}`;
+     it represents the exact quantity
+     of goods that recipient :math:`j` requires;
+   * :math:`\param{Cost}_{ij}`: unit  transportation cost along arc :math:`(i, j)
+     \in \set{E}`
+
+|
+   :model:`Variables:`
+|
+
+   * :math:`\var{f}_{ij}`: quantity of goods to be shipped along
+     arc :math:`(i, j) \in \set{E}`
+
+|
+   :model:`Constraints:`
+|
+
+   *  Demand satisfaction:
+
+      .. math::
+	 :nowrap:
+	 
+	 \begin{align*}
+	 \sum_{i \in \set{Orig}: (i, j) \in \set{E}} \var{f}_{ij} =
+	 \param{Dem}_j && \forall \, j \in \set{Dest}
+	 \end{align*}
+
+      It is assumed here that all the  demand needs to be satisfied,
+      although it would be simple to modify
+      the model to include  the possibility of partially unsatisfied demand;
+      
+   *  Maximum production constraint:
+
+      .. math::
+	 :nowrap:
+	    
+	 \begin{align*}
+	 \sum_{j \in \set{Dest}: (i, j) \in \set{E}} \var{f}_{ij} \leq \param{Pr}_i
+	 && \forall \, i \in \set{Orig}
+	 \end{align*}
+      
+      (goods shipped from each producer cannot exceed the
+      maximum production, or the availability)
+      
+   *  Non negativity:
+      :math:`\var{f}_{ij} \geq 0` for every arc;
+
+|
+   :model:`Objective:` 
+|
+
+   * Minimization of the overall transport cost:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+	\min \sum_{(i, j) \in E} \param{Cost}_{ij} \var{f}_{ij}
+	\end{align*}
+
+ 
+Although it might not be immediately apparent, this
+model falls within the class of minimum cost flow models.
+In fact, the objective function  is the same as that of the minimum
+cost flow  problem.
+For what concerns balance constraints, those associated to the demand
+are exactly flow balances (for nodes with no outgoing arc). However,
+the constraints on production nodes are inequalities.
+But if we add a slack to transform them into equivalent equations:
+
+.. math::
+   :nowrap:
+   
+   \begin{align*}
+   \sum_{j \in \set{Dest}: (i, j) \in \set{E}} \var{f}_{ij}
+   + \var{s}_{i} & = \param{Pr}_i
+    & \forall \, i \in \set{Orig}
+   \end{align*}
+   
+then it is possible to interpret this as a balance constraint,  with
+the slack variable :math:`\var{s}_i` representing a flow that, at zero
+cost, goes from node :math:`i`  to a virtual deposit
+whose demand is equal to the difference between the
+maximum total production and overall satisfied demand. Thanks to this
+interpretation, the model inherits all properties of  the minimum
+cost flow model, including the integrality of optimal solutions if
+maximum productions and demands are integer. 
+This property, which is very desirable in general, is particularly
+important here as it implies that no parcel needs to be subdivided
+into parts.
+
+It is also possible 
+to formulate the same problem introducing, as we
+did in the mixed :ref:`Production and distribution`
+example, a single source node
+connected with all sources, with arcs whose maximum capacity
+corresponds to the limit on the productive capacity of each node.
+ 
+:application: :index:`Transport of electricity`
+	      
+   An energy company owns various plants,
+   located in different areas of a region, and wants to determine
+   a minimum cost shipping plan of the produced energy
+   to the main cities of the region. Assume that the company
+   owns three plants whose maximum production (in 
+   megawatt/hour) is given by the following table:
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      \begin{array} {| lc |} \hline
+      \textrm{Plant} & \textrm{Max production} \\\hline
+      \textrm{P} 1 & 40 \\
+      \textrm{P} 2 & 50 \\
+      \textrm{P} 3 & 40 \\\hline
+      \end{array}
+      \end{align*}
+
+   while the destination cities have the following demand
+
+   .. math::
+      :nowrap:
+
+      \begin{align*}
+      \begin{array} {| lc |} \hline
+      \textrm{City} & \textrm{Request} \\\hline
+      \textrm{C} 1 & 45 \\
+      \textrm{C} 2 & 20 \\
+      \textrm{C} 3 & 30 \\
+      \textrm{C} 4 & 30 \\\hline
+      \end{array}
+      \end{align*}
+      
+      
+   Finally, the shipping cost of one 
+   megawatt / hour from the plants to the destination  cities is reported in
+   table:
+
+   .. math::
+      :nowrap:
+	 
+      \[
+      \begin{array} {| lcccc |} \hline
+      & \textrm{C} 1 & \textrm{C} 2 & \textrm{C} 3 & \textrm{C} 4 \\\hline
+      \textrm{P} 1 & 8 & 6 & 10 & 9 \\
+      \textrm{P} 2 & 9 & 12 & 13 & 7 \\
+      \textrm{P} 3 & 14 & 9 & 16 & 5 \\\hline
+      \end{array}
+      \]
+      
+   This transportation problem can be graphically represented as
+   follows:
+
+   .. tikz::
+
+      \begin{tikzpicture}[yscale=1.1,xscale=0.9]
+      \newcommand{\tvar}[1]{{\color{red}{\small{\mathbf{#1}}}}}
+      \newcommand{\tparam}[1]{{\color{blue}{#1}}}
+      \foreach \x / \y / \name / \colnode in
+      {-1/0/i/,2/0/j/,-1/3/s/}   
+      \node[vertex,\colnode] (\name) at (\x,\y) {\textcolor{black}{\name}};
+      \foreach \x / \y / \name / \colnode in
+      {1/1/P3/green!25,1/3/P2/green!25,1/5/P1/green!25,6/0/C4/cyan!25,6/2/C3/cyan!25,
+      6/4/C2/cyan!25,6/6/C1/cyan!25}   
+      \node[vertex,\colnode] (\name) at (\x,\y) {\textcolor{black}{\name}};
+      \foreach \source /  \dest / \cost / \capac in
+      {i/j/$\tparam{c}_{ij}$/;$\tparam{Fmax}_{ij}$,s/P1/0/;40,s/P2/0/;50,s/P3/0/;40,P1/C1/8/,P1/C2/6/,P1/C3/10/,P1/C4/9/,
+      P2/C1/9/,P2/C2/12/,P2/C3/13/,P2/C4/7/, P3/C1/14/,P3/C2/9/,P3/C3/16/,P3/C4/5/}
+      \path[arc] (\source) -- node[font=\tiny,sloped,near end,above left]
+      {\cost \capac} (\dest);
+      \node[below right=1em] at (C1) { -45};
+      \node[below right=1em] at (C2) { -20};
+      \node[below right=1em] at (C3) { -30};
+      \node[below right=1em] at (C4) { -30};
+      \end{tikzpicture}
+
+   In the above graph an infinite upper capacity limit has been
+   omitted. Inequality constraints on the maximum production levels
+   have been represented through the introduction of a dummy source
+   node connected to each plant by means of an arc whose maximum
+   allowed flow is the upper bound on the capacity.
+      
+   By solving the problem, an optimal solution can be obtained, with a
+   total cost of 1005, with the following structure:
+
+
+   .. tikz::
+
+      \begin{tikzpicture}[scale=0.75]
+      \foreach \x / \y / \name / \colnode in
+      {1/1/P3/green!25,1/3/P2/green!25,1/5/P1/green!25,6/0/C4/cyan!25,6/2/C3/cyan!25,
+      6/4/C2/cyan!25,6/6/C1/cyan!25}   
+      \node[vertex,\colnode] (\name) at (\x,\y) {\textcolor{black}{\name}};
+      \node[below right=1em] at (C1) { -45};
+      \node[below right=1em] at (C2) { -20};
+      \node[below right=1em] at (C3) { -30};
+      \node[below right=1em] at (C4) { -30};
+      \foreach \source / \dest /\flow in
+      {P1/C2/15,P1/C3/25,P2/C1/45,P2/C3/5,P3/C2/5,P3/C4/30}
+      \path[arc,blue] (\source) -- node[font=\tiny,sloped,above left,near end]
+      {\flow} (\dest);
+      \end{tikzpicture}
+
+   where it can be seen that plant 3 does not use its full production
+   capacity.
+
+   
+ 
+As we have seen, in the transportation model, each shipment 
+takes place from producers to consumers: the graph of
+the transportation network is indeed bi-partite. Some variants of the model are possible
+which allow cumulative transport
+to multiple destinations. In this case it could be
+convenient to send a quantity from a single origin 
+to satisfy the demand  of two or more destinations, allowing for the
+delivery to one of them and then to the others. In this
+extension there will be transportation arcs 
+connecting multiple destinations. Similarly,
+we might think of the case where goods are  loaded in a
+plant and, before delivery to customers,  goods
+produced in other plants are collected: there are therefore arcs
+which connect origin nodes. The inclusion of these arcs turns the transportation problem into
+a generic minimum cost flow one.
+ 
+Another very important variant arises when considering 
+temporal dynamics, a
+transportation model in which planning includes several
+days or different periods; decisions associated to two consecutive
+time periods are connected through an inventory. The quantity produced in a
+period :math:`t` which is not sent to any destination becomes an input, ready
+for shipping, for period :math:`t + 1`.
+In a similar way, it might be useful to model situations in which the
+demand cannot be satisfied by current production or by the available
+inventory. In this case the demand constraint becomes a "soft" one,
+which can be violated, although at a cost. This can be represented in
+a network by adding transportation arcs which run "backward" in time
+from production nodes to destination ones: an arc from a producer at
+time :math:`t+1` to a destination at time :math:`t` represents a
+demand which can be satisfied with one period delay, if
+needed. Usually these backward arcs have a higher unit cost to
+represent penalties for demand which is satisfied after the correct period.
+
+.. include:: closing.rst
+

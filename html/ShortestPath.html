@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>7. Shortest (Minimum Cost) Path Problems &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="8. Maximum Flow" href="MaximumFlow.html" />
+    <link rel="prev" title="6. Network flow models" href="NetworkFlow.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="NetworkFlow.html" title="Previous document"><span class="section-number">6. </span>Network flow models</a>
+        </li>
+        <li>
+          <a href="MaximumFlow.html" title="Next document"><span class="section-number">8. </span>Maximum Flow</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="shortest-minimum-cost-path-problems">
+<h1><span class="section-number">7. </span>Shortest (Minimum Cost) Path Problems<a class="headerlink" href="#shortest-minimum-cost-path-problems" title="Link to this heading">¶</a></h1>
+<p>Consider a special case of the minimum cost flow problem in which</p>
+<ol class="arabic simple">
+<li><p>there are two special nodes <span class="math notranslate nohighlight">\(s, t\)</span>, called
+respectively <span class="target" id="index-0"></span>source and <span class="target" id="index-1"></span>terminal (or <span class="target" id="index-2"></span>origin
+and <span class="target" id="index-3"></span>destination)</p></li>
+<li><p>the balance is  <span class="math notranslate nohighlight">\(+1\)</span>  for the source node,  <span class="math notranslate nohighlight">\(-1\)</span> for the
+terminal node, zero otherwise</p></li>
+<li><p>the lower bound for the flow  is everywhere 0</p></li>
+<li><p>the upper bound is <span class="math notranslate nohighlight">\(\infty\)</span> (hence the corresponding constraint
+can be omitted).</p></li>
+</ol>
+<p>This special case is called <span class="target" id="index-4"></span>minimum cost path problem and can
+be represented as follows:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{f}} \sum_{(i, j) \in E} \param{c}_{ij} \var{f}_{{ij}} \label{eq: sp} \\
+\sum_{(v, j) \in E} \var{f}_{vj} - \sum_{(i, v) \in E} \var{f}_{iv} &amp;
+= \left \{
+\begin{array}[c]{rl}
++1 &amp; \text{if } v = s \\
+-1 &amp; \text{if } v = t \\
+0 &amp; \text{otherwise}
+\end{array}
+\right. &amp; \forall\,v \in V \\ \nonumber
+\var{f}_{ij} &amp; \geq0 \nonumber
+\end{align*}</div><p>In this minimum cost flow problem
+a single  unit of flow starts from the source node and goes to the
+destination node.</p>
+<p>Based on  the scheme already used, the minimum cost path model can be
+represented as follows:</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Minimum cost path</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\({V}\)</span>  nodes of the graph;</p></li>
+<li><p><span class="math notranslate nohighlight">\(E \subseteq \set{V} \times \set{V}\)</span>: set of arcs</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\param{s} \in V\)</span>: source, or origin;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{t} \in V\)</span>: terminal, or destination; <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span>
+are symbolic parameters, not numerical ones.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{c}_{ij}\)</span>: “cost” associated with one unit of flow
+traversing arc <span class="math notranslate nohighlight">\((i, j) \in E\)</span>; it is not necessarily a
+monetary cost: it might be travel time, an index of discomfort or
+of danger, the length, fuel consumption, difficulty, slope, …</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{f}_{ij}\)</span>: flow along arc  <span class="math notranslate nohighlight">\((i, j) \in E\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Flow conservation:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+= \left \{
+\begin{array} {rl}
+    1 &amp; \textrm{if } v = \param{s} \\
+    -1 &amp; \textrm{if } v = \param{t} \\
+    0 &amp; \textrm{otherwise}
+\end{array}
+\right. \qquad \forall \, v \in V
+\end{align*}</div></li>
+<li><p>Flow non-negativity:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{f}_{ij} \geq 0 \qquad \forall \, (i, j) \in E
+\end{align*}</div></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><p>Cost minimization:</p>
+<div class="math notranslate nohighlight">
+\[
+\min \sum_{(i, j) \in E} \param{c}_{ij} \var{f}_{ij}
+\]</div></div></blockquote>
+<p>An example of implementation of the model is given in the following.
+We recall however that this model is a  special case of the minimum
+cost flow one and thus can be easily solved using the generic
+model formulation. It is possible, in other words, to use the generic
+minimum cost flow model and simply implement a minimum cost path
+instance by suitably defining the problem’s data.  Here we report a
+possible implementation also in order to show some peculiar aspects of
+the modeling language.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">sp.mod</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="kr">within</span><span class="w"> </span><span class="p">(</span>NODES<span class="w"> </span><span class="kr">cross</span><span class="w"> </span>NODES<span class="p">);</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Cost</span><span class="p">{</span>ARCS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">S</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="p">(</span>NODES<span class="w"> </span><span class="kr">diff</span><span class="w"> </span><span class="p">{</span>S<span class="p">});</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">f</span><span class="p">{</span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">cost</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>Cost<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>f<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">Conservation</span><span class="w"> </span><span class="p">{</span>n<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">}:</span>
+<span class="w">	</span><span class="kr">sum</span><span class="p">{(</span>n<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>f<span class="p">[</span>n<span class="p">,</span>j<span class="p">]</span><span class="w"> </span>
+<span class="w">	</span><span class="o">-</span><span class="w"> </span><span class="kr">sum</span><span class="p">{(</span>i<span class="p">,</span>n<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>f<span class="p">[</span>i<span class="p">,</span>n<span class="p">]</span><span class="w"> </span><span class="o">=</span>
+<span class="w">	</span><span class="kr">if</span><span class="w"> </span><span class="p">(</span>n<span class="w"> </span><span class="o">=</span><span class="w"> </span>S<span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="o">+</span><span class="mi">1</span><span class="w"> </span>
+<span class="w">        </span><span class="kr">else</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span>n<span class="w"> </span><span class="o">=</span><span class="w"> </span>T<span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span>
+<span class="w">        </span><span class="kr">else</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<section id="the-problem-of-arcs-with-negative-cost">
+<h2><span class="section-number">7.1. </span>The problem of arcs with negative cost<a class="headerlink" href="#the-problem-of-arcs-with-negative-cost" title="Link to this heading">¶</a></h2>
+<p>Before going into more details on this  model and its many
+applications it is important  to check whether this model is indeed a
+correct one. By this we mean that it is important to check whether the
+optimal solution to this model is indeed an optimal path. We will see
+that in some cases the optimal solution might not be a path or it
+might be sub-optimal. These defects might however happen only when some
+arc has negative cost, i.e., traversing an arc produces a gain,
+instead of a cost. This might seem curious in general, but there are
+many situations in which this is normal. Just as an example, there are
+cases in which instead of minimizing costs, we would like to find a
+path over which some kind of <em>utility</em> is maximized. Maximizing a
+positive utility is equivalent to minimize its opposite, which is thus
+a negative cost.</p>
+<p>A <span class="target" id="index-5"></span>path in a directed graph is a finite sequence</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+v_1,
+(v_1,v_2), v_2, (v_2,v_3), v_3,\ldots, v_k
+\end{align*}</div><p>such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+v_h &amp; \in V &amp; \forall\, h=1,k \\
+(v_h, v_{h+1}) &amp; \in E &amp; \forall\, h = 1, k-1
+\end{align*}</div><p>This sequence is composed
+of nodes and arcs; when the graph has no parallel arcs (arcs with the
+same end points), it
+can be represented more simply and without ambiguity as a finite sequence of nodes <span class="math notranslate nohighlight">\(v_1,
+v_2, \ldots, v_k\)</span> where it is understood that <span class="math notranslate nohighlight">\((v_h,v_{h+1}) \in E\)</span>,
+that is, every pair of consecutive nodes in the path is an arc in the
+graph.</p>
+<p>Assume that the linear optimization model has an optimal solution.
+The model is a special case of the
+minimum cost flow and thus, being the right hand side of the model
+integer, it is immediate to deduce that all basic solutions and, in
+particular, an optimal one, will be integer. However it is not
+granted that an optimal solution,  when it exists, is <span class="math notranslate nohighlight">\(binary\)</span>.
+This fact is not a problem in itself, as a flow larger than one might
+represent a flow passing more than once trough an arc. However this is
+the sign of possible difficulties, as we are going to show now.</p>
+<p>Consider the following graph, where the label on each arc represents
+the cost:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-76b80a6789a5fccb67b9bb282c9ce34fd2abc3d4.png" alt="Figure made with TikZ" /></p>
+</div><p>Here a <span class="target" id="index-6"></span>directed cycle exists in the graph: by this we mean a
+directed path with the same start and end node. In this case, the node
+sequence <span class="math notranslate nohighlight">\(A,B,C,A\)</span> corresponds to a directed cycle. Although it is
+evident that the minimum cost path in the graph is  <span class="math notranslate nohighlight">\(s,A,B,t\)</span>, with
+total cost 3, sub-optimal paths exist, like, e.g.,
+<span class="math notranslate nohighlight">\(s,A,B,C,A,B,t\)</span>. The flow along this path will be non binary: one unit
+on <span class="math notranslate nohighlight">\((s,A),(B,C), (C,A), (B,t)\)</span>, but two units along <span class="math notranslate nohighlight">\((A,B)\)</span>,
+corresponding to two passages along this arc. It is easy to imagine
+how, going through the cycle more than once, other non binary feasible
+solutions might be found. Of course, in this case, it will be costly
+to traverse the cycle, so an optimal solution will be
+<span class="target" id="index-7"></span>acyclic, i.e., it will not contain any cycle with positive flow.</p>
+<p>Assume now that the cost associated to arc <span class="math notranslate nohighlight">\((B,C)\)</span> is
+<span class="math notranslate nohighlight">\(-2\)</span>;</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-0d7f503917bf6e526fb325ee1bb711ebff6d2c03.png" alt="Figure made with TikZ" /></p>
+</div><p>Now the situation is different because, thanks to this
+negative cost, the overall cost of the cycle <span class="math notranslate nohighlight">\(A,B,C,A\)</span> is null. Thus
+it is possible to assign flow to this cycle, at no additional cost. As a
+consequence, there exist optimal solutions which include a cycle and,
+thus, have non binary flows. The cyclic solution <span class="math notranslate nohighlight">\(s,A,B,C,A,B,t\)</span> has
+the same cost as the optimal one and, thus, is optimal. It can be
+proven, however, that in this problem feasible solutions which contain
+cycles are not basic solutions: linear independence of the columns
+associated to arcs with positive flow correspond to the absence of
+cycles. Here with the term cycle we consider generic ones, i.e., even not
+directed ones or, in other words, closed paths which, after possibly a
+few changes in the direction of some arcs, turn into a directed
+cycle.
+Thus, even if an
+optimal cyclic solution might exist, the fundamental theorem of linear
+optimization grants that at least an
+optimal acyclic solution  exists too. And most of the commonly used linear
+optimization algorithms will return such an optimal
+basic solution.</p>
+<p>However, going further with the example, assume now that the cost of
+arc <span class="math notranslate nohighlight">\((B,C)\)</span>  is, say, <span class="math notranslate nohighlight">\(-3\)</span>: now, going through the cycle <span class="math notranslate nohighlight">\(A,B,C,A\)</span>
+will “cost” <span class="math notranslate nohighlight">\(-1\)</span>. In other words, the cycle gives us a positive
+gain. It is now evident that it is worth going through the cycle. If
+we traverse the cycle 1, 2, 3 times, the gain will be 1, 2, 3,…
+From  this, it immediately follows that the minimum cost path problem
+in this case becomes unsolvable or, more precisely, <em>unbounded</em>. Even in
+this case, the linear optimization formulation given before is correct
+and trying to solve that model in this case will correctly detect the
+unboundedness of the problem. Difficulties however arise in a slightly
+different situation. Consider the following example:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-76f466e49f32fbec95a4b3f9475943fdf79fd125.png" alt="Figure made with TikZ" /></p>
+</div><p>Here there is a unique, thus optimal, path <span class="math notranslate nohighlight">\(s,A,t\)</span> whose cost is 2.
+However, the linear optimization model turns out to be unbounded,
+as it is possible to assign any positive value to the arcs composing
+cycle BCDB, without violating any constraint. Thus the linear
+optimization model does not correctly represent the minimum cost path
+problem in this case, as a consequence of a negative cost cycle in the
+graph. We might think that bounding the flow over each arc to 1 might
+solve the problem, but this is false. Indeed, assigning a finite upper
+bound  to each arc will make the problem bounded. However, in this
+case, the optimal solution would assign unit flow to <span class="math notranslate nohighlight">\((s,A), (A,t)\)</span>
+but also to <span class="math notranslate nohighlight">\((B,C), (C,D), (D,B)\)</span>, thus returning an incorrect
+solution with an incorrect total cost. In this case the solution,
+although incorrect, contains the minimum cost path. Unfortunately, again,
+this is not the case, in general. Consider the following example:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-dbed36ea1fbac1768bccdf7fd936d71ad92ec650.png" alt="Figure made with TikZ" /></p>
+</div><p>Bounding the flow on each arc to 1 unit as a maximum, any linear
+optimization software would return the following optimal solution, consisting of
+one unit of flow on each arc, except arc  <span class="math notranslate nohighlight">\((D,t)\)</span>, with total cost
+<span class="math notranslate nohighlight">\(-3\)</span> (the flow is reported in red below each arc):</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-9208403d64f50b30e7605a95eed8c893536fd82e.png" alt="Figure made with TikZ" /></p>
+</div><p>However, the minimum cost path is  <span class="math notranslate nohighlight">\(s,B,D,t\)</span>,(cost: 1) which is not
+contained in the linear optimization solution:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-60d6391188d6f135e99f6a5e1fe1df84f467eca2.png" alt="Figure made with TikZ" /></p>
+</div><p>Concluding this section, it can be observed that problems arise when a
+negative cost cycle is included in the graph. In these cases the
+linear model might not be correct and special care has to be taken in order to
+avoid solution which include cycles. This can be done, as it will be
+seen in chapter <a class="reference internal" href="TravelingSalesPerson.html#sequencing-problems-the-traveling-salesperson-problem"><span class="std std-ref">Sequencing problems: the Traveling Salesperson Problem</span></a>.
+But the inclusion of constraints to avoid cycles will come at a huge
+computational cost. It can be proven that, while the minimum cost path
+is “easy”, in the sense that it admits a solution time which grows
+at most polynomially with the size of the problem, when negative
+cycles are present the complexity becomes much higher and no
+polynomial time algorithm is known, nor it is likely to be found in
+the future.</p>
+<p>It is also important to recall, however, that in the vast majority of
+practical cases the linear model will be a correct representation of
+the problem. Two wide classes of cases in which the model is granted
+to be correct
+are:</p>
+<ul class="simple">
+<li><p>graphs with non negative arc costs</p></li>
+<li><p>acyclic graphs, even with negative cost arcs</p></li>
+</ul>
+<p>In the two cases above it is evident that no negative cost cycle can
+exist. It is not difficult to prove that in these cases the linear
+model will be a correct one for the minimum cost
+path problem.</p>
+<p>Going back to the application of this model, let us consider the
+following application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-8"></span>Minimum resistance path in an electrical network</p>
+</dd>
+</dl>
+<p>Consider the following minimum cost path problem:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-536881e1a8bb962ebb5fc59887c6d07c8b98480c.png" alt="Figure made with TikZ" /></p>
+</div><p>This graph is undirected, but we can consider it as a directed graph
+in which each edge corresponds to two arcs, in opposite directions,
+each with the same cost as displayed. Assume we wish to find the
+minimum cost path from node <span class="math notranslate nohighlight">\(-\)</span>  to node <span class="math notranslate nohighlight">\(+\)</span>. This network might be an
+electrical one and we are interested in finding the minimum total resistance
+path in the network, assuming the labels of each edge are the
+resistances associated to each connection.</p>
+<p>Solving this problem either with a specialized shortest path algorithm
+or with a generic linear optimization tool, we obtain the optimal
+solution as <span class="math notranslate nohighlight">\(-,F,E,+\)</span> with total cost 510.</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-43292ad1d6277dacd8c844b2b0b23d0afa3c2877.png" alt="Figure made with TikZ" /></p>
+</div></section>
+<section id="dual-of-the-minimum-cost-path-model">
+<h2><span class="section-number">7.2. </span>Dual of the minimum cost path model<a class="headerlink" href="#dual-of-the-minimum-cost-path-model" title="Link to this heading">¶</a></h2>
+<p>In this section we analyze the <em>dual</em> of the linear model for the
+minimum cost path problem (assuming it correctly represents the
+minimum cost path problem).
+Consider the matrix representation of the minimum cost path problem:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{f}} \param{c}^T \var{f} &amp; \\
+\param{A} \var{f} &amp; = \mathbf{e}_s-\mathbf{e}_t \\
+\var{f} &amp; \geq 0
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\param{A} \in \{-1, 0, +1\}^{|V| \times |E|}\)</span> is the <span class="target" id="index-9"></span>incidence
+matrix of the graph and <span class="math notranslate nohighlight">\(\mathbf{e}_v \in \R^{|V|}\)</span> is a binary vector
+whose components are all zero except the one associated to node
+<span class="math notranslate nohighlight">\(v\)</span>. Thus the right hand side is +1 in the equation of the
+origin node, -1 in that of the destination and zero otherwise.</p>
+<p>This is a standard linear optimization model whose dual is immediately
+found to be</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max_{\mathvar{\lambda}} \mathvar{\lambda}^T (\mathbf{e}_s-\mathbf{e}_t) &amp; \\
+\mathvar{\lambda}^T \param{A} &amp; \leq \param{c}
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\mathvar{\lambda}_i\)</span> denotes the vector of
+dual variable associated to the nodes of the
+graph. The dual problem, in explicit form, turns out to be</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t} &amp; \label{eq: sp-dual-espl} \\
+\mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} &amp; \leq
+\param{c}_{ij} &amp; \forall \, (i, j) \in E
+\end{align*}</div><p>Consider the previous example of an electrical network. Dual variables
+can be thought of as node <span class="target" id="index-10"></span>potentials. If a voltage is applied
+between the two special  nodes <span class="math notranslate nohighlight">\(+,-\)</span>, the objective function of the
+dual corresponds to the maximization of the <span class="target" id="index-11"></span>difference of potential,
+or <span class="target" id="index-12"></span>tension,
+between the source and the terminal
+nodes (negative and positive nodes). Constraints can be interpreted as
+limits on the maximum allowable tension <span class="math notranslate nohighlight">\(\param{c}_{ij}\)</span> at the extremes of each
+arc <span class="math notranslate nohighlight">\((i,j)\)</span>.
+Thus the dual of the shortest path problem is a problem of maximum
+tension with bounds on the tension at each arc. It can be seen that
+node potentials never appear isolated in the constraints or the
+objective; in each expression, the difference between two potentials
+always appear. Thus each feasible solution, and in particular, an
+optimal one, can always be modified by adding a constant to each
+potential (dual variable). Seen in a different way, the dual problem has a “free”
+variable, which can be set to an arbitrary value. As an example, we
+might chose any node and fix its potential to zero (or <em>ground</em>).
+This redundancy in the dual variables is connected with a “primal”
+redundancy: a balance constraint can be arbitrarily chosen and deleted
+from the model, without changing the set of feasible solutions. It is
+not difficult to show that, if, in the primal, the balance constraint
+associated to node <span class="math notranslate nohighlight">\(i\)</span> is canceled then in the dual the optimal
+solution will correspond to one in which <span class="math notranslate nohighlight">\(\mathvar{\lambda}_i = 0\)</span>.</p>
+<p>In the example above, an optimal solution to the dual problem is
+reported in the following figure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-dff0d716143f385202b432d5b5aa8463769a0d13.png" alt="Figure made with TikZ" /></p>
+</div><p>From this solution it is also possible to notice that, as a
+consequence of complementarity, on all arcs on which a positive
+(primal) flow is assigned, there cannot be any slack in the dual
+constraint. In particular we can observe that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\lambda}_F - \mathvar{\lambda}_{-}  &amp; = 250 \\
+\mathvar{\lambda}_E - \mathvar{\lambda}_{F}  &amp; = 150 \\
+\mathvar{\lambda}_{+} - \mathvar{\lambda}_{E}  &amp; = 110 \\
+\end{align*}</div><p>An alternative interpretation of the dual of the minimum cost path
+problem is a mechanical one.
+Consider  a  physical model of a graph, made of strings,
+in which  nodes are knots and arc lengths are proportional to arc costs.
+Considering the dual, as a maximum tension problem, it is possible to
+think to an analogical solution procedure, in which nodes <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span>
+are pulled in opposite directions as much as possible, without exceeding
+the length of each arc.
+When a maximum tension is reached, an optimal, minimum length path,
+will be in tension. Consider the following example:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-2a8e272340490b8cbb7dc533e27709ff7605e330.png" alt="Figure made with TikZ" /></p>
+</div><p>It is easy to see that the minimum cost path is <span class="math notranslate nohighlight">\(sAt\)</span> and that
+assigning potential 25 to the node <span class="math notranslate nohighlight">\(s\)</span>, 15 to <span class="math notranslate nohighlight">\(A\)</span>,
+20 to <span class="math notranslate nohighlight">\(B\)</span>  and 0 to
+<span class="math notranslate nohighlight">\(t\)</span>,  an optimal dual solution is obtained. This solution can
+be represented with the string model as in the next graph (please
+notice that in this picture arc lengths are not correctly scaled):</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-d17dde7ae7e83cd45076a9919301eb32da28cf35.png" alt="Figure made with TikZ" /></p>
+</div><p>It is seen that, as prescribed by complementarity, the optimal path is
+“in tension” and no slack exists between adjacent nodes along the
+optimal path: their potential difference, which, in this case, is
+simply their distance, is equal to the right hand side (the cost). On
+the other end, nodes not on the optimal path (node <span class="math notranslate nohighlight">\(B\)</span> in the example)
+have incident arcs whose length can be, and in the example are,
+strictly greater than their cost (length).</p>
+<p>It might seem that this physical model is slightly unrealistic, being
+the arcs in the graph oriented. On the contrary we may assume that the
+graph is not directed and arc costs represent arc lengths. In this
+case we might build an equivalent network in which every undirected arc
+is transformed into two arcs with the same cost and opposite
+orientation. In this case to each arc in the graph two inequalities
+are found in the dual formulation:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t}  \\
+\mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} &amp; \leq
+\param{c}_{ij} &amp; \forall \, (i, j) \in E \\
+   \mathvar{\lambda}_{j} - \mathvar{\lambda}_{i} &amp; \leq
+\param{c}_{ij} &amp; \forall \, (i, j) \in E
+\end{align*}</div><p>and it is immediately seen that this is equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t}  \\
+| \mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} | &amp; \leq
+\param{c}_{ij} &amp; \forall \, (i, j) \in E
+\end{align*}</div><p>and the main constraints represent distance upper bounds for each
+pair of nodes connected by an arc.</p>
+</section>
+<section id="applications-of-the-minimum-cost-path-model">
+<h2><span class="section-number">7.3. </span>Applications of the minimum cost path model<a class="headerlink" href="#applications-of-the-minimum-cost-path-model" title="Link to this heading">¶</a></h2>
+<p>Many problems, sometimes apparently unrelated to minimum cost paths,
+can be traced back to this scheme. In this paragraph
+we will analyze a few of them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-13"></span>Maximum reliability path</p>
+</dd>
+</dl>
+<p>Consider a graph representing, as an example, a road network.
+Assume that a statistics on the <span class="math notranslate nohighlight">\(reliability\)</span> of each arc is
+available. The term “reliability” might have different definitions
+in various contexts. Here we assume that the reliability of an arc is
+an estimate of the probability that the arc can be “safely”
+traversed. In a road arc, it can be linked to incidentality and
+defined as one minus the incident rate of the road. In a
+telecommunication network it might be the probability of the
+connection being available.
+Let <span class="math notranslate nohighlight">\(\param{p}_{ij}\)</span> be the probability that an arc
+<span class="math notranslate nohighlight">\((i, j)\)</span> can be traversed without accidents (or that it is
+available for message passing in telecommunication networks). We
+assume that accidents in different roads are not correlated,
+and, in particular, that there is stochastic independence between
+events in different arcs of the graph. This assumption, in road
+traffic, might be reasonable in situations of light traffic, or in
+extra-urban or secondary roads, when
+accidents are mostly due to road conditions and not to congestion.</p>
+<p>As a consequence of the assumption of stochastic independence, given a
+set of arcs <span class="math notranslate nohighlight">\(I \subseteq E\)</span>, their joint reliability, i.e., the
+probability that no accident will occur in any of the arcs is given by</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\prod_{(i, j) \in I} \param{p}_{ij}.
+\end{align*}</div><p>The problem of finding a <span class="target" id="index-14"></span>Maximum reliability path in a graph
+can be formulated as  follows, where the constraints force basic
+feasible solutions to be paths:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \prod_{(i, j) \in E: \var{f}_{ij} = 1} \param{p}_{ij} &amp; \\
+\sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+&amp; = \left \{
+\begin{array} {rl}
+1 &amp; \textrm{if } v = s \\
+-1 &amp; \textrm{if } v = t \\
+0 &amp; \textrm{otherwise}
+\end{array}
+\right. &amp; \forall \, v &amp; \in V \\
+\var{f}_{ij} &amp; \in \{0,1 \} &amp; (i, j) &amp; \in E
+\end{align*}</div><p>This, as an optimization problem, is apparently very complex: a
+product of terms appears in the objective and
+variables are in the index of the product operator. Moreover,
+although it is true that the constraints associate basic feasible
+solutions to paths (provided the
+assumptions connected with the absence of negative cost cycles hold),
+given the form of the  objective it is not granted, a priori, that optimal solutions will
+be basic ones. Notice also that binary constraints are imposed on all
+variables, as the integrality property cannot be assumed to hold for general
+problems different from linear network flow ones.</p>
+<p>However a simplification of this formulation is indeed possible, and
+will lead to a network flow problem.
+Recall that in any optimization problem, applying a
+monotonically increasing function to the objective does not change the
+location of optima. That is, given a problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{x \in S} f (x)
+\end{align*}</div><p>if  <span class="math notranslate nohighlight">\(x^\star\)</span> is an optimal solution and <span class="math notranslate nohighlight">\(\phi(\cdot) : \R
+\rightarrow \R\)</span> is increasing, then <span class="math notranslate nohighlight">\(x^\star\)</span>  will be an optimal solution of the
+problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{x \in S} \phi (f (x))
+\end{align*}</div><p>and vice-versa.</p>
+<p>The same applies to maximization problems too.
+Thus, assuming without loss of generality that no arc exists with zero
+reliability, a logarithmic transformation of the objective function
+can be safely applied. Thus the maximum reliability  problem can be
+equivalently represented as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_{(i, j) \in E: \var{f}_{ij} = 1} \log (\param{p}_{ij}) &amp; \\
+\sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+&amp; = \left \{
+\begin{array} {rl}
+1 &amp; \textrm{if } v = s \\
+-1 &amp; \textrm{if } v = t \\
+0 &amp; \textrm{otherwise}
+\end{array}
+\right. &amp; \forall \, v &amp; \in V \\
+\var{f}_{ij} &amp; \in \{0,1 \} &amp; (i, j) &amp; \in E
+\end{align*}</div><p>But now we can observe that binary variables can be used to include or
+exclude specific terms in a summation and we can transform the problem
+as follows:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_{(i, j) \in E} \log (\param{p}_{ij}) \var{f}_{ij} &amp; \\
+\sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+&amp; = \left \{
+\begin{array} {rl}
+1 &amp; \textrm{if } v = s \\
+-1 &amp; \textrm{if } v = t \\
+0 &amp; \textrm{otherwise}
+\end{array}
+\right. &amp; \forall \, v &amp; \in V \\
+\var{f}_{ij} &amp; \geq 0 &amp; (i, j) &amp; \in E.
+\end{align*}</div><p>Observe that binary constraints on the variables have been removed,
+as this  is a pure  linear flow model and the integrality  of the
+optimal solution is
+guaranteed. We can also observe that this problem, when transformed
+into a minimization one, has non negative costs on each arc, so the
+optimal solution will be a path:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+- \min \sum_{(i, j) \in E} (- \log (\param{p}_{ij})) \var{f}_{ij}.
+\end{align*}</div><p>As an example, consider the following reliability network:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-d07bcac488616a2b99ab4401c920f3cf9ddee72d.png" alt="Figure made with TikZ" /></p>
+</div><p>Transforming the problem as explained and running a minimum cost path
+solver, the optimal solution turns out to be <span class="math notranslate nohighlight">\(s-b-d-t\)</span> with
+overall reliability <span class="math notranslate nohighlight">\(0.902286\)</span>.
+This result has been obtained by running a linear optimization solver
+on the following data:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">reliability.dat</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>s<span class="w"> </span>a<span class="w"> </span>b<span class="w"> </span>c<span class="w"> </span>d<span class="w"> </span>e<span class="w"> </span>t<span class="w"> </span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">S</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>s<span class="w"> </span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>t<span class="w"> </span><span class="p">;</span>
+
+<span class="kd">param</span><span class="p">:</span><span class="w">  </span><span class="nv">ARCS</span><span class="p">:</span><span class="w">  </span><span class="nv">Cost </span><span class="p">:</span><span class="o">=</span>
+<span class="w">         </span>s<span class="w"> </span>a<span class="w">    </span>.<span class="mi">91</span><span class="w">     </span>s<span class="w"> </span>b<span class="w">    </span>.<span class="mi">98</span><span class="w">     </span>s<span class="w"> </span>c<span class="w">    </span>.<span class="mi">96</span>
+<span class="w">         </span>a<span class="w"> </span>b<span class="w">    </span>.<span class="mi">93</span><span class="w">     </span>a<span class="w"> </span>d<span class="w">    </span>.<span class="mi">94</span>
+<span class="w">         </span>b<span class="w"> </span>a<span class="w">    </span>.<span class="mi">92</span><span class="w">     </span>b<span class="w"> </span>d<span class="w">    </span>.<span class="mi">93</span><span class="w">     </span>b<span class="w"> </span>e<span class="w">    </span>.<span class="mi">91</span>
+<span class="w">         </span>c<span class="w"> </span>e<span class="w">    </span>.<span class="mi">94</span><span class="w">     </span>d<span class="w"> </span>t<span class="w">    </span>.<span class="mi">99</span><span class="w">     </span>e<span class="w"> </span>t<span class="w">    </span>.<span class="mi">94</span><span class="w"> </span><span class="p">;</span>
+
+
+<span class="kd">let</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="nv">Cost</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">log</span><span class="p">(</span>Cost<span class="p">[</span>i<span class="p">,</span>j<span class="p">]);</span>
+</pre></div>
+</div>
+</div>
+<p>Notice from one side that, through a transformation of the data, the
+standard shortest path model was used. On the other hand, it is worth
+recalling that this problem is so special that much more efficient
+algorithms do exist to solve it to optimality, even for huge
+dimensional problems. It is out of the scope of this volume to go into
+these algorithmic details.</p>
+<p>Going back to the example, a myopic strategy
+which starts by choosing the  most reliable outgoing arc, in this
+case, would produce the path <span class="math notranslate nohighlight">\(s-c-e-t\)</span> whose reliability is only
+<span class="math notranslate nohighlight">\(0.848256\)</span>; by the way, such a strategy is not even granted to find a
+feasible path.</p>
+<p>This model finds applications in the field of
+dangerous  or highly polluting goods transportation, where minimizing
+accident probability is a typical objective.
+In this context, sometimes the objective to be minimized is the  expected
+damage (e.g., the expected number of possibly affected people
+or the expected monetary damage in case of an
+accident).
+This situation is easier to model, as, after having
+associated an expected damage to each arc, the overall cost of a path
+would be just the sum of the expected costs on the arcs of the path. Thus a
+regular minimum cost path is generated.
+Finally, it is appropriate to remember that  often in problems related to
+environmental issues several  objectives coexist: frequently the
+decision maker would like to obtain a path  with
+minimal risk, high reliability, low cost, short distance, …
+In these cases a   <em>multi-objective</em> approach is required, a topic
+which will be dealt with later on (see section
+<a class="reference internal" href="Objectives.html#multiple-objectives"><span class="std std-ref">Multiple Objectives</span></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-15"></span>Project planning</p>
+</dd>
+</dl>
+<p>When dealing with complex projects it is often
+very difficult to estimate the total time needed to complete them.
+However, there are a number of methodological tools and software that make
+the process of planning much easier.</p>
+<p>The most common scheme
+corresponds to the situation in which  a complex project
+can be subdivided into a number of “elementary” activities whose duration can be estimated
+with sufficient accuracy.
+Such activities are to be considered as elementary ones, in the sense
+that they cannot be further split into sub–activities and, once
+started, they are carried on until completion without interruptions.
+Between some pairs of activities there might be a precedence relation.
+The most common of these relationships is expressed as</p>
+<p><em>“activity</em> <span class="math notranslate nohighlight">\(j\)</span> <em>cannot start until  activity</em> <span class="math notranslate nohighlight">\(i\)</span>
+<em>is completed”</em> (start / end relationship).</p>
+<p>Denoting by <span class="math notranslate nohighlight">\(t_{i}\)</span>
+the starting time of activity <span class="math notranslate nohighlight">\(i\)</span> and with <span class="math notranslate nohighlight">\(s\)</span>
+and <span class="math notranslate nohighlight">\(t\)</span> respectively the activities associated to the start
+and to the end of the whole project
+(these activities in some cases might be fictitious)
+the problem of finding a  minimum duration plan  for the whole
+project, taking into account precedence relationships,  can be
+modeled as follows:</p>
+<dl class="field-list simple" id="cpm">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Project planning</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{A}\)</span>: set of activities to be carried out</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{P} \subseteq \set{A} \times \set{A}\)</span>: set of
+pairs of activities among which a start/end precedence needs to
+be imposed. The elements of each pair
+are called predecessor and successor</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(s \in \set{A}\)</span>: project start activity; it can be
+fictitious, that is, it can be an activity of null duration whose only
+purpose is to set the start time/date of the whole project.
+This activity has no predecessors;</p></li>
+<li><p><span class="math notranslate nohighlight">\(t \in
+\set{A}\)</span>: end of project; similarly to the previous one
+it is generally a fictitious one, with no successors.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{d}_i\)</span>: duration of  activity <span class="math notranslate nohighlight">\(i \in \set{A}\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{t}_i\)</span>: start time of activity <span class="math notranslate nohighlight">\(i \in \set{A}\)</span></p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Precedence constraint between selected pairs activities:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{t}_{j} \geq \var{t}_{i} + \param{d}_{i} \quad \forall \, (i, j) \in \set{P}
+\end{align*}</div></li>
+</ul>
+<blockquote>
+<div><p>This constraint expresses the fact that if there is a precedence between
+activity <span class="math notranslate nohighlight">\(i\)</span> and activity <span class="math notranslate nohighlight">\(j\)</span>, then the start time of
+activity <span class="math notranslate nohighlight">\(j\)</span> cannot be set before a  time period of length
+<span class="math notranslate nohighlight">\(d_i\)</span> passed since the beginning of activity <span class="math notranslate nohighlight">\(i\)</span>.</p>
+</div></blockquote>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><p>Minimization of the overall duration of the
+project, equal to  the difference between the
+project end and start times:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \var{t}_{t} - \var{t}_{s}
+\end{align*}</div></div></blockquote>
+<p>It is easy to see that
+this problem is  a particular case of the dual of a minimum cost path
+problem (in this case, indeed,  of <em>maximum</em> cost path) expressed in
+the following form</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_{i} \param{d}_{i} \sum_{j} \var{f}_{ij} &amp; \\
+\sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+&amp; = \left \{
+\begin{array} {rl}
+1 &amp; \textrm{if } v = s \\
+-1 &amp; \textrm{if } v = t \\
+0 &amp; \textrm{otherwise}
+\end{array}
+\right. &amp; \forall \, v \in V
+\\
+\var{f}_{ij} &amp; \geq 0 &amp; \forall \, (i, j) \in E
+\end{align*}</div><p>where the nodes of the graph are associated to the  activities and the arcs correspond to
+precedence relationships between two consecutive activities.</p>
+<p>Indeed, the dual of a <em>maximum</em> cost path problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max_{\var{f}} \param{c}_{ij} \var{f}_{ij} &amp; \\
+\sum_{j} \var{f}_{vj} -     \sum_{i} \var{f}_{iv} &amp; = \mathbf{e}_s - \mathbf{e}_t &amp; \forall\, v \in
+\set{V} \\
+\var{f}_{ij} &amp; \geq 0 &amp; \forall\,(i,j) \in \set{E}
+\end{align*}</div><p>can be found by first transforming the above problem into an
+equivalent minimization one:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+-\min_{\var{f}} -\param{c}_{ij} \var{f}_{ij} &amp; \\
+\sum_{j} \var{f}_{vj} -     \sum_{i} \var{f}_{iv} &amp; = \mathbf{e}_{s} -
+\mathbf{e}_{t} &amp;\forall\, v \in
+\set{V} \\
+\var{f}_{ij} &amp; \geq 0 &amp; \forall\,(i,j) \in \set{E}
+\end{align*}</div><p>and then going to the dual:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+-\max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t} &amp;\\
+\mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} &amp; \leq
+-\param{c}_{ij} &amp; \forall \, (i, j) \in E
+\end{align*}</div><p>or</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \mathvar{\lambda}_{t} - \mathvar{\lambda}_{s} &amp;  \\
+\mathvar{\lambda}_{j} &amp; \geq  \mathvar{\lambda}_{i} + \param{c}_{ij} &amp;
+\forall \, (i, j) \in E
+\end{align*}</div><p>The optimal solution to this problem is a
+<em>maximum cost path</em> which, in this context, is called
+<span class="target" id="index-16"></span>critical path. It is important to observe that this problem
+can always be solved by the above linear optimization models (although
+there exist enormously more efficient algorithms), since the graph of
+precedence relationships needs to be acyclic: this derives
+from the observation that, if a cycle
+<span class="math notranslate nohighlight">\(v_1, v_2, \ldots, v_k = v_1\)</span> existed in the graph,
+this would mean that  activity
+<span class="math notranslate nohighlight">\(v_1\)</span> should precede activity <span class="math notranslate nohighlight">\(v_2\)</span>, which
+precedes activity <span class="math notranslate nohighlight">\(v_3\)</span> and so on until the last
+<span class="math notranslate nohighlight">\(v_1\)</span>. If this  was the case, <span class="math notranslate nohighlight">\(v_1\)</span> would precede
+itself, which is obviously absurd.</p>
+<p>Given the well known relationship between a linear optimization
+problem and its  dual, the cost
+of the critical path is equal to the minimum duration of the project;
+moreover the
+activities associated with  nodes  on the critical path
+are responsible for the total duration of the project.  This fact can be deduced
+as a consequence of the  complementary slackness property: along
+the arcs on  which the flow associated  to the optimal
+(or critical) path is non zero (equal to one),
+in the corresponding dual the slack must be  zero;
+in other words, the start time of the next activity must be
+exactly equal to the start time of the previous one plus its
+duration. This means that between the end
+of the preceding activity and the beginning of the next one, along the
+critical path, there can be no delay.
+If even a single activity belonging to the critical path is
+delayed, the whole project would be delayed (from
+which the adjective “critical”).</p>
+<p>In the following we present a model for project planning, derived with
+tiny variations from the generic shortest path model, and a tiny
+example, inspired by planning a simple cooking recipe:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">cpm.mod</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kr">model</span><span class="w"> </span>sp.<span class="kr">mod</span><span class="p">;</span>
+<span class="c1"># inherit the standar shortest path model</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Duration</span><span class="p">{</span>NODES<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">  </span>
+<span class="c1"># add a parameter associated to the duration of each activity</span>
+
+<span class="kd">maximize</span><span class="w"> </span><span class="nv">Max_cost</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>Cost<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>f<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+<span class="c1"># define the maximization objective function and declare we wish to use it</span>
+
+<span class="kr">objective</span><span class="w"> </span>Max_cost<span class="p">;</span><span class="w">      </span>
+<span class="c1"># choose to use this objective</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">cpm.dat</span><a class="headerlink" href="#id4" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">NODES</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">Duration </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="c1"># shorthand name</span>
+<span class="s2">&quot;Start&quot;</span><span class="w"> </span><span class="mi">0</span><span class="w">                  </span><span class="c1"># S</span>
+<span class="s2">&quot;Boil Water&quot;</span><span class="w"> </span><span class="mi">10</span><span class="w">            </span><span class="c1"># BW</span>
+<span class="s2">&quot;Cut onions&quot;</span><span class="w"> </span><span class="mi">2</span><span class="w">             </span><span class="c1"># CO</span>
+<span class="s2">&quot;Cut garlic&quot;</span><span class="w"> </span><span class="mi">2</span><span class="w">             </span><span class="c1"># CG</span>
+<span class="s2">&quot;Scrap Grana cheese&quot;</span><span class="w"> </span><span class="mi">1</span><span class="w">     </span><span class="c1"># SG</span>
+<span class="s2">&quot;Peal off tomatoes&quot;</span><span class="w"> </span><span class="mi">3</span><span class="w">      </span><span class="c1"># PT</span>
+<span class="s2">&quot;Fry onions&quot;</span><span class="w"> </span><span class="mi">2</span><span class="w">             </span><span class="c1"># FO</span>
+<span class="s2">&quot;Cook tomatoes&quot;</span><span class="w"> </span><span class="mi">10</span><span class="w">         </span><span class="c1"># CT</span>
+<span class="s2">&quot;Prepare the sauce&quot;</span><span class="w"> </span><span class="mi">3</span><span class="w">      </span><span class="c1"># PS</span>
+<span class="s2">&quot;Cook spaghetti&quot;</span><span class="w"> </span><span class="mi">8</span><span class="w">         </span><span class="c1"># CS</span>
+<span class="s2">&quot;Put sauce on spaghetti&quot;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="c1"># SS</span>
+<span class="s2">&quot;End&quot;</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">                   </span><span class="c1"># E</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">S</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Start&quot;</span><span class="w"> </span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;End&quot;</span><span class="w"> </span><span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span>
+<span class="w">    </span><span class="p">(</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Boil Water&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cut onions&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cut garlic&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Peal off tomatoes&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Start&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Scrap Grana cheese&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="s2">&quot;Cut onions&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Fry onions&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Peal off tomatoes&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cook tomatoes&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Cut garlic&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cook tomatoes&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Fry onions&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cook tomatoes&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Cook tomatoes&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Prepare the sauce&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">(</span><span class="s2">&quot;Boil Water&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Cook spaghetti&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Prepare the sauce&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Put sauce on spaghetti&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Cook spaghetti&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Put sauce on spaghetti&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Put sauce on spaghetti&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;End&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">(</span><span class="s2">&quot;Scrap Grana cheese&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;End&quot;</span><span class="p">)</span>
+<span class="p">;</span>
+
+
+<span class="c1"># associate to each arc a cost equal to the duration</span>
+<span class="c1"># of the preceding activity</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="nv">Cost</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>Duration<span class="p">[</span>i<span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<p>The only changes with respect to the basic shortest path model
+are simply the redefinition of the objective function (which
+now is a maximization) and the definition of the cost associated
+to each arc, based on the duration of the activities. The model
+presented above can be easily generalized allowing that the cost on
+each arc is any positive number, removing in this way the requirement
+that every arc out from an activity has the same cost, equal to the
+duration of that activity. There might in fact be situation in which
+different activities with a common predecessor require a different
+amount of time before being allowed to start.</p>
+<p>A graphical representation of the project network implemented in the
+above data file is the following:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-98ee225ef5acc9362c099dedb341a22f89865f6d.png" alt="Figure made with TikZ" /></p>
+</div><p>Running a general purpose linear optimization solver on this example,
+a solution of cost 19 is obtained, associated with the critical path
+emphasized in red in the graph above.
+It is important to recall that
+problems of this kind can be solved by means of
+extremely efficient  algorithms consisting in a suitable “visit”
+of the graph and  based on simple
+sorting algorithms. By running an optimization algorithm, non zero
+flow variables
+represent critical paths, while values associated with the dual variables
+represent possible
+start times of each activity. Alternative optimal schedules can be obtained by
+summing a constant to all of these dual variables.</p>
+<p>Frequently in project planning a  graphical representation is used
+which goes under the name of  <span class="target" id="index-17"></span>Gantt chart. In this
+diagram to  each activity a bar is associated whose
+length is proportional to its duration  and whose position, along a
+time axis, depends on  the start and end time obtained after finding
+an optimal plan. The next figure reports a Gantt chart for the
+example above:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-8558a2c0a5a2fbe72bd08f05119381e5f4c66f20.png" alt="Figure made with TikZ" /></p>
+</div><p>From a standard Gantt chart it is possible to deduce
+the detailed plan of activities, and, through the use of color,
+it is possible to show the critical path. In classical Gantt charts,
+however, it is usually not possible to see precedence relationships,
+although this can be easily done adding some arcs over the
+chart. Usually, for non critical activities, the “slack”, can also be
+represented, as shown in the following chart:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-107cbee45ce82406a4236804a3b8557c776a7a55.png" alt="Figure made with TikZ" /></p>
+</div><p>Colored in green it is possible to see the so-called  “float”, i.e.
+the delay that a given activity might allow without causing
+a delay to the whole project; this information can be inferred from the
+constraint slack.</p>
+<p>If the problem is solved by means of a linear optimization solver
+(which is discouraged, as there exist much more efficient tools for
+this basic scenario) it is worth observing that dual variables will
+represent  just one out of the possibly infinite number of optimal
+start times for the activities. There is in fact nothing in the
+formulation which induces, as an example, all activities to start at
+the earliest possible time (which is the one reported in the Gantt
+charts).</p>
+<p>In real project planning
+situations, constraints often are more complex than
+those seen before, based on  the start/end  precedence. It is  very easy
+to modify the dual  model presented here in order to represent
+constraints such as: “activity <span class="math notranslate nohighlight">\(i\)</span> cannot start later than
+<span class="math notranslate nohighlight">\(\param{g}\)</span> days  from  the start of activity, <span class="math notranslate nohighlight">\(j\)</span>”, or
+“activities <span class="math notranslate nohighlight">\(h,k\)</span> must end simultaneously”.  In formulae:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\lambda}_i &amp; \leq \mathvar{\lambda}_j + \param{g} \\
+\mathvar{\lambda}_h + \param{d}_h &amp; = \mathvar{\lambda}_k + \param{d}_k
+\end{align*}</div><p>Although, as mentioned, the solution of a problem of
+project planning is extremely simple from a
+computational point of view and does not require the use of tools
+like the simplex method, it is anyway important
+to present the formulation of the problem in terms of
+a linear model since in practical
+project planning, additional constraints frequently appear, which
+cannot be dealt with unless specialized project planning algorithms
+are available.</p>
+<p>A frequently required constraint which makes the problem significantly
+more complex is  related to
+implicit precedences, caused by  the limited availability of some
+resources.
+In the example above, assume that a single fire is
+available, so that, e.g.,  it is not possible to simultaneously boil
+the water and fry the onions.
+It is thus necessary to include a  constraint to  force these two
+activities, which require the same resource, not to
+overlap.
+In this case  a
+“disjunctive” constraint needs to be imposed: either  activity BW
+follows FO or, in
+alternative, activity FO should follow BW:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\textbf{Either } \, \mathvar{\lambda}_{BW} &amp; \geq \mathvar{\lambda}_{FO} + 2
+ \\
+\textbf{Or}\, \mathvar{\lambda}_{FO} &amp; \geq \mathvar{\lambda}_{BW} + 10
+\end{align*}</div><p>This type of “OR” constraint cannot be
+formulated through  linear equalities or inequalities and makes the problem
+extremely more complex. We will see how to formulate this and other
+kinds of logical constraints in  chapter
+<a class="reference internal" href="MIPModels.html#using-binary-variables-to-impose-constraints"><span class="std std-ref">Using binary variables to impose constraints</span></a>. The example above is clearly only
+partial - if the conflict for the use of resources were limited to
+two activities only, a quick-and-dirty solution could simply be that of
+solving two optimal project planning problems, using one of the two
+possible precedence relationships in the model and choosing the one
+which produces the shortest total duration. However when, as
+already in this tiny example, the conflicts for one or more scarce
+resources causes more than just two activities to be incompatible, an
+explicit enumeration of all possible combination would immediately
+lead to an exponential number of instances to be solved.</p>
+<p>It can be shown that planning when resources are so scarce as to cause
+the decision maker to impose a sequence on pairs of  activities  which
+otherwise might be planned in parallel is an hard combinatorial
+optimization problem, for which no efficient algorithm is known.
+Commercial software tools are usually based on heuristic procedures
+which might produce plans which are quite far from being
+optimal. Thanks to the model described above, as we will see in later
+chapters, the problem can be formulated as a mixed integer linear
+optimization problem which, although very complex in theory, might
+nonetheless be solved to optimality thanks to the advances of recent
+optimization software, at least for moderately sized project planning instances.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="NetworkFlow.html" title="Previous document"><span class="section-number">6. </span>Network flow models</a>
+        </li>
+        <li>
+          <a href="MaximumFlow.html" title="Next document"><span class="section-number">8. </span>Maximum Flow</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">7. Shortest (Minimum Cost) Path Problems</a><ul>
+<li><a class="reference internal" href="#the-problem-of-arcs-with-negative-cost">7.1. The problem of arcs with negative cost</a></li>
+<li><a class="reference internal" href="#dual-of-the-minimum-cost-path-model">7.2. Dual of the minimum cost path model</a></li>
+<li><a class="reference internal" href="#applications-of-the-minimum-cost-path-model">7.3. Applications of the minimum cost path model</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="NetworkFlow.html" title="previous chapter"><span class="section-number">6. </span>Network flow models</a></li>
+      <li>Next: <a href="MaximumFlow.html" title="next chapter"><span class="section-number">8. </span>Maximum Flow</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/ShortestPath.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,387 @@
+.. include:: preamble.rst
+
+**************************************
+Structured linear optimization models
+**************************************
+
+This chapter is devoted to the introduction of some classes of linear
+optimization problems with a special "structure".
+Before starting with quite a large number of special models, let us
+introduce the basic terminology first. All of the optimization models
+we will be presenting can be represented as constrained optimization
+models in :math:`\R^n`:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min_{\var{x} \in S \subseteq \R^n}  f(\var{x}) 
+   \end{align*}
+
+Here :math:`\var{x}` is the vector of :index:`decision variables`;
+the set :math:`S` is the :index:`feasible set`, while
+:math:`f: \R^n\rightarrow \R` is called :index:`objective
+function`. In a :index:`linear model`, the objective function and the constraints
+are linear, which, in finite Euclidean spaces, is equivalent to say that
+
+1. There exist real coefficients :math:`c \in \R^n` such that
+   
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      f(\var{x}) & = \sum_{j=1}^n \param{c}_j \var{x}_j
+      \end{align*}
+      
+2. The feasible set is a :index:`polyhedron`, or, equivalently, 
+   there exist matrices :math:`A, B` and vectors :math:`\alpha, \beta`
+   such that the set :math:`S` is composed by the solutions of the
+   system of liner equations and inequalities
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      A \var{x} & = \alpha \\
+      B \var{x} & \leq \beta
+      \end{align*}
+
+Thus, in a *linear model* both the objective function and the left
+hand sides of all equalities and inequalities are linear expressions.
+
+By the therm *structured models*  we mean that
+these models can be seen as special cases of generic linear optimization ones,
+whose structure from one side identifies a class of potentially useful
+applications and, on another side, lends itself to further theoretical
+analysis; this, in some cases, might lead to improved numerical
+performance. By a "structure" we usually mean a set of constraints
+with a special form (like, as we will see later, *balance equations*) or
+families of constraints with a special meaning in the applied context,
+like blending or resource consumption.
+
+An important class of such structured problems is that of :ref:`Network flow models`, which will be the subject of a detailed analysis later on; being
+able to identify and exploit the fact that a model is indeed a network
+flow one allows to get significantly greater insight as well as opens
+the way towards very efficient optimization algorithms.
+
+Before starting a review of some of the main mathematical optimization
+models and their applications, we introduce here a fairly simple model
+connected to the production of aluminum from scrap. This is
+indeed an instance  of a class of models, called
+:ref:`Blending Models` which  will be described in more
+detail later. It seems useful to start the presentation with this simple case,
+the description of which is sufficiently elementary to be understood
+even without deeper knowledge; its formulation contains the main
+elements of more complex models. Moreover, although elementary, this
+model is currently in use at several companies.
+
+   .. _blending_al_scrap:
+
+   :application: :index:`Blending aluminum scrap`
+   
+   One of the industrial sectors in which optimization models are widely used
+   is that of mixing different scrap to produce aluminum alloys of a
+   prescribed quality. Consider the situation in which we may buy, in
+   limited amounts, some scrap mostly composed of aluminum, but containing
+   also other chemical elements; we would like to mix some of these scraps
+   in order to obtain, through casting, an alloy with a prescribed
+   percentage of various chemical elements. We can also consider the case
+   in which, in order to improve the quality of the available scrap, it is
+   possible to purchase pure metals, without any limit, although at a
+   significantly higher price. The problem thus becomes that of
+   establishing the quantities to buy for each scrap and pure metal to be
+   used in a blend of minimum total cost which satisfies quality
+   constraints.
+
+   The following table shows a data file prepared
+   for a hypothetical problem of aluminum blending from scrap. The
+   objective is to obtain a blend which satisfies a set of quality
+   specifications, does not use more scrap than available, and produces the
+   required quantity of finished product at minimum total cost.
+
+   .. tabs::
+
+      .. group-tab:: AMPL
+	 .. code-block:: ampl
+	 .. literalinclude:: AMPL/Al6061.dat
+	    :caption: Al6061.dat
+      
+      .. group-tab:: Julia
+	 .. code-block:: Julia
+	 .. literalinclude:: Julia/Al6061.dat
+	    :caption: Al6061.dat
+    
+      .. group-tab:: Pyomo
+	 .. code-block:: python
+	 .. literalinclude:: Pyomo/Al6061.dat
+	    :caption: Al6061.dat
+     
+   The first part of the data file contains the definition of the names of
+   the available materials and the chemical elements of interest. Than we
+   specify the total required quantity to be produced (in kg) and, for each
+   chemical element, the value of the minimum and maximum percentage
+   required, based on the definition of the “6061” blend type
+   specification. The syntax of this part reflects one of the many ways
+   data can be defined  – here we are using a multi–dimensional
+   array whose rows have symbolic names (the names of the chemical
+   elements) and the columns represent, for each chemical element, the
+   minimum and maximum allowed contents in the blend. Next, the data file
+   contains the definition of the chemical composition of each scrap type;
+   again, we are using the same syntax (although modeling languages allow for different
+   ways to obtain a similar data specification) and we define a
+   matrix,   ``compos``, whose rows are associated to chemical
+   elements, whose columns correspond to different scrap materials and
+   whose elements are the (average) percentage contents of that chemical in
+   one unit of that material. Finally, for each material, the cost in Euros
+   per kg and the maximum available quantity are reported. Of course, while these
+   data is quite realistic, the reported numbers have no relations with real life
+   situations.
+   
+   It is worth observing that the main chemical component, aluminum, is not
+   included in this dataset: this means that we can consider that the
+   aluminum content in each material is what remains to reach 100%. As an
+   example, for material ``UBC`` summing the first column
+   in the ``compos`` matrix we obtain 0.025875
+   and we can assume that the aluminum contents is 97.4125%.
+   
+   To formalize the problem we need to identify decision variables,
+   constraints, objective function. It is very natural to associate a
+   variable :math:`\var{x}_{j}` to each material :math:`j` (in the model
+   this variable is called ``Buy``); although not
+   necessary, it seems  useful to introduce another variable,
+   :math:`\var{y}_i`, for the total chemical contents of the resulting
+   blend (in the model this is called ``Chem``). Notice
+   that while in the text we prefer to use classical mathematical notation
+   and naming conventions, in the implemented models we preferred to use
+   more meaningful variable names.
+
+   In the declaration of both variables, we include lower and upper bounds.
+   For the main variable, :math:`\var{x}`, these are zero and the
+   available quantity,
+   respectively. For what concerns chemical contents, they are the minimum
+   and maximum allowed contents for each element.
+   
+   The constraint on the total quantity to be produced is simply
+   
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      \sum_{j \in \set{Materials}} \var{x}_{j} = \param{required}
+      \end{align*}
+
+   For what concerns the chemical balance, having introduced a specific
+   variable, we just need to “define” this variable through a set of
+   constraints: 
+
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      \var{y}_i & = \sum_{j \in \set{Materials}} \param{compos}_{ij}
+      \var{x}_j / \param{required}
+      \end{align*}
+
+   It is easy to see how we might get rid of the additional variables
+   :math:`\var{y}` by simply redefining the lower and upper bound
+   constraints on the quality as
+      
+   .. math::
+      :nowrap:
+
+      \begin{align*}
+      \param{minReq}_i \leq  \sum_{j \in \set{Materials}} \param{compos}_{ij}
+      \var{x}_j / \param{required} \leq \param{maxReq}_i
+      \end{align*}
+
+   for all :math:`i \in \set{ELEMENTS}`.
+
+   The objective function, given a unit cost :math:`\param{cost}_{j}`
+   associated with each material, can be expressed as
+
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      \min \sum_{j \in \set{Materials}} \param{cost}_{j} \var{x}_{j}
+      \end{align*}
+
+   In summary, the complete blending model has the following form: 
+
+
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      &\min_{\var{x},\var{y}} \sum_{j \in \set{Materials}} \param{cost}_{j}\, \var{x}_{j} \\
+      \sum_{j \in \set{Materials}} \var{x}_{j} &= \param{required} \\
+      \var{y}_i & = \sum_{j \in \set{Materials}} \frac{\param{compos}_{ij}
+      \var{x}_j}{\param{required}} & \forall\, i& \in
+      \set{ELEMENTS} \\
+      0 \leq \var{x}_j & \leq \param{avail}_j & \forall\, j &\in
+      \set{MATERIALS}\\
+      \param{minReq}_i \leq \var{y}_i & \leq \param{maxReq}_i &\forall\, i& \in
+      \set{ELEMENTS}
+      \end{align*}
+
+   The model  can be implemented as
+   reported in the following, where the strong similarity between the
+   abstract model above and its implementation can be easily seen.
+
+   ..
+      .. literalinclude:: AMPL/Al_blend.mod
+         :caption: Al_blend.mod
+         :language: ampl
+
+   .. tabs::
+
+      .. group-tab:: AMPL
+	 .. code-block:: ampl
+	 .. literalinclude:: AMPL/Al_blend.mod
+	    :caption: Al_blend_mod.mod
+
+      .. group-tab:: Julia
+	 .. code-block:: Julia
+	 .. literalinclude:: Julia/Al_blend_mod.jl
+	    :caption: Al_blend_mod.jl
+
+      .. group-tab:: Pyomo
+	 .. code-block:: python
+	 .. literalinclude:: Pyomo/Al_blend.py
+	    :caption: Al_blend.py
+
+   In order to solve the model, we need to combine the model, a set of
+   data, and pass through a suitable solver. In this example we choose
+   the Cbc  :cite:`cbc` 
+   open source linear and mixed integer solver. We
+   obtained an optimal solution through a set of language-specific commands, reported
+   below.
+   		
+   ..
+     .. literalinclude:: AMPL/Al_blend.run
+        :caption: Al_blend.run
+        :language: ampl
+		
+   .. tabs::
+
+      .. group-tab:: AMPL
+	 .. code-block:: ampl
+	 .. literalinclude:: AMPL/Al_blend.run
+	    :caption: Al_blend.run
+
+      .. group-tab:: Julia
+	 .. code-block:: Julia
+	 .. literalinclude:: Julia/Al_blend_run.jl
+	    :caption: Al_blend_run.jl
+
+      .. group-tab:: Pyomo
+	 .. code-block:: python
+	 .. literalinclude:: Pyomo/Al_blend.sh
+	    :caption: Al_blend.sh
+
+   The solution we obtained by running this solver with the above data
+   was:
+
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      \begin{array}[c]{lr}  \hline
+      \mathtt{UBC} & 154.87 \\
+      \mathtt{Radiator} & 1.07 \\
+      \mathtt{WireScraps} & 1\,200.00 \\
+      \mathtt{MixedTurnings} & 139.28 \\
+      \mathtt{Mg} & 4.78 \\
+      \hline
+      \end{array}
+      \end{align*}
+
+   with an overall cost of 1286.37 (an average of 0.857 per unit
+   produced). The chemical composition of the blend is
+
+
+   .. math::
+      :nowrap:
+      
+      \begin{align*}
+      \begin{array}[c]{llll} 
+      Element & min & actual & max \\ \hline
+      \mathtt{Si} & 0.4 & 0.8 & 0.8\\
+      \mathtt{Mg} & 0.8 & 0.8 & 1.2\\
+      \mathtt{Fe} & 0.0 & 0.35 & 0.8\\
+      \mathtt{Cu} & 0.15 & 0.31 & 0.4\\
+      \mathtt{Mn} & 0.0 & 0.15 & 0.15\\
+      \mathtt{Zn} & 0.0 & 0.15 & 0.25\\
+      \hline
+      \end{array}
+      \end{align*}
+
+   These data have been obtained by running a solver on the supplied
+   model and data. An example of the output which can be obtained from
+   the solver is given below.
+
+   ..
+     .. literalinclude:: AMPL/Al6061.out
+        :caption: Al6061.out
+        :language: ampl
+
+   .. tabs::
+   
+      .. group-tab:: AMPL
+	 .. code-block:: ampl
+	 .. literalinclude:: AMPL/Al6061.out
+	    :caption: Al6061.out
+      
+      .. group-tab:: Julia
+	 .. code-block:: Julia
+	 .. literalinclude:: Julia/Al6061.out
+	    :caption: Al6061.out
+
+      .. group-tab:: Pyomo
+	 .. code-block:: python
+	 .. literalinclude:: Pyomo/Al6061.out
+	    :caption: Al6061.out
+
+
+   We can observe, from the above results, that some elements, like ``Mg``, are
+   expensive and, thus kept at their minimum value in the optimal
+   solution; on the contrary, others, like ``Mn``, are cheap. We
+   also can observe that in the final optimal blend some materials,
+   ``Radiator`` in particular, are present in a tiny fraction of the
+   overall blend. We might easily modify the data to exclude this from
+   the blend. However, it might be preferable to insert a ``logical``
+   constraint 
+   stating that for every material, either it is not included in the
+   optimal solution or its level should be greater than a
+   threshold. As an example we might add a constraint saying that either
+   ``Radiator`` is zero or it needs to be more than, say, 50kg. This kind
+   of constraint will be presented later in this volume
+   (see section :ref:`Using binary variables in logical constraints`).
+
+
+In this first introductory model we have  seen the main 
+components of mathematical optimization models:
+
+* index sets (the names of the scrap, the names of the chemical
+  elements);
+* numerical parameters (scalars, vectors, matrices) such as the
+  quantity to be produced, the required quality,
+  the  unit cost, the chemical composition of each material;
+* the variables, in this
+  case associated with the quantities to be used in the preparation of the blend;
+* the constraints,  equations or inequalities (in this case they
+  are all linear);
+* the objective to be optimized, in this case the total cost of the blend, to be minimized.
+
+Since the variables appear linearly in all the constraints and in the
+objective function,
+the model just described is called
+a :index:`linear optimization model` .
+ 
+The above ingredients will appear in most of the models analyzed in
+this volume.
+From the next paragraph we will begin
+to examine some important specific classes of optimization models. 
+
+.. include:: closing.rst
+

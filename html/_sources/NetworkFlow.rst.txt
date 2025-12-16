@@ -1,0 +1,475 @@
+.. include:: preamble.rst
+
+*******************
+Network flow models
+*******************
+ 
+In this chapter a class of very important models will be introduced,
+all belonging to the class of network flow models. They can be thought
+of as representing the flow of some material (e.g., a liquid or a gas,
+but also vehicles or bits) along a (physical) network. These models lend
+themselves to theoretical analysis, to the development of specialized
+solution methods and to modeling much diverse situations, some of
+which apparently far from the concept of flows. The models we will
+introduce are, with few exceptions,
+linear optimization ones, and, thus, they inherit both the theory and the
+algorithms known for generic linear optimization. However their structure
+make them well suited for extremely efficient, specialized algorithms, capable of
+solving problems of huge size. The literature on network flow models
+and methods is very large; here we just mention :cite:`Ahuja93`, an
+excellent classic on this subject - although significant improvements have
+been observed in recent years and some of the proposed methods are
+nowadays slightly outdated, the book is an excellent reading for its
+clearness, depth and coverage.
+
+=================
+Minimum cost flow
+=================
+
+Assume a :index:`graph` :math:`G` is given.  
+Definitions related to the elements of graph theory are briefly
+summarized in the Appendix: :ref:`Graphs: basic definitions`. 
+The generic :index:`minimum cost flow` model can be defined as
+follows:
+
+     
+.. role:: model
+   :class: smallcaps
+	   
+:model: Minimum cost flow
+
+|
+   :model:`Sets:`
+|
+
+   * :math:`\set{V}`: set of vertices or nodes of the graph
+   * :math:`\set{E} \subseteq V \times V`: set of arcs; unless
+     stated otherwise, arcs are  directed, i.e. :math:`(i,j)  \ne (j,i)`;
+
+|
+   :model:`Parameters:`
+|
+
+   * :math:`\param{b}_i` (balance): net output / input balance for
+     node :math:`i \in V`.
+     This quantity represents
+     the  difference between the total outflow from node :math:`i` and the total inflow
+     for the same node. A positive balance is associated to nodes which
+     generate  flow, a negative one with consumer nodes, while
+     zero balance corresponds to transit nodes;
+     
+  * :math:`\param{L}_{ij}, \param{U}_{ij}` (lower and upper bounds
+    on arc flows): on each arc :math:`(i, j) \in E`
+    a minimum flow can be imposed
+    (frequently equal to 0) as well as a maximum one (sometimes
+    absent, or equal to :math:`+ \infty`) 
+
+  * :math:`\param{c}_{ij}`: cost associated with one unit of flow
+    passing through  arc :math:`(i, j) \in E`;
+
+|
+   :model:`Variables:`
+|
+
+   * :math:`\var{f}_{ij}`: the amount of flow through arc :math:`(i, j)`
+
+|
+   :model:`Constraints:`
+|
+
+   * :index:`Flow conservation` or balance equations:
+
+     .. math::
+	:nowrap:
+	   
+	\[
+	\sum_{k: (i, k) \in E} \var{f}_{ik} - \sum_{h: (h, i) \in E}
+        \var{f}_{hi} = \param{b}_i \qquad \forall \, i \in V
+	\]
+	
+     This constraint  forces the difference between flow out from
+     node  :math:`i`  and the  entering flow to be
+     equal to  :math:`\param{b}_i`.
+
+   * Bounds:
+
+     .. math::
+	:nowrap:
+	   
+	\[
+	\param{L}_{ij} \leq \var{f}_{ij} \leq \param{U}_{ij} \qquad \forall \, (i, j) \in E
+	\]
+
+|
+   :model:`Objective:` 
+|
+
+   * Objective:  total cost minimization:
+
+     .. math::
+	:nowrap:
+	   
+	\[
+	\min \sum_{(i, j) \in E} \param{c}_{ij} \var{f}_{ij}
+	\]
+
+
+In matrix form the problem might be represented as
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min_\var{f} c^T \var{f} & \\
+   \param{A} \var{f} & = \param{b} \\
+   \param{L} \leq \var{f} & \leq \param{U}
+   \end{align*}
+
+where :math:`\param{A} \in \{-1, 0, +1\}^{|V| \times |E|}` is the :index:`incidence
+matrix` of the graph (see the Appendix :ref:`Graphs: basic definitions`).
+While for modeling purposes this representation is less useful than
+the explicit one, it becomes interesting for theoretical
+analysis. In particular it might be proven that the incidence matrix
+enjoys the :index:`total unimodularity` property. This means that
+every square sub-matrix of :math:`\param{A}` has either 0 or 1 or -1 determinant. A
+fundamental consequence of this is the fact that, as the inverse of an
+integer matrix with determinant :math:`\pm 1` is still integer, all basic
+solution of the above linear optimization model are granted to be
+integer, provided that :math:`\param{b}, \param{L}, \param{U}` are
+integer. Thus, in this case, from the fundamental theorem of linear
+optimization, if the problem admits an optimal solution, then it will
+admit an optimal *basic* solution whose components are all integer. In
+this case, thus, there is no need to look for specialized, and
+significantly more complex, algorithms if an integer solution is
+required. Integrality comes for free in network flow models, under the
+assumption of integrality of the above terms. It is worth reminding
+that this fundamental property is usually lost as soon as even a
+single constraint which cannot be considered as a balance equation or
+as a bound on the flow on a single arc is added to the model.    
+
+In the definition of the  minimum cost flow model some assumptions are
+made, some of which can be relaxed, although with some disadvantages:
+usually, extending the model will compromise the integrality
+property of optimal basic solutions:
+
+1. It is required that
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      \sum_{i \in \set{V}} \param{b}_{i} & = 0
+      \end{align*}
+      
+   This assumption cannot be relaxed:  if it is not satisfied, then no feasible
+   flow can be found in the network. In fact,  summing all balance
+   equations, it can be seen that the variable associated to any
+   arc :math:`(i,j)` appears in exactly two flow balance equations: the flow
+   balance of node :math:`i`, where it appears with coefficient +1,
+   and the flow balance of 
+   node :math:`j`, with coefficient   -1. Therefore, summing all balance
+   equation, a null left hand side is obtained. Thus, in order for the
+   system of equations to admit solutions, it is necessary (although
+   not sufficient) that the sum
+   of the right hand sides is zero too.
+
+2. The network is oriented;
+   if this were not the case, frequently it is possible to associate to each
+   undirected arc (an :index:`edge`) a pair of directed arcs.
+   This modeling solution is feasible, provided that a capacity can be assigned
+   to each of the two directions; this is  the case when a two-way road
+   can be seen as two one-way roads, each of which with its own capacity.
+   A different situation occurs when
+   the two directions share the same capacity and thus, if a large
+   amount of flow is present on one direction, the other one will have
+   a more limited capacity. In this case, if the undirected edge is
+   :math:`(i, j)` and the maximum (shared) capacity is :math:`\param{U}`, after
+   the substitution of the edge with two directed arcs :math:`(i,j)` and :math:`(j,i)`,
+   the following constraint needs to be added
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      \var{f}_{ij} + \var{f}_{ji} & \leq \param{U}
+      \end{align*}
+
+   This constraint is a linear inequality, so the overall problem is
+   again a linear optimization one, although no more a minimum cost
+   network flow problem. In fact this constraint cannot be seen as a
+   flow balance constraint or a simple bound on flow variables. The
+   main negative consequence of this, besides not being able to
+   exploit the specialized algorithms for network flow problems, is
+   that the inclusion of even a single constraint of this kind usually
+   destroys the integrality property of the problem. Thus, if an
+   integer flow is looked for, this will not be granted by simply
+   solving the linear optimization problem.
+   
+3. The flow is  "single commodity".  Thus the demand of nodes
+   with negative balance can be satisfied by the production of any
+   node whose balance is positive. Sometimes, however, it is necessary to deal
+   with separate  flows; as an example, consider a transportation
+   network in which some origin nodes produce vehicles and some
+   destination nodes ask for  produced vehicles: if products differ in
+   color, size, brand, it will be necessary to keep all of the  flows of each
+   product type well separated from each other, so that each customer will receive the
+   correct quantity of the required products. This situation originates
+   so--called :index:`multi-commodity flow` models. It is easy
+   to take into account different flow types by adding a
+   further index to each flow variable, like, e.g., :math:`\var{f}_{ij}^k` meant
+   to model the flow on arc :math:`(i,j)` of products  of type :math:`k`. In some
+   cases these multiple flows give simply rise to several, distinct
+   and independent, network flow models, one for each flow
+   type. Sometimes, however, there will be "linking" constraints
+   which create a dependency between flows of different
+   commodities. An elementary example is, again that of shared arc
+   capacity. If the maximum amount of flow along arc :math:`(i,j)` is
+   :math:`\param{U}`, this limit must not be exceeded, whichever the commodity
+   associated to that arc.
+   As an example, referring again to the vehicle production example,
+   transportation on each arc might be done with a single truck with a
+   finite capacity  of :math:`\param{U}` vehicles.
+   To model this situation we might simply add constraints like:
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      \sum_{k \in \set{ProductTypes}} \var{f}_{ij}^k & \leq U_{ij}
+      \end{align*}
+      
+   Again, this linear constraint usually destroys the integrality
+   property enjoyed by pure network flow problems.
+   
+4. No flow losses or gains are possible long an arc. It is thus assumed that the
+   amount of flow entering an arc is kept unchanged until the end of the
+   arc. Sometimes, however, we might wish to model arc losses or
+   gains. As an example, in an hydraulic network, there might be flow
+   losses along pipes, proportional to the amount of flow. 
+   In modeling financial flows it might happen that the flow leaving a
+   node represents an amount of money, e.g., in €, while at the end
+   of the arc we would like to have that amount in US$, through a
+   multiplication by the current exchange rate. So, as an example, if
+   100€  start from arc :math:`(i,j)`, they will be transformed into,
+   say, 120 US$ at the end of the arc:
+
+   .. tikz::
+
+      \begin{tikzpicture}
+      \node[vertex] at (0,0) (1) {€};
+      \node[vertex] at (4,0) (2) {\$};
+      \draw[arc] (1) -- node[above right]{$\times 1.20$} (2);
+      \end{tikzpicture}
+
+   A model including this kind of behavior can be easily built
+   starting from the generic one. In fact it is sufficient to include
+   the multiplier on the arc in the corresponding balance equation. In
+   particular, if flow along a specific arc :math:`(i,j)` gets multiplied by
+   a factor :math:`\theta`, the balance equation associated to the destination
+   node should become
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      \sum_{k: (j, k) \in E} \var{f}_{jk} - \sum_{h: (h, j) \in
+      E, h \ne i}
+      \var{f}_{hj} - \theta \var{f}_{ij} = \param{b}_j \qquad  j \in V
+      \end{align*}
+
+   In the above balance equation, associated to node :math:`j`, the
+   flow going out from the node, assumed to be in US$, is simply
+   summed as usual; however, the flow entering the node includes the
+   special case of a flow from a € node, :math:`i` to :math:`j` and,
+   thus, a multiplication factor is introduced. This
+   situation can be generalized to the case in which several
+   entering arcs carry flows which need a transformation before
+   entering node :math:`j`. 
+   Again, the model remains a linear one, although no more a network
+   flow one and, in general, the integrality property does not hold
+   anymore.
+   
+5. The flow is assumed to be stationary; 
+   this means that a constant quantity is "flowing" along every arc
+   and there is no dynamics: flows are constant over time. Sometimes
+   this is not desirable and we would like to model flows which vary
+   in time. We will see later, in section
+   :ref:`Dynamic Flows<section:dynamic-networks>`, how to modify the basic model in
+   order to deal with this situation 
+   
+An example of a general model for the minimum cost flow problem
+is given in the following figure: 
+
+.. tikz::
+   
+   \begin{tikzpicture}[scale=0.8]
+   \newcommand{\tvar}[1]{{\color{red}{\small{\mathbf{#1}}}}}
+   \newcommand{\tparam}[1]{{\color{blue}{#1}}}
+   \newcommand{\tset}[1]{\textsc{#1}}
+   \node[vertex] (s) at  (0,2) [label=above:{\tiny{180}}] {$s$};
+   \node[vertex] (P1) at (4,4) {P1};
+   \node[vertex] (P2) at (4,2) {P2};
+   \node[vertex] (P3) at (4,0) {P3};
+   \node[vertex] (D1) at (8,5) [label=above:{\tiny{-120}}]{D1};
+   \node[vertex] (D2) at (8,-1) [label=above:{\tiny{-60}}]{D2};
+   \node[vertex] (i) at (2,-2) [label=above:{\tiny{$b_i$}}] {$i$};
+   \node[vertex] (j) at (6,-2) [label=above:{\tiny{$b_j$}}]{$j$};
+   \foreach \ini/\fin/\cost/\inf/\sup in {s/P1/11/0/100,
+   s/P2/13/0/200,
+   s/P3/10/0/100,
+   P1/D1/3/0/$\infty$,   P2/D1/1/0/$\infty$,
+   P2/D2/1/0/$\infty$,
+   P3/D1/5/0/$\infty$,
+   P3/D2/3/0/$\infty$,
+   i/j/$\tparam{c}_{ij}$/\tparam{L}$_{ij}$/\tparam{U}$_{ij}$}
+   \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost,\inf,\sup}} (\fin);
+   \end{tikzpicture}
+
+In this figure, the problem is graphically represented, including all
+data: above each node the balance is reported, with the convention
+that nothing is written above nodes with zero balance. On each arch we
+represent the unit cost, the lower and the upper bound on the flow.
+
+Solving this example with a Linear Optimization software the optimal
+flow turns out to be:
+
+.. tikz::
+   
+   \begin{tikzpicture}[scale=0.8]
+   \newcommand{\tvar}[1]{{\color{red}{\small{\mathbf{#1}}}}}
+   \newcommand{\tparam}[1]{{\color{blue}{#1}}}
+   \newcommand{\tset}[1]{\textsc{#1}}
+   \node[vertex] (s) at  (0,2) [label=above:{\tiny{180}}] {$s$};
+   \node[vertex] (P1) at (4,4) {P1};
+   \node[vertex] (P2) at (4,2) {P2};
+   \node[vertex] (P3) at (4,0) {P3};
+   \node[vertex] (D1) at (8,5) [label=above:{\tiny{-120}}]{D1};
+   \node[vertex] (D2) at (8,-1) [label=above:{\tiny{-60}}]{D2};
+   \node[vertex] (i) at (2,-2) [label=above:{\tiny{$b_i$}}] {$i$};
+   \node[vertex] (j) at (6,-2) [label=above:{\tiny{$b_j$}}]{$j$};
+   \foreach \ini/\fin/\cost/\inf/\sup in {s/P1/11/0/100,
+   s/P2/13/0/200,
+   s/P3/10/0/100,
+   P1/D1/3/0/$\infty$,
+   P1/D2/5/0/$\infty$,
+   P2/D1/1/0/$\infty$,
+   P2/D2/1/0/$\infty$,
+   P3/D1/5/0/$\infty$,
+   P3/D2/3/0/$\infty$,
+   i/j/$\tparam{c}_{ij}$/\tparam{L}$_{ij}$/\tparam{U}$_{ij}$}
+   \draw[arc,dotted] (\ini) -- (\fin);
+   \foreach \ini/\fin/\flow in {s/P2/120,
+   s/P3/60,
+   P2/D1/120,
+   P3/D2/60,
+   i/j/$\tvar{f}_{ij}$}
+   \draw[arc] (\ini) --node[above,sloped]{\textbf{\flow}}(\fin);
+   \end{tikzpicture}
+
+
+The solution represented above has been found by running a linear
+programming solver with the following model:
+   
+.. literalinclude:: AMPL/minflow.mod
+   :caption: minflow.mod
+   :language: ampl
+
+and the following data:
+
+.. literalinclude:: AMPL/netflow.dat
+   :caption: netflow.dat
+   :language: ampl
+
+========================================
+Applications of minimum cost flow models
+========================================
+
+:application: :index:`Production and distribution`
+
+   Logistics, and, in particular, distribution, is one of the fields
+   where the minimum cost flow model finds 
+   many applications.
+   As an example, consider a  set of plants, each with a given
+   maximum production capacity and a set of distributors; consider also a
+   set of  customers, whose demand for the product is assumed to be
+   known.
+
+   In a situation like this one, we would like to plan both
+   production as well as transportation in order to minimize the total
+   costs. Production might have different costs, depending on the
+   producing plant; transportation, also, has a cost which depends
+   both on the producer's location as well as on the customer's one.
+   Reconsider the example of the preceding paragraph:
+
+   .. tikz::
+   
+      \begin{tikzpicture}[scale=0.8]
+      \newcommand{\tvar}[1]{{\color{red}{\small{\mathbf{#1}}}}}
+      \newcommand{\tparam}[1]{{\color{blue}{#1}}}
+      \newcommand{\tset}[1]{\textsc{#1}}
+      \node[vertex] (s) at  (0,2) [label=above:{\tiny{180}}] {$s$};
+      \node[vertex] (P1) at (4,4) {P1};
+      \node[vertex] (P2) at (4,2) {P2};
+      \node[vertex] (P3) at (4,0) {P3};
+      \node[vertex] (D1) at (8,5) [label=above:{\tiny{-120}}]{D1};
+      \node[vertex] (D2) at (8,-1) [label=above:{\tiny{-60}}]{D2};
+      \node[vertex] (i) at (2,-2) [label=above:{\tiny{$b_i$}}] {$i$};
+      \node[vertex] (j) at (6,-2) [label=above:{\tiny{$b_j$}}]{$j$};
+      \foreach \ini/\fin/\cost/\inf/\sup in {s/P1/10/0/100,
+      s/P2/13/0/200,
+      s/P3/10/0/100,
+      P1/D1/3/0/$\infty$,   P2/D1/1/0/$\infty$,
+      P2/D2/1/0/$\infty$,
+      P3/D1/5/0/$\infty$,
+      P3/D2/3/0/$\infty$,
+      i/j/$\tparam{c}_{ij}$/\tparam{L}$_{ij}$/\tparam{U}$_{ij}$}
+      \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost,\inf,\sup}} (\fin);
+      \end{tikzpicture}
+
+   We might consider the example as a production/transportation case:
+   node :math:`s` is a decision node, from which production orders are
+   issued. Each production order consists of a quantity to be produced
+   from a specific producer (P1, P2, P3). The capacity on *production arcs* :math:`(s,P1),
+   (s,P2), (s,P3)` are the maximum production capacities of the three
+   plants (100, 200, 100, respectively). The costs associated to each of
+   these arc
+   are production costs: P1 and P3 produce at 10€ per unit, while P2 has a
+   production cost of 13€. Arcs from P1, P2, P3 to D1 and D2 can be
+   thought of as *transportation arcs*, with unlimited capacity (in
+   this example) but
+   different unit costs, raging from 1 per unit out of producer P2, to 5
+   per unit in two links from the other producers. The balance of nodes
+   D1 and D2 represent demand, while an equivalent balance, of opposite
+   sign, is associated to the start node :math:`s`.
+   
+   It might seem that in this model flows of different kinds are present
+   (production orders, finished good transportation):
+   however, we can consider each flow as an order (from the producers to
+   the customer). There is no distinction among flows, as any destination
+   can be satisfied with flows from any of the connected nodes. 
+   
+   This model shows how it is possible to model two important decisions
+   (production and transportation) by means of a single model which, in this case,
+   is a network flow one. Being able to solve this global problem can be a
+   great advantage, as decisions are taken in a non myopic way:
+   traditionally, first production would be allocated to existing plants,
+   minimizing production costs and then products would be shipped at
+   minimum cost to destinations, thus taking the two decisions in
+   different, separated, stages. In this example,  minimizing just
+   production costs would lead to produce all 180 parts in plants P1 and
+   P3, possibly 90 each (but any other combination not exceeding
+   production capacity would cost the same).
+   Taking into account that shipping costs from P1 are 3 towards D1
+   and 5 towards D2, a slightly less myopic solution  would be to produce
+   100 at P1 and 80 at P2, with a total production cost 1,800€. From
+   there, transportation costs are: :math:`3 \times 100 + 5 \times 20 + 3
+   \times 60 = 580`, with total cost 2,380€. On the other hand, the
+   optimal solution reported has a total cost 2,360€, which is only
+   slightly more convenient; although the difference is small, the
+   structure of the solution is quite radically different and it is not
+   difficult to see that in more complex production/transportation
+   applications, the difference between a solution found by optimizing
+   single stages in the process may be arbitrarily worse than the optimal one.  
+
+.. include:: closing.rst
+

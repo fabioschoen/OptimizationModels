@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>17. The fixed charge problem &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="19. Knapsack, Bin Packing and Plant Location problems" href="Knapsack.html" />
+    <link rel="prev" title="16. Mixed Integer Linear Models" href="MIPModels.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="MIPModels.html" title="Previous document"><span class="section-number">16. </span>Mixed Integer Linear Models</a>
+        </li>
+        <li>
+          <a href="Knapsack.html" title="Next document"><span class="section-number">19. </span>Knapsack, Bin Packing and Plant Location problems</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<p>Similarly to what we did in the chapters devoted to pure linear
+optimization problems, here we start a group of sections devoted to
+specific models and applications. This way from one side we introduce
+important applications of mathematical optimization models and their
+formulations. On another side we aim at guiding the reader towards
+acquiring specific modeling skills. This way we hope that when
+modeling a complex real life problem the building blocks introduced in
+these chapters will form a rich enough set of modeling tools.</p>
+<section id="the-fixed-charge-problem">
+<span id="sect-fixedcharge"></span><h1><span class="section-number">17. </span>The fixed charge problem<a class="headerlink" href="#the-fixed-charge-problem" title="Link to this heading">¶</a></h1>
+<p>In some applications although it is reasonable to assume the cost
+is  linear there might arise a problem of
+modeling a discontinuity at zero.
+Consider, as an example,  a production problem, like that
+already presented in chapter <a class="reference internal" href="LinearModelsWeb.html#structured-linear-optimization-models"><span class="std std-ref">Structured linear optimization models</span></a>.</p>
+<p>Production of a particular finished product, sometimes,
+involves a cost which is proportional to the quantity to be
+produced; this is often associated to labor time or  to the time
+spent consuming some of the available resources. But sometimes
+a “fixed charge”  is paid at the very start of production.
+This cost is a constant which needs to be paid only if the production
+level is strictly positive.
+As an example, often a machine needs some start-up or set-up time
+before being ready to produce. This time, which is non productive, can
+be associated to a cost which needs to be paid independently on the
+quantity to be produced, provided that this quantity is non zero.
+Examples might be  warming up a plant, staff training, or equipment or
+tool change
+in a machine. We can formally describe the contribution to the total cost
+due to the decision to produce <span class="math notranslate nohighlight">\(\var{x}\)</span> units of a given  product
+as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+C(\var{x}) = \left\{
+\begin{array}[c]{ll}
+c \var{x} + \param{K} &amp; \text{ if } \var{x}&gt; 0 \cr
+0 &amp; \text{ otherwise}
+\end{array}
+\right.
+\end{align*}</div><p>This function, if the fixed cost <span class="math notranslate nohighlight">\(\param{K}\)</span> is non zero, is not continuous,
+although it can be proven to be <em>concave</em>.</p>
+<blockquote>
+<div><div class="figure" style="text-align: center"><p><img  src="_images/tikz-0acb9c30dae26548397fd5b50249aca516194408.png" alt="Figure made with TikZ" /></p>
+</div></div></blockquote>
+<p>Through the introduction of an auxiliary
+binary variable it is possible to correctly formulate such a  cost function.
+Taking into consideration the modeling examples introduced in chapter
+<a class="reference internal" href="MIPModels.html#using-binary-variables-in-logical-constraints"><span class="std std-ref">Using binary variables in logical constraints</span></a>
+a binary variable <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span>  is introduced and the
+following is required:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} \leq \param{M} \mathvar{\delta}
+\end{align*}</div><p>Here <span class="math notranslate nohighlight">\(\param{M}\)</span> is a sufficiently large constant, e.g., an upper
+bound on the production quantity. This way we have formulated, in a
+linear way, the logical constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq \param{M} \\
+\var{x} &gt; 0 &amp; \implies \mathvar{\delta} = 1
+\end{align*}</div><p>Thus the indicator variable <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span> is forced to 1
+when the event <span class="math notranslate nohighlight">\(\var{x}&gt; 0\)</span> occurs. This binary variable might then
+be used in the objective function to switch on the fixed charge:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min  \sum_j c_j \var{x}_j + \sum_j \param{K}_j \mathvar{\delta}_j  \\
+\var{x}_j &amp; \leq \param{M}_j \mathvar{\delta}_j &amp;  \forall \, j \\
+\var{x}_j &amp; \geq0 \\
+\mathvar{\delta}_j &amp; \in \{0,1\} \\
+\var{x} &amp;\in X
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(X\)</span> denotes other constraints  of the model.
+It is worth observing that this model is not “perfect”:
+in fact, while the constraints correctly implement the logical
+constraint,
+they are not
+enough to guarantee that if <span class="math notranslate nohighlight">\(\var{x}_j = 0\)</span> then
+the corresponding <span class="math notranslate nohighlight">\(\mathvar{\delta}_j = 0\)</span>.
+Thus, in this model it is possible to obtain feasible
+solutions in which although there is no production for a certain
+product, nonetheless a fixed charge  is included
+(<span class="math notranslate nohighlight">\(\var{x}_j = 0,  \mathvar{\delta}_j = 1\)</span>).</p>
+<p>This modeling error is
+irrelevant in this application. In fact, even if it is true that there can
+exist feasible solutions with zero production and not null  fixed charge,
+thanks to the  minimization of the objective function, these solutions will be
+discarded in favor of similar, cheaper, solutions with zero fixed charge.
+In other words, although the feasible set is larger then the feasible
+set of the original problem, the optimal solutions will be correct,
+thanks to the positivity of the fixed charge.</p>
+<p>In some cases, however, the role of the indicator variable in the model might be
+more complex; it might be involved in different constraints  and
+it might  not automatically be driven  to zero when production is null.</p>
+<p>In these cases,  an exact formulation of the fixed charge  model would be necessary
+and an additional logical constraint would be required:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} = 0 &amp;\implies \mathvar{\delta} = 0
+\end{align*}</div><p>As we have already seen, this logical constraint cannot be exactly
+translated by means of a
+finite number of linear constraints. A
+solution, which is only partially satisfactory, consists in transforming the
+constraint <span class="math notranslate nohighlight">\(\var{x}&gt; 0\)</span> into
+<span class="math notranslate nohighlight">\(\var{x} \geq \varepsilon\)</span>, where <span class="math notranslate nohighlight">\(\epsilon&gt; 0\)</span> is a
+small enough constant.</p>
+<p>In this case it is possible to introduce a
+constraint that represents the logical implication</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp;\geq 0 \\
+\mathvar{\delta} = 1 &amp; \implies \var{x} \geq \epsilon
+\end{align*}</div><p>Choosing the upper bound <span class="math notranslate nohighlight">\(\param{M}\)</span> requires some
+additional care. From a purely logical point of view,   this
+constant plays the role of <span class="math notranslate nohighlight">\(+ \infty\)</span>;  it is, in other words,
+a value large enough  to make the constraint
+<span class="math notranslate nohighlight">\(\var{x} \leq \param{M}\)</span> redundant.
+From the computational point of view the
+choice of this constant might have an
+influence on the effective possibility
+of solving large scale problems in acceptable computational times.
+It is important to choose the value of the constant <span class="math notranslate nohighlight">\(\param{M}\)</span> in
+such a way that, although it should be large enough not to limit in
+any way feasible solutions, it must nonetheless be the lowest possible
+in order not to generate too weak a relaxation.
+In fact, consider a simple example. Assume that in a fixed charge
+problem a production variable <span class="math notranslate nohighlight">\(\var{x}\)</span> has an upper bound
+equal to, say, 5. Then each of the following logical constraints:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq 5 \mathvar{\delta} \\
+\var{x} &amp; \leq 10 \mathvar{\delta} \\
+\var{x} &amp; \leq 100 \mathvar{\delta}
+\end{align*}</div><p>when coupled with <span class="math notranslate nohighlight">\(0 \leq \var{x} \leq 5, \mathvar{\delta} \in
+\{0,1\}\)</span>
+produce exactly the
+same set of feasible solutions. However, when relaxing the integrality
+requirement on the binary variable the resulting polyhedra are
+different and, in particular, the first one is stronger, then the
+second, which is stronger than the third.</p>
+<blockquote>
+<div><div class="figure" style="text-align: center"><p><img  src="_images/tikz-ae0f07a91c28ed57b57154d795a6679bbc8db4f0.png" alt="Figure made with TikZ" /></p>
+</div></div></blockquote>
+<p>In the figure, the feasible set is represented in green and it
+consists of the origin O and the segment (A,B); the relaxed polyhedra
+associated to the three formulations above are, respectively, those
+with vertices  (O,A,B), (O,A,B,C), (O,A,B,D). (O,A,B** is ideal, as it
+is the smallest possible polyhedron including the feasible set.
+On the contrary, the other two polyhedra contain vertices which are
+not feasible.</p>
+</section>
+<section id="lot-sizing">
+<h1><span class="section-number">18. </span>Lot sizing<a class="headerlink" href="#lot-sizing" title="Link to this heading">¶</a></h1>
+<p>An immediate application of the fixed charge model can be found in
+production planning. The <span class="target" id="index-0"></span>lot sizing problem consists in
+deciding production levels (lot sizes) in order to be able to satisfy
+a known external demand, taking into account capacity and costs. The
+most basic lot sizing model is the following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min &amp; \sum_{t=1}^T  (\mathpar{p}_t \var{x}_t + \mathpar{q}_t
+\mathvar{\delta}_t + \mathpar{h}_t
+\var{s}_t)  \\
+\var{s}_{t-1} + \var{x}_t  &amp; = \mathpar{d}_t + \var{s}_t &amp; \forall\, &amp;t\\
+\var{s}_0 = \var{s}_T &amp; = 0 \\
+\var{x}_t &amp; \leq  \param{M}_t \mathvar{\delta}_t &amp; \forall\, &amp;t\\
+\var{x}_t &amp; \geq 0 \\
+\mathvar{\delta}_t &amp; \in \{0,1\} \\
+\var{s}_t &amp; \geq 0
+\end{align*}</div><p>where (in the following, <span class="math notranslate nohighlight">\(t\)</span> always denotes a time period
+within the time horizon):</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(T\)</span> is the finite time horizon, i.e., the planning period</p></li>
+<li><p><span class="math notranslate nohighlight">\(\var{x}_t\)</span> is the production level at the beginning of
+time period <span class="math notranslate nohighlight">\(t\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\var{s}_t\)</span> is the inventory level at the end of the period</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathvar{\delta}_t\)</span> is the fixed charge binary variable for the
+period, used to add a fixed cost whenever the production
+in a time period is different from zero</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathpar{d}_t\)</span> is the (known or estimated) demand for the
+period</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathpar{p}_t,\mathpar{q}_t, \mathpar{h}_t\)</span> are, respectively,
+the unit production cost, the fixed charge, the unit inventory cost</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathpar{M}_t\)</span> is the upper bound required in order to
+correctly formulate the fixed charge logical constraint at each
+period.</p></li>
+</ul>
+<p>Classical lot sizing models are usually analyzed depending on a major
+assumption. In many cases the problems are assumed to be
+<em>uncapacitated</em>. By this we mean the fact that there is no strict
+limit on production capacity in any period, and, similarly, there are
+no constraints on inventories. The assumption of no limits on the
+production capacity might seem to be contradictory with respect to the
+inclusion, in the model, of an upper bound on production, which is
+necessary in order to correctly formulate the logical
+constraint. However, this upper bound, in uncapacitated models, is
+defined as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathpar{M}_t &amp; = \sum_{i=t}^T \mathpar{d}_i
+\end{align*}</div><p>This assumption derives from cost considerations: there is in fact no
+need to produce, at any time period, more than what will be demanded
+in the current and future periods. Any extra production, beyond this
+limit, would not be used to satisfy demand and will generate an
+additional cost. So, by using this parameter as an upper bound on
+production levels, a redundant constraint is generated. To be precise,
+the upper bound is redundant for any optimal solution. Using a similar
+upper bound does not really limit production: at any time period it is
+assumed that production can be set to any reasonable level, without
+any strict limitation. It can be easily seen that, thanks to this
+upper bound, also the inventory is limited. But, again, this is not a
+limited capacity constraint on the inventory, but simply a consequence
+of the assumption on the model.</p>
+<p>From a purely modeling point of view, including an upper bound on
+production or on the inventory would be quite trivial. However it is
+known that the  lot-sizing optimization problem is easy to solve
+in the uncapacitated case, while it becomes, in general, hard as soon
+as strict bounds on production or inventory levels are introduced.</p>
+<p>We are not going to go into much detail on the algorithmic aspects of
+lot-sizing. It seems worth recalling, however, that the uncapacitated
+case remains easily  solvable even when the objective function is
+<em>concave</em> in terms of production and inventory levels.</p>
+<p>We recall that concave functions are frequently encountered as cost
+functions in applied problems. Let us first give some definitions. A
+set <span class="math notranslate nohighlight">\(S \subseteq \R^n\)</span> is called <span class="target" id="index-1"></span>convex set if</p>
+<div class="math notranslate nohighlight">
+\[
+x\in S, y \in S \implies \lambda x + (1-\lambda y) \in S,
+\forall\, \lambda \in [0,1]
+\]</div><p>A convex set is any set characterized by the fact that given any two
+elements in the set, also the segment connecting them belongs to the
+set.  A <span class="target" id="index-2"></span>convex function over a convex set <span class="math notranslate nohighlight">\(S\)</span> is a
+function such that:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f(\lambda x + (1-\lambda)y) &amp; \leq \lambda f(x) + (1-\lambda) f(y)
+&amp; \forall\,x,y, \in S, \lambda \in [0,1]
+\end{align*}</div><p>while a <span class="target" id="index-3"></span>concave function is any function such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f(\lambda x + (1-\lambda)y) &amp; \geq \lambda f(x) + (1-\lambda) f(y)
+&amp; \forall\,x,y, \in S, \lambda \in [0,1]
+\end{align*}</div><p>It can be easily seen that for concave functions (here we limit to
+functions of a single variable, but a more general result might be
+stated)
+the following holds:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f( x + 1) - f(x) &amp; \leq  f(x) - f(x-1)
+\end{align*}</div><p>and this means that the <em>increment</em>  in the function is not increasing
+with its argument. This situation is very common in industrial cost
+functions where there usually is some sort of a scale effect which
+makes production, or inventory, display a marginal cost variation
+which is non increasing with the quantity. It is some sort of a
+quantity discount: one additional unit produced will marginally cost
+less as the production level increases.</p>
+<p>It is easy to proof that the fixed charge objective function is indeed
+a concave function over the set of non negative reals.</p>
+<p>A well known result in lot sizing theory is that, provided that the
+problem is uncapacitated, if the objective function is a concave
+function of the inventory and the production levels, then the optimal
+production policy can be efficiently found (i.e., in polynomial
+time). We suggest the interested reader to consult the fundamental
+book <span id="id1">[<a class="reference internal" href="Bibliography.html#id7" title="Yves Pochet and Laurence A. Wolsey. Production planning by mixed integer programming. Springer series in operations research and financial engineering. Springer, New York ; Berlin, 2006.">Pochet and Wolsey, 2006</a>]</span> on this subject. Here it might suffice to say
+that there exist many efficient algorithms to optimally solve the
+uncapacitated lot sizing problem, the best known of which is the
+<span class="target" id="index-4"></span>Wagner-Within algorithm, which is based on dynamic
+programming.</p>
+<p>It is also important to observe that  the problem is “easy”
+and can be efficiently solved for long time horizons even in a much
+more general form than the linear one considered here. However, the
+formulation given above is far from being ideal and, in general,
+solving a  problem of realistic size using  that model with a general
+purpose mixed integer linear optimization solver might be extremely
+demanding.
+We cannot here go into details on strong formulations for this
+problem. It is sufficient so say that a strong (ideal) formulation of
+the uncapacitated lot sizing problem can indeed be obtained. However,
+its formulation requires an exponential number of constraints in the
+space of the original variable (although ideal formulations of
+polynomial size exist when the problem is reformulated in a higher
+dimensional space). Thus,
+the direct use of such a formulation for a large scale problem is out
+of question. It is nonetheless possible to define a computational
+procedure which can be recursively called to sequentially add a small number of
+constraints to the original formulation until the optimal solution is
+found.</p>
+<section id="branch-and-cut-dynamical-simplex-method">
+<h2><span class="section-number">18.1. </span>Branch and cut - dynamical simplex method<a class="headerlink" href="#branch-and-cut-dynamical-simplex-method" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>This kind of procedure is quite common in combinatorial
+optimization and it is worth devoting a paragraph to a quick
+description.
+Assume a formulation of a
+problem is given in  which constraints are partitioned into a set of
+“easy” constraints, quite limited in number, and another set of
+constraints, usually of huge cardinality.</p>
+<p>Let us denote these two sets by <span class="math notranslate nohighlight">\(F_0, F\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min c^T \var{x}  &amp; \\
+a_i^T \var{x} &amp; \leq b_i  &amp; i \in F_0 \\
+\alpha_i^T \var{x} &amp; \leq \beta_i &amp; i \in F
+\end{align*}</div><p>Usually, even if not necessarily,  integrality
+requirements for a subset of variables might be present. The idea of the dynamical
+simplex method, which is the basis of  the Branch and Cut algorithm, is to start by
+solving a relaxation of the problem (possibly a good one) obtained by
+eliminating the large family of constraints with index in
+<span class="math notranslate nohighlight">\(F\)</span> (and, possibly, the integrality requirement too).</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+x^\star_0 &amp; \in \arg \min c^T \var{x}  \\
+a_i^T \var{x} &amp; \leq b_i  &amp; i \in F_0
+\end{align*}</div><p>The optimal solution of this problem might be a feasible solution or not. If
+it is feasible, i.e., if it satisfies also all of the constraints
+which have been eliminated, than it is an optimal solution to the
+original problem. Otherwise, there must exist at least an inequality,
+in family <span class="math notranslate nohighlight">\(F\)</span>, which is not satisfied by the current
+solution.</p>
+<p>Assume we have available a procedure, called a <span class="target" id="index-5"></span>separation
+procedure which, given a point <span class="math notranslate nohighlight">\(\bar{x}\)</span>, either</p>
+<ul>
+<li><p>certifies that <span class="math notranslate nohighlight">\(\bar{x}\)</span> satisfies all of the inequalities
+indexed by <span class="math notranslate nohighlight">\(F\)</span></p></li>
+<li><p>or returns at least an index <span class="math notranslate nohighlight">\(\bar{\imath} \in F\)</span> such
+that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\alpha_{\bar{\imath}}^T \bar{x} &amp; &gt; \beta_{\bar{\imath}}
+\end{align*}</div></li>
+</ul>
+<p>(and possibly returns many of these indices and, if at all possible,
+some of those associated to the “maximally violated” inequalities)</p>
+<p>Let us denote this procedure by <span class="math notranslate nohighlight">\(CutGenerator(x,F)\)</span> and
+assume it returns a set of indices of violated inequalities, if any
+exists, or the empty set if all are satisfied.</p>
+<p>Thus a cutting plane algorithm might be built this way:</p>
+<ol class="arabic">
+<li><p>let, as before, <span class="math notranslate nohighlight">\(x_0^\star\)</span> be an optimal solution of the initial
+relaxed problem</p></li>
+<li><p>let <span class="math notranslate nohighlight">\(k:= 0\)</span></p></li>
+<li><p>let <span class="math notranslate nohighlight">\(F_1 = \emptyset\)</span></p></li>
+<li><p>While <span class="math notranslate nohighlight">\(C = CutGenerator(x_k^\star,F) \ne \emptyset\)</span>:</p>
+<ol class="loweralpha">
+<li><p>let <span class="math notranslate nohighlight">\(k := k+1\)</span></p></li>
+<li><p>let <span class="math notranslate nohighlight">\(F_1 = F_1 \cup C\)</span></p></li>
+<li><p>let <span class="math notranslate nohighlight">\(F = F \setminus C\)</span></p></li>
+<li><p>solve:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+x^\star_k &amp; \in \arg \min c^T \var{x}  \\
+a_i^T \var{x} &amp; \leq b_i  &amp; i \in F_0  \\
+\alpha_i^T \var{x} &amp; \leq \beta_i &amp; i \in F_1
+\end{align*}</div></li>
+</ol>
+</li>
+<li><p>End While</p></li>
+</ol>
+<p>In the above algorithmic scheme, the CutGeneration procedure is
+repeatedly called to separate the current solution. In fact, all of
+the inequalities returned by this procedure are violated in the
+current optimal solution. Thus, adding these inequalities to the pool
+of current inequalities, will make that solution infeasible. Thus the
+procedure, at every iteration, is granted to deliver a different
+solution to the current relaxation. It is hoped, and this is what
+happens in practice, that the whole algorithm will terminate well
+before all of the inequalities of the original set <span class="math notranslate nohighlight">\(F\)</span> have
+been added.</p>
+<p>This has become the standard way to approach difficult combinatorial
+optimization problems. What is needed is, from one side, a family of
+valid inequalities, possibly describing the ideal formulation of the
+problem or, at least, a subset of the inequalities defining such ideal
+representation. This is clearly a modeling problem. From the
+algorithmic point of view, it is necessary to have available a
+CutGeneration procedure which avoids checking, one by one, all of the
+inequalities in search of a violated one or of a proof of
+feasibility. This, sometimes, can be done efficiently, while in some
+other cases we must be satisfied by an heuristic CutGeneration
+procedure, one which is not granted to find a violated inequality even
+if one exists. An important result in computational complexity theory
+states that an efficient separation procedure exists if and only if an
+efficient optimization algorithm exists for the original problem.
+In other words, if a problem is efficiently solvable, as it is the
+case of the uncapacitated
+lot-sizing with linear costs and fixed charge, then there
+should exist a formulation and an efficient cut generation algorithm
+to solve it through the repeated execution of linear optimization
+algorithms.</p>
+<p>On the opposite side, if a problem is inherently difficult, as it is
+the case, in general, for finite capacity production planning
+problems, even if the ideal formulation might be known, finding a
+violated inequality or checking they are all satisfied is in general
+hard.</p>
+<p>This negative result should not however be too much emphasized. Modern
+exact optimization procedures do in fact use this kind of strategies,
+in order to solve specific instances of hard problems. These are
+worst-case results, and they do not prevent single problems to be
+solved quite efficiently by using a similar scheme.</p>
+<p>This framework is also a justification for presenting linear integer
+models for problems, like the lot sizing, for which efficient
+algorithms do exist which are somewhat unrelated to linear
+optimization.</p>
+<p>The reason is the following: if we just needed to solve an
+uncapacitated lot sizing problem, it is quite out of question that the
+best choice would be to use the Wagner-Within algorithm, or some
+other, even more efficient,  available method. However, when trying to
+solve more general lot-sizing problems, knowing a set of good quality
+inequalities as well as a procedure to separate an infeasible solution
+might prove extremely important in the solution of realistic large
+size problems.</p>
+</div></blockquote>
+</section>
+<section id="advanced-formulations-for-the-lot-sizing-model">
+<h2><span class="section-number">18.2. </span>Advanced formulations for the lot sizing model<a class="headerlink" href="#advanced-formulations-for-the-lot-sizing-model" title="Link to this heading">¶</a></h2>
+<p>It is not the case to present here the ideal formulation of the lot
+sizing model, for which we refer to the relevant literature on the
+subject. Introducing this formulation, in fact, would require us to
+make a quite long digression on valid inequalities for the problem,
+which seems to be out of scope in this notes, mainly devoted to
+modeling issues. Another reason for not introducing this formulation
+is the fact that, as a consequence of the exponential number of its
+constraints, it cannot be used as-is in a model, but included in a
+specialized algorithmic procedure of the kind briefly described
+above.</p>
+<p>It might be worth, however, to introduce a different model for the
+problem which is indeed ideal and not too large in dimension. The
+model is based on a <em>multi-commodity flow</em> formulation. When a decision
+on a production level is taken at a specific time instant, we might
+follow the material flow from production up to demand
+consumption. This flow usually will be split into some flow of
+production going directly to satisfy part of the current demand, and a
+set of flows that, passing through a few periods in the inventory,
+will eventually contribute to partially satisfy future demand. The
+idea of the multi-commodity flow formulation is to make these flows
+explicit. We label each production and each inventory variable with
+two indices: the current time period, and the time period at which the
+material will be delivered to satisfy the demand. Thus, e.g.,
+<span class="math notranslate nohighlight">\(\var{x}_{3,5}\)</span> represents production in period 3 which will
+be used to satisfy (part of)
+the demand of period 5; <span class="math notranslate nohighlight">\(\var{s}_{2,6}\)</span> is the quantity of
+material in the inventory at the end of period 2 which will be used to
+satisfy (part of) the demand of period 6.</p>
+<p>The following illustration might be useful to understand the
+formulation. Consider the following feasible flow in a 3 period
+planning problem:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-1066f385fbf4800402829d2d4927fd82bb8d7306.png" alt="Figure made with TikZ" /></p>
+</div><p>Here, 13 units are produced at time 1, some which to satisfy the
+demand of period 1, some for period 2 and 1 for  the
+demand of period 3. Another production run is in period 3, in which 6
+units are produced to satisfy, with the inventory left over from
+previous periods, the demand of period 3.
+If we split the single origin/destination flows, we obtain:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-09bceab2b398b257a02531c08c552e5991ae54b1.png" alt="Figure made with TikZ" /></p>
+</div><p>Denoting by <span class="math notranslate nohighlight">\(\param{d}_{s,t} = \sum_{p=s}^t \mathpar{d}_s\)</span> the cumulative
+demand between periods <span class="math notranslate nohighlight">\(s\)</span>  and  <span class="math notranslate nohighlight">\(t\)</span>, the model can be
+written as:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min &amp;\sum_{s=1}^T \sum_{t=s}^T (\mathpar{p}_s \var{x}_{st}  + \mathpar{h}_s
+\var{s}_{st}) + \sum_{t=1}^T \mathpar{q}_t \mathvar{\delta}_t  \\
+\var{s}_{s-1,t} + \var{x}_{s,t}  &amp; =  \var{s}_{st} &amp;
+\forall\, &amp;1 \leq s &lt; t \leq T\\
+\var{s}_{t-1,t} + \var{x}_{t,t}  &amp; = \mathpar{d}_t &amp;
+\forall\, &amp;1 \leq t  \leq T\\
+\var{x}_{st} &amp; \leq \param{d}_{t,T} \mathvar{\delta}_s &amp; \forall\, &amp;s
+\leq t\\
+\var{x}_{st} &amp; \geq 0 \\
+\mathvar{\delta}_t &amp; \in \{0,1\} \\
+\var{s}_{st} &amp; \geq 0
+\end{align*}</div><p>The model follows quite closely the standard one, and the link between
+the two is obtained by considering the relations</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_i &amp; = \sum_{t=i}^T \var{x}_{it} \\
+\var{s}_i &amp; = \sum_{t=i+1}^T \var{s}_{it}
+\end{align*}</div><p>In the above model it is assumed that the initial inventory is 0;
+in any case, if  the initial inventory is  no more than
+<span class="math notranslate nohighlight">\(\mathpar{d}_1\)</span> it can  be reduced to  zero,
+partially compensating the initial demand. Under the assumption of
+zero initial inventory, it is also required to add some border
+constraints on the inventory variables associated to the initial
+period:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s}_{0i} &amp; = 0 &amp; \forall\,i &amp; = 1, T
+\end{align*}</div><p>and the following one for the impossibility of having a storage “going
+back in time” (recall that we used to define the storage at the end of
+the period):</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s}_{ii} &amp; = 0  &amp; \forall\,i
+\end{align*}</div><p>In the model above, the objective is quite immediately recognized as
+perfectly equivalent to the original one.  The first group of
+constraints represents the flow of inventories inside the network,
+before their exit as partial demand satisfaction. Those constraint
+states that the inventory flow of products whose destination is a
+future demand either comes from current production or from the
+previous period, all with the same destination in the future. The
+second group of constraints is associated to demand satisfaction, and
+it states that all of the demand of a period needs to be satisfied
+with the current production destined to current demand, or with the
+products stored in the inventory and destined to satisfy current
+demand. No inventory can be left over at this stage.
+The following constraint is a set of logical constraints imposing that
+at any time period, if there is a non null production, whichever the
+destination, then the logical variable of that time period needs to be
+set to 1. This variable is then used to add the fixed charge cost to
+the objective.</p>
+<p>This <em>multi commodity</em> formulation has a larger number of variables
+and constraints: <span class="math notranslate nohighlight">\(O(T^2)\)</span> instead of <span class="math notranslate nohighlight">\(O(T)\)</span> of the
+original formulation. However, it can be proven that this formulation
+is <em>ideal</em>: relaxing the integrality constraints on the logical
+variables, every (optimal) basic feasible solution satisfies also the
+binary constraints. Thus it is possible to solve to optimality this
+problem  with a single execution of a linear optimization algorithm
+like, e.g., the simplex method.  It is worth recalling that, if our
+aim was to solve an instance of this problem, even this ideal
+formulation might not be a good choice, in particular for large time
+horizons. In fact efficient specialized algorithms exist which allow
+for a very fast solution even at large size. However, when there are
+complicating constraints, like, e.g., finite capacity or additional
+logical constraints, it might be useful to add those constraints to a
+good formulation, like this one, and to start from this for a branch
+and bound algorithm. We recall again, however, that it is possible to
+obtain an ideal representation of the problem in the original variable
+space, without the necessity of squaring the number of variables and
+constraints.</p>
+<p>The following code contains an example of implementation of the
+original lot
+sizing model:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">LS-U.mod</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">p</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">q</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">h</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">s0</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">d</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">MaxProd</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">x</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span><span class="w">  </span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">s</span><span class="p">{</span><span class="mi">0</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">cost</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="p">(</span>p<span class="p">[</span>t<span class="p">]</span><span class="o">*</span>x<span class="p">[</span>t<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>q<span class="p">[</span>t<span class="p">]</span><span class="o">*</span>delta<span class="p">[</span>t<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>h<span class="p">[</span>t<span class="p">]</span><span class="o">*</span>s<span class="p">[</span>t<span class="p">]);</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">balance</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">}:</span>
+<span class="w">     </span>s<span class="p">[</span>t<span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>x<span class="p">[</span>t<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>d<span class="p">[</span>t<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>s<span class="p">[</span>t<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">fix0</span><span class="p">:</span><span class="w"> </span>s<span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>s0<span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">logical</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">}:</span>
+<span class="w">     </span>x<span class="p">[</span>t<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>delta<span class="p">[</span>t<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span>MaxProd<span class="p">,</span><span class="kr">sum</span><span class="p">{</span>k<span class="w"> </span><span class="kr">in</span><span class="w"> </span>t<span class="o">..</span>T<span class="p">}</span><span class="w"> </span>d<span class="p">[</span>k<span class="p">]);</span>
+</pre></div>
+</div>
+</div>
+<p>while the following one is an implementation using the multi-commodity
+flow formulation (notice we have not imposed integrality on the
+logical variables):</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">LS-U-multicommodity.mod</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">p</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">q</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">h</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">s0</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">d</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">MaxProd</span><span class="p">;</span><span class="w">  </span><span class="c1"># used for finit capacity</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">x</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>u<span class="w"> </span><span class="kr">in</span><span class="w"> </span>t<span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">s</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">0</span><span class="o">..</span>T<span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span>s<span class="w"> </span><span class="kr">in</span><span class="w"> </span>t<span class="o">+</span><span class="mi">1</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;=</span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">cost</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span><span class="p">(</span>
+<span class="w">                  </span><span class="kr">sum</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span>i<span class="o">..</span>T<span class="p">}</span><span class="w"> </span>p<span class="p">[</span>t<span class="p">]</span><span class="o">*</span>x<span class="p">[</span>i<span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                  </span><span class="kr">sum</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span>i<span class="o">+</span><span class="mi">1</span><span class="o">..</span>T<span class="p">}</span><span class="w"> </span>h<span class="p">[</span>t<span class="p">]</span><span class="o">*</span>s<span class="p">[</span>i<span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">+</span>
+<span class="w">	          </span>q<span class="p">[</span>i<span class="p">]</span><span class="o">*</span>delta<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="p">);</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">balance</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span><span class="w"> </span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span>i<span class="o">..</span>T<span class="p">}:</span>
+<span class="w">	</span>s<span class="p">[</span>i<span class="o">-</span><span class="mi">1</span><span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>x<span class="p">[</span>i<span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">=</span>
+<span class="w">	</span><span class="p">(</span><span class="kr">if</span><span class="w"> </span><span class="p">(</span>i<span class="o">==</span>t<span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kr">else</span><span class="w"> </span>s<span class="p">[</span>i<span class="p">,</span>t<span class="p">])</span><span class="w"> </span><span class="o">+</span>
+<span class="w">        </span><span class="p">(</span><span class="kr">if</span><span class="w"> </span><span class="p">(</span>i<span class="o">==</span>t<span class="p">)</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span>d<span class="p">[</span>t<span class="p">]</span><span class="w"> </span><span class="kr">else</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">fix0</span><span class="p">:</span><span class="w"> </span>s<span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>s0<span class="p">;</span>
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">fixT</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">2</span><span class="o">..</span>T<span class="p">}:</span><span class="w"> </span>s<span class="p">[</span><span class="mi">0</span><span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">logical</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span><span class="w"> </span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span>i<span class="o">..</span>T<span class="p">}:</span>
+<span class="w">     </span>x<span class="p">[</span>i<span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>
+<span class="w">     	    </span><span class="kr">if</span><span class="w"> </span>t<span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span>d<span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span>s0
+<span class="w">	    </span><span class="kr">else</span><span class="w"> </span>d<span class="p">[</span>t<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">MaxCap</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">}:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span>i<span class="o">..</span>T<span class="p">}</span><span class="w"> </span>x<span class="p">[</span>i<span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>MaxProd<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>If we run both models with the following data:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">LS-U-big.dat</span><a class="headerlink" href="#id4" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="w">   </span><span class="nv">T</span><span class="w">   </span><span class="p">:</span><span class="o">=</span><span class="w">  </span><span class="mi">52</span><span class="p">;</span><span class="w"> </span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">MaxProd</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">Infinity</span><span class="p">;</span>
+
+param<span class="p">:</span>
+<span class="w">     </span>p<span class="w">    </span>q<span class="w">     </span>h<span class="w"> </span><span class="p">:</span><span class="o">=</span>
+<span class="mi">1</span><span class="w">   </span><span class="mi">100</span><span class="w"> </span><span class="mi">5000</span><span class="w">    </span><span class="mi">5</span><span class="w">   </span>
+<span class="mi">2</span><span class="w">   </span><span class="mi">100</span><span class="w"> </span><span class="mi">5000</span><span class="w">    </span><span class="mi">5</span><span class="w">   </span>
+<span class="mi">3</span><span class="w">   </span><span class="mi">100</span><span class="w"> </span><span class="mi">5000</span><span class="w">    </span><span class="mi">5</span><span class="w">   </span>
+<span class="mi">4</span><span class="w">   </span><span class="mi">100</span><span class="w"> </span><span class="mi">5000</span><span class="w">    </span><span class="mi">5</span><span class="w">   </span>
+<span class="mi">5</span><span class="w">   </span><span class="mi">100</span><span class="w"> </span><span class="mi">5000</span><span class="w">    </span><span class="mi">5</span><span class="w">   </span>
+</pre></div>
+</div>
+</div>
+<p><span class="math notranslate nohighlight">\(\dots\)</span></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">param</span>   <span class="n">T</span>   <span class="o">:=</span>  <span class="mi">52</span><span class="p">;</span> 
+<span class="n">param</span> <span class="n">MaxProd</span> <span class="o">:=</span> <span class="n">Infinity</span><span class="p">;</span>
+
+<span class="n">param</span><span class="p">:</span>
+     <span class="n">p</span>    <span class="n">q</span>     <span class="n">h</span> <span class="o">:=</span>
+<span class="mi">1</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">2</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">3</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">4</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">5</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">6</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">7</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">8</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">9</span>   <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">10</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">11</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">12</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">13</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">14</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">15</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">16</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">17</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">18</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">19</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">20</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">21</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">22</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">23</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">24</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">25</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">26</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">27</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">28</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">29</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">30</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">31</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">32</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">33</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">34</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">35</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">36</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">37</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">38</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">39</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">40</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">41</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">42</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">43</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">44</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">45</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">46</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">47</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">48</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">49</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">50</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">51</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="mi">52</span>  <span class="mi">100</span> <span class="mi">5000</span>    <span class="mi">5</span>   
+<span class="p">;</span>               
+        
+<span class="n">param</span>   <span class="n">s0</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span>    
+                
+<span class="n">param</span>   <span class="n">d</span> <span class="o">:=</span>            
+<span class="mi">1</span>   <span class="mi">400</span>         <span class="mi">2</span>   <span class="mi">400</span>         <span class="mi">3</span>   <span class="mi">800</span>         <span class="mi">4</span>   <span class="mi">800</span>         
+<span class="mi">5</span>   <span class="mi">1200</span>        <span class="mi">6</span>   <span class="mi">1200</span>        <span class="mi">7</span>   <span class="mi">1200</span>        <span class="mi">8</span>   <span class="mi">1200</span>            
+<span class="mi">9</span>   <span class="mi">1300</span>        <span class="mi">10</span>  <span class="mi">1300</span>        <span class="mi">11</span>  <span class="mi">300</span>         <span class="mi">12</span>  <span class="mi">1500</span>            
+<span class="mi">13</span>  <span class="mi">200</span>         <span class="mi">14</span>  <span class="mi">100</span>         <span class="mi">15</span>  <span class="mi">500</span>         <span class="mi">16</span>  <span class="mi">500</span>         
+<span class="mi">17</span>  <span class="mi">900</span>         <span class="mi">18</span>  <span class="mi">800</span>         <span class="mi">19</span>  <span class="mi">400</span>         <span class="mi">20</span>  <span class="mi">1200</span>            
+<span class="mi">21</span>  <span class="mi">1500</span>        <span class="mi">22</span>  <span class="mi">1200</span>        <span class="mi">23</span>  <span class="mi">900</span>         <span class="mi">24</span>  <span class="mi">1100</span>            
+<span class="mi">25</span>  <span class="mi">200</span>         <span class="mi">26</span>  <span class="mi">1200</span>        <span class="mi">27</span>  <span class="mi">600</span>         <span class="mi">28</span>  <span class="mi">400</span>         
+<span class="mi">29</span>  <span class="mi">300</span>         <span class="mi">30</span>  <span class="mi">100</span>         <span class="mi">31</span>  <span class="mi">1300</span>        <span class="mi">32</span>  <span class="mi">500</span>         
+<span class="mi">33</span>  <span class="mi">1600</span>        <span class="mi">34</span>  <span class="mi">800</span>         <span class="mi">35</span>  <span class="mi">1600</span>        <span class="mi">36</span>  <span class="mi">900</span>         
+<span class="mi">37</span>  <span class="mi">1100</span>        <span class="mi">38</span>  <span class="mi">400</span>         <span class="mi">39</span>  <span class="mi">500</span>         <span class="mi">40</span>  <span class="mi">100</span>         
+<span class="mi">41</span>  <span class="mi">900</span>         <span class="mi">42</span>  <span class="mi">1000</span>        <span class="mi">43</span>  <span class="mi">1500</span>        <span class="mi">44</span>  <span class="mi">1300</span>            
+<span class="mi">45</span>  <span class="mi">500</span>         <span class="mi">46</span>  <span class="mi">1400</span>        <span class="mi">47</span>  <span class="mi">200</span>         <span class="mi">48</span>  <span class="mi">1400</span>            
+<span class="mi">49</span>  <span class="mi">800</span>         <span class="mi">50</span>  <span class="mi">1400</span>        <span class="mi">51</span>  <span class="mi">700</span>         <span class="mi">52</span>  <span class="mi">400</span>         
+<span class="p">;</span>               
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">language<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ampl
+:lines: 54-77</p>
+</dd>
+</dl>
+<p>the first model returns:</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">LS-U.out</span><a class="headerlink" href="#id5" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>Gurobi<span class="w"> </span><span class="mf">9.1</span>.<span class="mi">1</span><span class="p">:</span><span class="w"> </span>optimal<span class="w"> </span><span class="kr">solution</span><span class="p">;</span><span class="w"> </span><span class="kr">objective</span><span class="w"> </span><span class="mi">4603000</span>
+<span class="mi">230</span><span class="w"> </span>simplex<span class="w"> </span>iterations
+<span class="mi">1</span><span class="w"> </span>branch<span class="o">-</span><span class="kr">and</span><span class="o">-</span>cut<span class="w"> </span>nodes
+plus<span class="w"> </span><span class="mi">122</span><span class="w"> </span>simplex<span class="w"> </span>iterations<span class="w"> </span><span class="kr">for</span><span class="w"> </span>intbasis
+
+<span class="kr">display</span><span class="w"> </span>x<span class="p">,</span>s<span class="p">,</span>d<span class="p">;</span>
+
+<span class="p">:</span><span class="w">     </span>x<span class="w">      </span>s<span class="w">     </span>d<span class="w">      </span><span class="p">:</span><span class="o">=</span>
+<span class="mi">0</span><span class="w">      </span>.<span class="w">      </span><span class="mi">0</span><span class="w">     </span>.
+<span class="mi">1</span><span class="w">     </span><span class="mi">800</span><span class="w">   </span><span class="mi">400</span><span class="w">    </span><span class="mi">400</span>
+<span class="mi">2</span><span class="w">       </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">400</span>
+<span class="mi">3</span><span class="w">    </span><span class="mi">1600</span><span class="w">   </span><span class="mi">800</span><span class="w">    </span><span class="mi">800</span>
+<span class="mi">4</span><span class="w">       </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">800</span>
+<span class="mi">5</span><span class="w">    </span><span class="mi">1200</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1200</span>
+<span class="mi">6</span><span class="w">    </span><span class="mi">1200</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1200</span>
+<span class="mi">7</span><span class="w">    </span><span class="mi">1200</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1200</span>
+<span class="mi">8</span><span class="w">    </span><span class="mi">1200</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1200</span>
+<span class="mi">9</span><span class="w">    </span><span class="mi">1300</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1300</span>
+<span class="mi">10</span><span class="w">   </span><span class="mi">1600</span><span class="w">   </span><span class="mi">300</span><span class="w">   </span><span class="mi">1300</span>
+<span class="mi">11</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">300</span>
+<span class="mi">12</span><span class="w">   </span><span class="mi">1800</span><span class="w">   </span><span class="mi">300</span><span class="w">   </span><span class="mi">1500</span>
+<span class="mi">13</span><span class="w">      </span><span class="mi">0</span><span class="w">   </span><span class="mi">100</span><span class="w">    </span><span class="mi">200</span>
+<span class="mi">14</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">100</span>
+<span class="mi">15</span><span class="w">   </span><span class="mi">1000</span><span class="w">   </span><span class="mi">500</span><span class="w">    </span><span class="mi">500</span>
+<span class="mi">16</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">500</span>
+<span class="mi">17</span><span class="w">    </span><span class="mi">900</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">900</span>
+<span class="mi">18</span><span class="w">   </span><span class="mi">1200</span><span class="w">   </span><span class="mi">400</span><span class="w">    </span><span class="mi">800</span>
+<span class="mi">19</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">400</span>
+<span class="mi">20</span><span class="w">   </span><span class="mi">1200</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1200</span>
+<span class="mi">21</span><span class="w">   </span><span class="mi">1500</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1500</span>
+<span class="mi">22</span><span class="w">   </span><span class="mi">2100</span><span class="w">   </span><span class="mi">900</span><span class="w">   </span><span class="mi">1200</span>
+<span class="mi">23</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">900</span>
+<span class="mi">24</span><span class="w">   </span><span class="mi">1300</span><span class="w">   </span><span class="mi">200</span><span class="w">   </span><span class="mi">1100</span>
+<span class="mi">25</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">200</span>
+<span class="mi">26</span><span class="w">   </span><span class="mi">1800</span><span class="w">   </span><span class="mi">600</span><span class="w">   </span><span class="mi">1200</span>
+<span class="mi">27</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">600</span>
+<span class="mi">28</span><span class="w">    </span><span class="mi">800</span><span class="w">   </span><span class="mi">400</span><span class="w">    </span><span class="mi">400</span>
+<span class="mi">29</span><span class="w">      </span><span class="mi">0</span><span class="w">   </span><span class="mi">100</span><span class="w">    </span><span class="mi">300</span>
+<span class="mi">30</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">100</span>
+<span class="mi">31</span><span class="w">   </span><span class="mi">1800</span><span class="w">   </span><span class="mi">500</span><span class="w">   </span><span class="mi">1300</span>
+<span class="mi">32</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">500</span>
+<span class="mi">33</span><span class="w">   </span><span class="mi">2400</span><span class="w">   </span><span class="mi">800</span><span class="w">   </span><span class="mi">1600</span>
+<span class="mi">34</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">800</span>
+<span class="mi">35</span><span class="w">   </span><span class="mi">2500</span><span class="w">   </span><span class="mi">900</span><span class="w">   </span><span class="mi">1600</span>
+<span class="mi">36</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">900</span>
+<span class="mi">37</span><span class="w">   </span><span class="mi">1500</span><span class="w">   </span><span class="mi">400</span><span class="w">   </span><span class="mi">1100</span>
+<span class="mi">38</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">400</span>
+<span class="mi">39</span><span class="w">    </span><span class="mi">600</span><span class="w">   </span><span class="mi">100</span><span class="w">    </span><span class="mi">500</span>
+<span class="mi">40</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">100</span>
+<span class="mi">41</span><span class="w">    </span><span class="mi">900</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">900</span>
+<span class="mi">42</span><span class="w">   </span><span class="mi">1000</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1000</span>
+<span class="mi">43</span><span class="w">   </span><span class="mi">1500</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1500</span>
+<span class="mi">44</span><span class="w">   </span><span class="mi">1800</span><span class="w">   </span><span class="mi">500</span><span class="w">   </span><span class="mi">1300</span>
+<span class="mi">45</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">500</span>
+<span class="mi">46</span><span class="w">   </span><span class="mi">1600</span><span class="w">   </span><span class="mi">200</span><span class="w">   </span><span class="mi">1400</span>
+<span class="mi">47</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">200</span>
+<span class="mi">48</span><span class="w">   </span><span class="mi">2200</span><span class="w">   </span><span class="mi">800</span><span class="w">   </span><span class="mi">1400</span>
+<span class="mi">49</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">800</span>
+<span class="mi">50</span><span class="w">   </span><span class="mi">1400</span><span class="w">     </span><span class="mi">0</span><span class="w">   </span><span class="mi">1400</span>
+<span class="mi">51</span><span class="w">   </span><span class="mi">1100</span><span class="w">   </span><span class="mi">400</span><span class="w">    </span><span class="mi">700</span>
+<span class="mi">52</span><span class="w">      </span><span class="mi">0</span><span class="w">     </span><span class="mi">0</span><span class="w">    </span><span class="mi">400</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>while the multi-commodity flow based one:</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">LS-U.out</span><a class="headerlink" href="#id6" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>Gurobi<span class="w"> </span><span class="mf">9.1</span>.<span class="mi">1</span><span class="p">:</span><span class="w"> </span>optimal<span class="w"> </span><span class="kr">solution</span><span class="p">;</span><span class="w"> </span><span class="kr">objective</span><span class="w"> </span><span class="mi">4603000</span>
+<span class="mi">110</span><span class="w"> </span>simplex<span class="w"> </span>iterations
+</pre></div>
+</div>
+</div>
+<p>It must be said that modern solvers employ a large set of
+preprocessing techniques in order to strengthen the initial
+formulation and transform it into one which is as close as reasonably
+possible to the ideal one. This is why, employing a state-of-the-art
+solver like, in this case, Gurobi, the difference between the two is
+not striking. However we can observe that with the original
+formulation a step of branch and bound is required, while with the
+second  one the simplex method is enough.  The number of simplex
+iterations in the second run is much lower than the analogous one in
+the first. It must be said, however, that the first formulation has a
+much smaller number of variables and constraints, so the real winner
+in this case is not so evident. If we tried an older solver like,
+e.g., glpsol, then the difference in the two runs would have been very significant.</p>
+</section>
+<section id="variants-of-production-planning-models">
+<h2><span class="section-number">18.3. </span>Variants of production planning models<a class="headerlink" href="#variants-of-production-planning-models" title="Link to this heading">¶</a></h2>
+<p>In this part we would like to briefly list some additional modeling
+possibilities and some extensions of the basic model, useful in
+realistic production scenarios.</p>
+<ul>
+<li><p>Backlogs</p>
+<p>The first modeling variant we introduce is that related to allowing
+for part of the demand not to be satisfied in the period it was
+requested. It is possible, sometimes, to delay the delivery of part
+of the demand; of course, any delay will involve an additional
+cost. In order to model this situation, it is possible to consider
+the fact that this is quite symmetrical to the situation of the
+inventory. In the case of inventory, in fact, we are producing in
+advance with respect to the demand period; and the earlier we
+produce, the higher the storage cost will be. This is modeled through an
+inventory variable, with a cost, which models the flow of produced
+material “towards the future”. In a completely analogous way,
+<span class="target" id="index-6"></span>backlog (which is the delayed delivery of products) can be
+thought of as an inventory which, from future production periods,
+flows “back” towards the satisfaction of a past demand. Every unit
+in this backward flow will have an associated backlog cost. Of
+course, products never travel back in time, but a backlog can be
+used to model production delayed by a few periods. A model with
+backlog is the following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min &amp; \sum_{t=1}^T  (\mathpar{p}_t \var{x}_t + \mathpar{q}_t
+\mathvar{\delta}_t + \mathpar{h}_t
+\var{s}_t + \mathpar{b}_t \var{r}_t)  \\
+\var{s}_{t-1} + \var{x}_t  + \var{r}_t&amp; = \mathpar{d}_t + \var{s}_t +
+\var{r}_{t-1}&amp; \forall\, &amp;t\\
+\var{s}_0 = \var{s}_T &amp; = 0 \\
+\var{x}_t &amp; \leq  \param{M}_t \mathvar{\delta}_t &amp; \forall\, &amp;t\\
+\mathvar{\delta}_t &amp; \in \{0,1\} \\
+\var{x}_t, \var{s}_t, \var{r}_t &amp; \geq 0
+\end{align*}</div><p>Here we have included a new variable, <span class="math notranslate nohighlight">\(\var{r}_t\)</span> to
+represent the quantity of material produced after period <span class="math notranslate nohighlight">\(t\)</span>
+which is available either to satisfy the current demand or to go
+backward in time to satisfy previous demand.</p>
+<p>The following schematic representation should help understanding the
+balance equations:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-396e9c6c0afa2a1c233614aef779be3eeeef6f0c.png" alt="Figure made with TikZ" /></p>
+</div><p>The backward arcs in the picture represent the flow of material
+produced after the demand period. It is in general assumed that on
+the borders of the planning periods, the backlog variable is zero.</p>
+<p>This model, similarly to the standard one, can be very easily solved
+when there is no strict constraint on finite capacities. Also for
+this model there exist alternative formulations, either in a larger
+dimensional space, similar to what has been introduced in the
+multi-commodity formulation above, or in the same space of variables,
+but with an ideal formulation with an exponential number of
+constraints.</p>
+</li>
+<li><p>Startup cost</p>
+<p>We have already seen how to model a <em>setup</em> cost which is to be paid
+whenever production is positive. A <span class="target" id="index-7"></span>startup cost is
+different in that it is a cost to be paid whenever production is
+positive after a null production period.  Startup cost, in other
+words, is paid whenever production changes its state from zero to
+positive. It is quite common in plants with continuous production
+and represents a cost to be paid in order to take the production
+plant from a quiet state to an active state. On the contrary, setup
+costs can be thought of as similar costs, but for a plant which is
+always switched off at the end of the period, so that it needs to be
+paid at every production period, of course if there is any positive
+production.
+It is the case, as an example, of
+production plants working for 8 hours a day, which, every morning,
+need to be set up in order to be able to start production.</p>
+<p>A possibility to model startup costs is to introduce an additional
+binary variable, <span class="math notranslate nohighlight">\(\var{z}_t\)</span> and to link it in such a way
+as to represent this change of state:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{t-1}=0 \land      \mathvar{\delta}_{t}=1  &amp;
+\implies \var{z}_t = 1
+\end{align*}</div><p>This is equivalent to the logical expression:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{t-1}=1 \lor  \mathvar{\delta}_{t}=0 \lor
+ \var{z}_t = 1
+\end{align*}</div><p>which can be formulated as the constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(1-\mathvar{\delta}_{t-1}) +      \mathvar{\delta}_{t}
++ \var{z}_t  &amp; \geq 1
+\end{align*}</div><p>or, simplifying,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{z}_t  &amp; \geq \mathvar{\delta}_{t-1} - \mathvar{\delta}_{t}
+\end{align*}</div><p>The opposite implication <span class="math notranslate nohighlight">\(\var{z}_t = 1 \implies
+\mathvar{\delta}_{t-1}=0 \land      \mathvar{\delta}_{t}=1\)</span> is not
+in general required, as the cost associated to the startup variable
+will forbid <span class="math notranslate nohighlight">\(\var{z}_t\)</span> to be 1 if there is no startup situation.</p>
+<p>It might also be observed that, here, we used
+<span class="math notranslate nohighlight">\(\mathvar{\delta}_t=0\)</span> as an indicator that in that period
+production is zero. But, we recall, in the original lot sizing model
+this implication was not imposed, as it was automatically true in
+optimal solutions, due to a similar reasoning as above: it is costly
+to set the variable to 1 when it is not necessary. In this case,
+however, some care needs to be taken, as we should consider whether
+it is still true that there is no incentive, in optimal solutions,
+to have <span class="math notranslate nohighlight">\(\mathvar{\delta}_t=1\)</span> even when production is
+zero. And, indeed, now this might happen, in particular when the
+startup cost is significantly high: it might be convenient to set
+this variable to 1 just to avoid paying a startup cost. This is
+incorrect and, in this model, we need to add the requirement:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_t = 0 &amp; \implies \mathvar{\delta}_t = 0
+\end{align*}</div><p>which can be approximately formulated as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_t &amp;\geq  \varepsilon \mathvar{\delta}_t
+\end{align*}</div></li>
+<li><p>Startup time</p>
+<p>Another quite frequent effect of startup is that, not only a cost is
+incurred, but also production capacity is reduced, due to the time
+spent in starting the engine. We report here the example for
+startup,  because for setup the situation is easier. In fact, if,
+say, one hour of production is lost for setup, we can simply change
+the capacity of the production plant, reducing it to take into
+account this one hour loss. With startup the situation is different,
+as production capacity will be full for every period, except for
+those periods which immediately follow a change of state.</p>
+<p>Le us assume now that the startup cost model has been included, so that we
+can use variable <span class="math notranslate nohighlight">\(\var{z}_t\)</span>  to indicate startup
+periods. If production capacity is denoted by <span class="math notranslate nohighlight">\(\mathpar{C}_t\)</span>
+and the loss of production capacity due to startup is denoted by
+<span class="math notranslate nohighlight">\(\mathpar{ST}_t\)</span>, then the logical constraint linking binary
+variables to production can be written as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_t &amp; \leq \mathpar{C}_t \mathvar{\delta}_t - \mathpar{ST}_t \var{z}_t
+\end{align*}</div><p>This way, when startup occurs, the upper bound on production is
+reduced accordingly.</p>
+</li>
+<li><p>Minimum production levels</p>
+<p>In some production planning cases, when production is active, a
+minimum production level might be imposed. Take into account that,
+usually, an effect of the presence of setup costs is the fact that
+when production is active, production levels are non  negligible, to
+compensate for the setup cost. If, nonetheless, a minimum production
+level <span class="math notranslate nohighlight">\(\mathpar{LB}_t\)</span> is required, this can be easily introduced  through a linear
+inequality:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_t &amp; \geq \mathpar{LB}_t \mathvar{\delta}_t
+\end{align*}</div><p>By the way, when present, this lower bound can take the place of the
+<span class="math notranslate nohighlight">\(\varepsilon\)</span> parameter we had to introduce to model some of
+the logical constraints in previous sections. If we put together the
+maximum and minimum level requirements, the constraint turns out to
+be:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathpar{LB}_t \mathvar{\delta}_t &amp; \leq \var{x}_t \leq \mathpar{C}_t
+\mathvar{\delta}_t
+\end{align*}</div><p>from which it is immediately seen that either the production is zero
+or otherwise it is within the interval <span class="math notranslate nohighlight">\([\mathpar{LB}_t, \mathpar{C}_t]\)</span></p>
+</li>
+<li><p>Safety stock</p>
+<p>A similar lower bound is frequently imposed on inventories too, in
+order to protect from uncertainties (in the demand, in the
+production, …). The difference is that usually a safety stock is
+always required, and does not depend on other events or binary
+variables. It can thus be trivially imposed via</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s}_t  &amp; \geq \mathpar{SS}_t
+\end{align*}</div></li>
+<li><p>Unsatisfied demand.</p>
+<p>We have always assumed demand as a quantity to
+be delivered exactly, possibly with some delay, as we have seen
+before. However, we might as well turn the balance constraint into a
+“soft” one by allowing the demand not to be exactly satisfied. Of
+course this will imply a penalty in the objective function. The
+standard way to soften an equality can be used to obtain equations
+like the following one:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s}_{t-1} + \var{x}_t &amp; = \mathpar{d}_t + \var{s}_t  -
+\var{y}_t \\
+\var{y}_t &amp; \geq 0
+\end{align*}</div><p>The  non negative variable <span class="math notranslate nohighlight">\(\var{y}_t\)</span>  subtracted on the
+right hand side represents the quantity of available product which
+is not used to satisfy the demand or to feed the inventory. If, as
+it is required, a positive cost is imposed on this variable in the
+objective function, then, if at all possible and convenient, demand will be
+satisfied and this variable will be left equal to zero. Otherwise,
+either for cost considerations, or in order to cope with
+limited production capacity in this and earlier periods, it might be
+convenient to use this variable, paying a cost, and avoid full
+demand satisfaction. Of course, an upper bound might be imposed to
+this variable in order to avoid too large a fraction of the demand
+not to be satisfied.</p>
+</li>
+</ul>
+</section>
+<section id="advanced-lot-sizing-models">
+<h2><span class="section-number">18.4. </span>Advanced lot sizing models<a class="headerlink" href="#advanced-lot-sizing-models" title="Link to this heading">¶</a></h2>
+<p>We will not go too much into details, in this chapter, on generalized
+lot sizing models. But we would like to introduce at least a few formulation of realistic
+production situations. In fact, real production planning problems
+require us to take into account many different aspects, from the
+multiplicity of products, to the different production phases, to the
+availability of resources. In this part we will define a few such
+models, in order to show the power of linear constraints to model even
+very complex realistic situations. Of course, modeling is not solving,
+and the computational aspects behind the possibility of actually
+solving these models are complex and out of scope in this volume. In any case
+we would like to recall that  modeling the whole
+production planning problem as a single model might be extremely
+beneficial, from a cost point of view; typical practical approaches in
+this field proceed by decomposing the problem into sub-problems, easier
+to solve, but whose interactions are neglected. This usually leads to
+far from optimal solutions, and, thus, inefficiencies.
+Small scale problems can be solved already from the models we will
+introduce here, with general purpose mixed integer linear optimization
+tools. Larger scale problems might require advanced algorithmic
+implementations, or, possibly, improved formulations.</p>
+<section id="master-production-scheduling-models">
+<h3><span class="section-number">18.4.1. </span>Master Production Scheduling models<a class="headerlink" href="#master-production-scheduling-models" title="Link to this heading">¶</a></h3>
+<p><span class="target" id="index-8"></span>MPS (<span class="target" id="index-9"></span>Master Production Scheduling) models consist of a quite
+straightforward generalization of lot sizing to take into account</p>
+<ul class="simple">
+<li><p>limited resource availability</p></li>
+<li><p>multiple products</p></li>
+</ul>
+<p>These are two major extensions of the basic model. From one side,
+multiple products are considered and their flow through the planning
+period must be managed separately one from the other. It actually is
+a multi-commodity flow problem. Having different products to consider would not be
+a problem if they were completely independent. On the contrary,
+dependence among decisions is needed, as, in general, these different
+product flows need to access some limited resources. These might be
+shared machines, personnel, prime material, budget … In what follows we
+formulate  a basic linear model to take into account both multiple
+products as well as resources. We consider also some resource
+consumption due to setup.</p>
+<p>Let:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(i=1,\ldots,m\)</span> denote the  indices of different products to
+be planned simultaneously on the same plant</p></li>
+<li><p><span class="math notranslate nohighlight">\(k =1, \ldots,K\)</span> denote the set of indices of a set of
+resources which are shared among different products. These
+resources are available with only finite capacity, so conflicts
+arise for their usage, up to capacity</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathpar{L}_t^k\)</span> is the maximum available quantity of
+resource <span class="math notranslate nohighlight">\(k\)</span> during period  <span class="math notranslate nohighlight">\(t\)</span>. Depending on the
+resource consumption of various products, this amount cannot be
+exceeded during any single time period</p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathpar{\alpha}^{ik}\)</span>:   the amount of resource <span class="math notranslate nohighlight">\(k\)</span> which
+is necessary in order to produce one unit  of  product <span class="math notranslate nohighlight">\(i\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\mathpar{\beta}^{ik}\)</span> amount of resource <span class="math notranslate nohighlight">\(k\)</span>  required for
+production setup relative to product  <span class="math notranslate nohighlight">\(i\)</span>. Here it is
+assumed that each product type will generate a setup cost when its
+production is non zero. Different situations might be dealt with in
+quite  a similar way.</p></li>
+</ul>
+<p>Given these parameters, a model might be formulated as follows, where
+the superscript on variables denotes each product type:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min &amp;\sum_{t=1}^T \sum_{i=1}^m (\mathpar{p}^i_t \var{x}^i_t +
+\mathpar{q}^i_t \mathvar{\delta}^i_t + \mathpar{h}^i_t \var{s}^i_t)  \\
+\var{s}^i_{t-1} + \var{x}^i_t  &amp; = \mathpar{d}^i_t + \var{s}^i_t &amp; \forall\, &amp;i,t\\
+\var{x}^i_t &amp; \leq  \mathpar{M}^i_t \mathvar{\delta}^i_t &amp; \forall\, &amp;i,t\\
+\sum_i \mathpar{\alpha}^{ik} \var{x}^i_t + \sum_i \mathpar{\beta}^{ik}
+\mathvar{\delta}^i_t &amp; \leq \mathpar{L}^k_t
+&amp; \forall\,&amp;t,k\\\var{x} &amp; \in \R^{mn}_{+} \\
+\mathvar{\delta} &amp; \in \{0,1\}^{mn} \\
+\var{s} &amp; \in \R^{m(n+1)}_{+}
+\end{align*}</div><p>The first equation above is the standard inventory balance equation,
+the only difference being the fact that it is replicated for each
+product type: each product has its own production, inventory,
+demand. The following inequalities are the logical constraints which
+force the binary variable, for a product in a specific period, to
+become 1 when the production of that product in that period is non
+zero. Up to now, there was no linking between the different products:
+up to here, different products are independent. The following
+constraints, however, introduce the dependence: at every time period,
+for each of the resources considered, the total amount of resources
+consumed cannot be more than the available quantity. Resources are
+consumed when production is non zero, and the consumption has been
+assumed to be proportional to the quantity produced, with a
+proportionality constant which depends on the product type. Moreover,
+when there is a non zero production, there might be also a fixed
+consumption of a resource due to setup.</p>
+<p>A simple example of implementation, along with a small dataset is
+reported in what follows:</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">MPS.mod</span><a class="headerlink" href="#id7" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="p">;</span><span class="w">  </span><span class="c1"># time periods</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">PROD</span><span class="p">;</span><span class="w">  </span><span class="c1"># products</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">p</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>PROD<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">q</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>PROD<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">h</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>PROD<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">s0</span><span class="p">{</span>PROD<span class="p">}</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">d</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>PROD<span class="p">};</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">RESOURCE</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Avail</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>RESOURCE<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Consume</span><span class="p">{</span>PROD<span class="p">,</span>RESOURCE<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Setup</span><span class="p">{</span>PROD<span class="p">,</span>RESOURCE<span class="p">};</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">x</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>PROD<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span><span class="w">  </span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">s</span><span class="p">{</span><span class="mi">0</span><span class="o">..</span>T<span class="p">,</span>PROD<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span>PROD<span class="p">}</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">cost</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span><span class="w"> </span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>PROD<span class="p">}</span><span class="w"> </span><span class="p">(</span>p<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="o">*</span>x<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>q<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="o">*</span>delta<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span>
+<span class="w">                                            </span><span class="o">+</span><span class="w"> </span>h<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="o">*</span>s<span class="p">[</span>t<span class="p">,</span>i<span class="p">]);</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">balance</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span><span class="w"> </span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>PROD<span class="p">}:</span>
+<span class="w">     </span>s<span class="p">[</span>t<span class="o">-</span><span class="mi">1</span><span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>x<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>d<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>s<span class="p">[</span>t<span class="p">,</span>i<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">fix0</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>PROD<span class="p">}:</span>
+<span class="w">	</span>s<span class="p">[</span><span class="mi">0</span><span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>s0<span class="p">[</span>i<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">logical</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span><span class="w"> </span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>PROD<span class="p">}:</span>
+<span class="w">	</span>x<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>delta<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>k<span class="w"> </span><span class="kr">in</span><span class="w"> </span>t<span class="o">..</span>T<span class="p">}</span><span class="w"> </span>d<span class="p">[</span>k<span class="p">,</span>i<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">resource_avail</span><span class="p">{</span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>T<span class="p">,</span><span class="w"> </span>k<span class="w"> </span><span class="kr">in</span><span class="w"> </span>RESOURCE<span class="p">}:</span>
+<span class="w">	</span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>PROD<span class="p">}</span><span class="w"> </span>Consume<span class="p">[</span>i<span class="p">,</span>k<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>x<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span>
+<span class="w">        </span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>PROD<span class="p">}</span><span class="w"> </span>Setup<span class="p">[</span>i<span class="p">,</span>k<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>t<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>Avail<span class="p">[</span>t<span class="p">,</span>k<span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">MPS.dat</span><a class="headerlink" href="#id8" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">PROD</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>Shoes<span class="w"> </span>Shirts<span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">RESOURCE</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>Machine<span class="w"> </span>Personnel<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">p</span><span class="p">:</span>
+<span class="w">   </span>Shoes<span class="w"> </span>Shirts<span class="p">:</span><span class="o">=</span>
+<span class="mi">1</span><span class="w">    </span><span class="mi">2</span><span class="w">    </span><span class="mi">1</span>
+<span class="mi">2</span><span class="w">    </span><span class="mi">2</span><span class="w">    </span><span class="mi">1</span>
+<span class="mi">3</span><span class="w">    </span><span class="mi">2</span><span class="w">    </span><span class="mi">1</span>
+<span class="mi">4</span><span class="w">    </span><span class="mi">2</span><span class="w">    </span><span class="mi">1</span>
+<span class="mi">5</span><span class="w">    </span><span class="mi">2</span><span class="w">    </span><span class="mi">1</span>
+<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">q</span><span class="p">:</span>
+<span class="w">   </span>Shoes<span class="w"> </span>Shirts<span class="p">:</span><span class="o">=</span>
+<span class="mi">1</span><span class="w">    </span><span class="mi">10</span><span class="w">    </span><span class="mi">10</span>
+<span class="mi">2</span><span class="w">    </span><span class="mi">10</span><span class="w">    </span><span class="mi">10</span>
+<span class="mi">3</span><span class="w">    </span><span class="mi">10</span><span class="w">    </span><span class="mi">10</span>
+<span class="mi">4</span><span class="w">    </span><span class="mi">10</span><span class="w">    </span><span class="mi">10</span>
+<span class="mi">5</span><span class="w">    </span><span class="mi">10</span><span class="w">    </span><span class="mi">10</span>
+<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">h</span><span class="p">:</span>
+<span class="w">   </span>Shoes<span class="w"> </span>Shirts<span class="p">:</span><span class="o">=</span>
+<span class="mi">1</span><span class="w">    </span>.<span class="mi">1</span><span class="w">    </span>.<span class="mi">1</span>
+<span class="mi">2</span><span class="w">    </span>.<span class="mi">1</span><span class="w">    </span>.<span class="mi">1</span>
+<span class="mi">3</span><span class="w">    </span>.<span class="mi">1</span><span class="w">    </span>.<span class="mi">1</span>
+<span class="mi">4</span><span class="w">    </span>.<span class="mi">1</span><span class="w">    </span>.<span class="mi">1</span>
+<span class="mi">5</span><span class="w">    </span>.<span class="mi">1</span><span class="w">    </span>.<span class="mi">1</span>
+<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">d</span><span class="p">:</span>
+<span class="w">   </span>Shoes<span class="w"> </span>Shirts<span class="p">:</span><span class="o">=</span>
+<span class="mi">1</span><span class="w">    </span><span class="mi">50</span><span class="w">    </span><span class="mi">20</span>
+<span class="mi">2</span><span class="w">    </span><span class="mi">20</span><span class="w">    </span><span class="mi">40</span>
+<span class="mi">3</span><span class="w">    </span><span class="mi">30</span><span class="w">    </span><span class="mi">40</span>
+<span class="mi">4</span><span class="w">    </span><span class="mi">80</span><span class="w">    </span><span class="mi">40</span>
+<span class="mi">5</span><span class="w">    </span><span class="mi">40</span><span class="w">    </span><span class="mi">10</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Avail</span><span class="p">:</span>
+<span class="w">   </span>Machine<span class="w"> </span>Personnel<span class="p">:</span><span class="o">=</span>
+<span class="mi">1</span><span class="w">    </span><span class="mi">100</span><span class="w">    </span><span class="mi">150</span><span class="w">     </span>
+<span class="mi">2</span><span class="w">    </span><span class="mi">140</span><span class="w">    </span><span class="mi">80</span><span class="w">      </span>
+<span class="mi">3</span><span class="w">    </span><span class="mi">100</span><span class="w">    </span><span class="mi">70</span><span class="w">      </span>
+<span class="mi">4</span><span class="w">    </span><span class="mi">120</span><span class="w">    </span><span class="mi">120</span><span class="w">     </span>
+<span class="mi">5</span><span class="w">    </span><span class="mi">60</span><span class="w">     </span><span class="mi">60</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Consume</span><span class="p">:</span>
+<span class="w">        </span>Machine<span class="w"> </span>Personnel<span class="p">:</span><span class="o">=</span>
+Shoes<span class="w">     </span><span class="mi">1</span><span class="w">        </span><span class="mi">1</span>
+Shirts<span class="w">    </span><span class="mi">1</span><span class="w">        </span><span class="mi">1</span>
+<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Setup</span><span class="p">:</span>
+<span class="w">        </span>Machine<span class="w"> </span>Personnel<span class="p">:</span><span class="o">=</span>
+Shoes<span class="w">     </span><span class="mi">5</span><span class="w">        </span><span class="mi">0</span>
+Shirts<span class="w">    </span><span class="mi">8</span><span class="w">        </span><span class="mi">0</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Running a mixed integer linear optimization algorithm with these data,
+the following solution is obtained:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-3b49c07ce13f516fce281013ab138b00b94ebf7f.png" alt="Figure made with TikZ" /></p>
+</div><p>From the picture above it is immediate to see that many properties
+enjoyed by the standard lot sizing model here are no more valid. In
+uncapacitated lot sizing it can be proven that at each period either
+there exist a positive production or a positive inventory, but never
+both. Here this is no more true.  A consequence of the basic property
+of uncapacitated lot sizing is that production is always equal to the
+sum of a set of future consecutive demands, which, again, is false in
+a model like this one.</p>
+<p>For what concerns resource consumption, the situation is the
+following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\textrm{Machine} \\
+\begin{array}{r|rrrrr}
+\hline \\
+t &amp; 1 &amp; 2 &amp; 3 &amp; 4 &amp; 5 \\ \hline
+\textrm{Actual} &amp; 93 &amp; 93 &amp; 71 &amp; 120 &amp; 45 \\
+\textrm{Avail}  &amp; 100 &amp; 140 &amp; 100 &amp; 120 &amp; 60 \\ \hline
+\end{array}
+\\
+\textrm{Personnel} \\
+\begin{array}{r|rrrrr}
+\hline\\
+t &amp; 1 &amp; 2 &amp; 3 &amp; 4 &amp; 5 \\ \hline
+\textrm{Actual} &amp; 80 &amp; 80 &amp; 63 &amp; 107 &amp; 40 \\
+\textrm{Avail}  &amp; 150 &amp; 80 &amp; 70 &amp; 120 &amp; 60 \\ \hline
+\end{array}
+\end{align*}</div><p>from which it can be seen the both the Machine as well as the
+Personnel resource are in some time periods used at maximum capacity.</p>
+</section>
+<section id="material-requirement-planning">
+<h3><span class="section-number">18.4.2. </span>Material Requirement Planning<a class="headerlink" href="#material-requirement-planning" title="Link to this heading">¶</a></h3>
+<p>The models presented above concern production planning with somewhat
+monolithic and independent products. By this we mean that the unique
+interaction among different products is due to the scarcity of some
+resources, which are needed for different products.</p>
+<p>In many situations, however, the situation is highly more
+complex. Frequently a product is made through an assembling of several
+intermediate products or parts. Sometimes production proceeds in
+sequential stages (<span class="target" id="index-10"></span>series production models). In these cases
+we might think, for each product, to a graph consisting of a single
+path of successive productions, the final product at one stage being
+the required material for the following one:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-8715c4d93786bfd9a3c0e2783399e6704029779e.png" alt="Figure made with TikZ" /></p>
+</div><p>To cope with this situation, along with the usual balance constraints
+for each (intermediate and final) product, temporal sequences need to
+be taken into account, as production at downhill stages cannot be
+started until the required production uphill has been completed.</p>
+<p>In a more general situation, a final product might be composed of a
+more complex set of intermediate products. The following picture
+graphically represents a part assembly production model:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-b713fffc280edf73c80062957cd5ded2289efc8a.png" alt="Figure made with TikZ" /></p>
+</div><p>In an even more general situation, the same product or the same
+intermediate product might be obtained following different production
+paths, and a choice of the most convenient one needs to be
+done. Moreover, each product, either final or intermediate, might need
+a different quantity of parts from the upper production levels, like
+we depict in the following figure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-9700e0e09574b740e0fc57ac68fb60b2b74ec00a.png" alt="Figure made with TikZ" /></p>
+</div><p>In a complex situation like those described here we may assume that a
+graph <span class="math notranslate nohighlight">\(G=\langle V,E \rangle\)</span> is available to represent the
+flow of material and of parts required for the assembly.
+Let us denote with <span class="math notranslate nohighlight">\(\mathpar{r}^{ij}\)</span> the number of products of type
+<span class="math notranslate nohighlight">\(i\)</span> required as input to product <span class="math notranslate nohighlight">\(j\)</span>. Let
+<span class="math notranslate nohighlight">\(\mathpar{\gamma}^i\)</span>  the <em>lead time</em> for the production of one unit of
+<span class="math notranslate nohighlight">\(i\)</span>. This is considered as an integer number of time periods
+between the start of production and the time by which the part becomes
+available.</p>
+<p>A possibility for the formulation of this model is the following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min &amp;\sum_{t=1}^T  \sum_{i=1}^m (\mathpar{p}^i_t \var{x}^i_t +
+\mathpar{q}^i_t \mathvar{y}\delta^i_t + \mathpar{h}^i_t  \var{s}^i_t)  \\
+\var{s}^i_{t-1} + \var{x}^i_{t - \mathpar{\gamma}^i}  &amp; =
+\mathpar{d}^i_t +
+\sum_{j: (i,j) \in E} \mathpar{r}^{ij}
+\var{x}^j_t + \var{s}^i_t &amp; \forall\, &amp;i,t\\
+\var{x}^i_t &amp; \leq  \mathpar{M}^i_t \mathvar{\delta}^i_t &amp; \forall\, &amp;i,t\\
+\sum_i \mathpar{\alpha}^{ik} \var{x}^i_t + \sum_i \mathpar{\beta}^{ik}
+\mathvar{\delta}^i_t &amp; \leq \mathpar{L}^k_t
+&amp; \forall\,&amp;t,k\\
+\var{x}, \var{s} &amp; \geq 0\\
+\mathvar{\delta} &amp; \in \{0,1\}^{mn} \\
+\end{align*}</div><p>This model, again, inherits many of the basic building blocks of
+previously seen models, with some important variations.  In the first
+set of equations, we can recognize the basic structure of balance
+equations. However, in the left hand side, the set of “ready” products
+of type <span class="math notranslate nohighlight">\(i\)</span> can be seen to be composed either of items in the
+inventory at the end of the previous time period, as usual, plus
+the quantity of produced items which are available. However, in order
+to take into account the lead time, i.e., the time between actual
+production start and the availability of the product, the temporal
+index is not the actual period, but is shifted backward
+<span class="math notranslate nohighlight">\(\mathpar{\gamma}_i\)</span> time units. This way we can take into
+account the fact that production is not instantaneous, and, in
+particular, production started in a period does not necessarily lead
+to a finished product in the same period, ready to satisfy the demand.</p>
+<p>On the right hand side, the output side, we have the demand, which is
+the real, exogenous, demand for that product at that time period; as
+usual, we have the final inventory too. However, now, there is another
+important component of the flow out of period <span class="math notranslate nohighlight">\(t\)</span>: this is
+composed of all of the material, ready to ship in this period, which
+is required as an input in later production stages. The term</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j: (i,j) \in E} \mathpar{r}^{ij}
+\var{x}^j_t
+\end{align*}</div><p>corresponds to all of the internal requirement for this product. The
+sum is extended to all production nodes in the MRP graph which require
+parts of type <span class="math notranslate nohighlight">\(i\)</span> for their assembly. The number of parts
+required is <span class="math notranslate nohighlight">\(\mathpar{r}^{ij}\)</span>. This way we model both the
+satisfaction of external demand, as well as the demand which arises
+from other production stages within the same plant. The main
+difference between the two demand types is that while the external
+demand may be assumed to be known, or at least, estimated, the
+internal demand is part of the decision process itself, and is linked
+with all of the other variables of the problem.</p>
+<p>Of course, this is a basic building block; it might be generalized in
+several ways, taking, e.g., into account some of the extensions we
+have seen before.
+We might have, e.g., some deadlines, which we might model through a
+backlog,  and impose penalties for late delivery.
+It is important to recall that solving problems like
+this one, while computationally difficult, might be extremely
+beneficial in terms of the solution quality.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="MIPModels.html" title="Previous document"><span class="section-number">16. </span>Mixed Integer Linear Models</a>
+        </li>
+        <li>
+          <a href="Knapsack.html" title="Next document"><span class="section-number">19. </span>Knapsack, Bin Packing and Plant Location problems</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">17. The fixed charge problem</a></li>
+<li><a class="reference internal" href="#lot-sizing">18. Lot sizing</a><ul>
+<li><a class="reference internal" href="#branch-and-cut-dynamical-simplex-method">18.1. Branch and cut - dynamical simplex method</a></li>
+<li><a class="reference internal" href="#advanced-formulations-for-the-lot-sizing-model">18.2. Advanced formulations for the lot sizing model</a></li>
+<li><a class="reference internal" href="#variants-of-production-planning-models">18.3. Variants of production planning models</a></li>
+<li><a class="reference internal" href="#advanced-lot-sizing-models">18.4. Advanced lot sizing models</a><ul>
+<li><a class="reference internal" href="#master-production-scheduling-models">18.4.1. Master Production Scheduling models</a></li>
+<li><a class="reference internal" href="#material-requirement-planning">18.4.2. Material Requirement Planning</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="MIPModels.html" title="previous chapter"><span class="section-number">16. </span>Mixed Integer Linear Models</a></li>
+      <li>Next: <a href="Knapsack.html" title="next chapter"><span class="section-number">19. </span>Knapsack, Bin Packing and Plant Location problems</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/StructuredMIPmodels.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

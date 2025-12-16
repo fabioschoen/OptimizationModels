@@ -1,0 +1,424 @@
+.. include:: preamble.rst
+
+Product Mix Models
+==================
+
+A field in which linear models find wide applicability is
+that of decisions related to some aspects of the 
+production process. In particular,  :index:`production mix` problems
+correspond to the case in which it is necessary to choose, among many
+possible  products, the quantity to produce, taking into account the
+availability of some scarce  resources (like, e.g.,
+available workers). An assumption  frequently made in some of these models, is
+that of operating in a market in which the supply of finished products
+always finds a suitable demand in the market. This assumption might
+however be somewhat relaxed without necessarily having to include
+stochastic models of the demand.
+
+The basic problem therefore reduces to choosing the quantities to
+produce to maximize the total
+gain, within the  constraints imposed by the availability
+of resources. The components of these models are:
+ 
+#. a set of possible products;
+#. a set of available resources;
+#. the quantity of each resource required for the production of each product;
+#. the net gain for each product. 
+ 
+Also in this model we can highlight the basic elements
+of all optimization models and, in particular,
+
+* index sets: the set of possible products and the set of resources;
+* parameters: the unit gain for each product (a parameter
+  indexed by the set of products), the  availability of resources
+  (a numeric parameter indexed by the set of resources), a table
+  in which, for each product and for each resource, the quantity of
+  resource needed to produce one unit of this product is given; this
+  parameter is indeed a
+  matrix indexed by the Cartesian product between the set of
+  resources and the set of products; other parameters may also be
+  present, such as lower and upper limits on the quantity to be
+  produced;
+  
+* decision variables:
+  the quantities to be produced, a vector of variables indexed by
+  the set of products.
+  It is worth observing that there is only a difference between
+  parameters and variables:  variables are under the control
+  of the decision maker, while parameters are considered 
+  known and constant, and cannot be modified by the solver; 
+* constraints: 
+    
+  * lower and upper limits on the quantities to be produced
+    (two sets of constraints indexed by the set of products);
+  * maximum resource consumption (a set of constraints
+    corresponding to the different types of resources). 
+
+* an objective function; in the example we assume that we wish
+  to maximize the  total gain.
+    
+It may be useful to put  the elements of the model in
+a scheme.
+
+.. role:: model
+   :class: smallcaps
+	   
+:model: ProductMix
+
+|
+   :model:`Sets:`
+|
+
+   * :math:`\set{Products}` :  product types
+   * :math:`\set{Resources}` :  available  resources  types (work
+     hours, machines, prime material, ...)
+
+|
+   :model:`Parameters:`
+|
+
+   * :math:`\param{Gain}_p` : unit gain for  product :math:`p \in \set{Products}`
+   * :math:`\param{Avail}_r`: maximum availability of  resource
+     :math:`r \in \set{Resources}` 
+   * :math:`\param{MinQty}_p, \param{MaxQty}_p`:  minimum and maximum
+     quantities to be produced, for each :math:`p \in \set{Products}` ; 
+   * :math:`\param{Consumption}_{rp}`: quantity of resource :math:`r
+     \in \set{Resources}` required in order to produce one unit of :math:`p \in
+     \set{ Products}`; 
+
+|
+   :model:`Variables:`
+|
+     
+   * :math:`\var{x}_p`: quantity to be produced, for each
+     :math:`p \in \set{Products}`
+
+|
+   :model:`Constraints:`
+|
+
+   * Lower and upper bounds on production:
+
+     .. math::
+	:nowrap:
+	   
+	\[
+	\param{MinQty}_p \leq \var{x}_p \leq \param{MaxQty}_p
+	\]
+	
+   for every :math:`p \in \set{Products}`;
+    
+   * Resource consumption:
+
+     .. math::
+	:nowrap:
+	   
+	\[
+        \sum_{p \in \set{Products}} \param{Consumption}_{rp} \var{x}_p \leq \param{Avail}_r
+	\]
+	 
+   for each :math:`r \in \set{Resources}`
+
+|
+   :model:`Objective:` Maximize the total gain:
+|
+
+     .. math::
+	:nowrap:
+ 
+	\[
+	\max \sum_{p \in \set{Products}} \param{Gain}_p \var{x}_p
+	\]
+
+
+Of course this is an overly simplified model of a realistic situation;
+by the way:
+
+.. warning::
+   
+   the above statement is true for all of the models described in this
+   volume!
+   
+Several deliberately simplified modeling assumptions are made in
+order to keep models easy to understand without unnecessary
+details. In realistic situations, complex models will be built by
+joining parts of different models.
+
+In this product mix example, many
+additional aspects might be considered, like, e.g.:
+
+* fixed costs: the decision regarding the production
+  of a particular piece must sometimes be based on the presence of
+  a fixed cost to be paid just to start production. As an example, starting
+  production  might require "warming up" a machine or a plant until it
+  is ready to produce, thus consuming costly energy; in other
+  situations,  hours
+  should be initially devoted to training. This modeling aspect
+  will be seen in the 
+  chapter on :ref:`Fixed Charge models<sect:fixedcharge>` and will require the introduction of
+  binary variables;
+ 
+* dynamic models: demand  forecasts do not concern a single period, but a
+  set of consecutive production periods, linked together through
+  the introduction of an inventory. These models will be introduced in
+  the section on :ref:`Multi Period Models<section:multi-prod>`.
+ 
+* stochastic models:  some parameters,
+  like, most notably, the demand for a certain product,  can be
+  seen as realizations of random variables.
+  Even when dealing with make-to-order systems, in which production is
+  started based on known purchase orders, randomness is always present when
+  dealing with future planning periods. And, of course, when the company
+  operates in a make-to-stock way, demand needs to be somewhat
+  anticipated and, thus, estimated. 
+
+  In many situations in which uncertainty is present  decision makers 
+  simply replace random variables with an estimate, usually the
+  expected value or the most likely one. However, optimization
+  approaches do exist which are capable of taking into account uncertainty in an
+  explicit way, thus accounting, e.g., not only for expected values but
+  also for the variance of random variables. A very short and simplified
+  introduction to these models will be presented in
+  Chapter :ref:`sect:plstoc`, where it will be shown how far from
+  optimality   a policy might be when summarizing a stochastic quantity
+  by its expected value.
+  
+
+  :application: :index:`Choosing among different production modes`
+   
+  Sometimes a product mix model
+  is  not used to decide, among several
+  *products*, which ones to produce and in which
+  quantities. Frequently, the quantity to be produced is fixed and
+  known; the decision problem might in this case be that of choosing
+  among multiple *production modes*, instead. In other words, we are not
+  required to decide how much to produce, but how much of the production
+  should be allocated to different plants, with different resource
+  consumption, different resource availability and possibly different
+  production costs and, thus, gains. Formally the problem is identical to the
+  standard one. As an example, consider
+  steel rods of different diameters to be produced using different machines. The
+  available machines can produce material of different diameters, with
+  production rates and  costs which depend on the machine.
+
+  The  data file below is an example of this situation.
+
+  .. literalinclude:: AMPL/steel.dat
+     :caption: steel.dat
+     :language: ampl
+ 
+  Considering the data in the example, the resources in this case are 
+  machines which differ one another  for their availability (hours
+  per week) and production speed: in this example the
+  actual availability doesn't just depend on the available hours,
+  but also on the speed of the machine. So, for example, if the speed 
+  of machine 1 is  150 meters per minute, in order to produce one
+  meter  :math:`1/(60 \cdot 150)` hours would be required. In this
+  case, the consumption
+  of each resource does not depend on the product itself, but on the
+  machine type. There is also another special type of dependence: 
+  not every  machine, in fact, is capable of producing  all  product types.
+  As an example, product type A can only be worked
+  on machine 1 (its diameter is within the interval 3 to 6 which
+  characterizes this machine), while product type B (diameter 6) can be
+  produced both on the second or on third machine, but not on the
+  first one. The
+  net gain  resulting from the decision to produce a type of
+  rod on a specific machine is obtained as  the difference between the revenue
+  associated with this rod and the cost of using the machine.
+  If we wish to formalize this model, the following scheme might be a guide.
+  
+  :model: Choice between production modes
+
+  |
+     :model:`Sets:`
+  |
+
+     * :math:`\set{Resources}`: available machines
+     * :math:`\set{Products}`:  product types;
+     * :math:`\set{Match} \subseteq \set{Resources} \times
+       \set{Products}`: set of feasible combinations between 
+       product types and production-enabled machines.
+
+  |
+     :model:`Parameters:`
+  |
+
+     * :math:`\param{MinQty}_p, \param{MaxQty}_p`: minimum and maximum
+       quantities to be produced for each    :math:`p \in \set{Products}` ;
+     * :math:`\param{Avail}_r`: resource availability :math:`r \in \set{Resources}`
+     * :math:`\param{Consumption}_{rp}`: amount of  resource :math:`r \in \set{Resources}`
+       needed to produce a unit of product :math:`p \in \set{Products}`; this
+       parameter can be an input data, or it can be computed as a function
+       of other parameters, as in the case of the included file,  where
+       it is based on the  production speed of each machine; 
+     * :math:`\param{Cost}_r`: hourly cost of using  resource
+       :math:`r \in \set{Resources}`;
+     * :math:`\param{Revenue}_p`: unit revenue for  product :math:`p \in
+       \set{Products}`
+     * :math:`\param{Gain}_{pr}`: difference between revenues and
+       costs
+       
+       .. math::
+	  :nowrap:
+	    
+	  \begin{align*}
+          \param{Gain}_{rp} = \param{Revenue}_p  - \param{Cost}_r \times \param{Consumption}_{rp}
+	  \end{align*}
+	 
+     for  :math:`p \in \set{Products}`, :math:`r \in \set{Resources}`,
+     provided that  :math:`Match(p, r)` is true, i.e., that product
+     :math:`p` can
+     be obtained on machine :math:`r` ;
+
+  |
+     :model:`Variables:`
+  |
+     
+     * :math:`\var{x}_{rp}`: quantity of   :math:`p \in \set{Products}`
+       to be produced on machine  :math:`r \in \set{Resources}`;
+
+  |
+     :model:`Constraints:`
+  |
+
+     * Minimum and maximum production:
+       
+       .. math::
+	  :nowrap:
+	    
+          \begin{align*}
+	  \param{MinQty}_p \leq \sum_{r \in \set{Resources}: Match(p, r)}
+          \var{x}_{rp} \leq \param{MaxQty}_p
+	  \end{align*}
+    
+       for each :math:`p \in \set{Products}`. 
+     *  Resource availability:
+
+	.. math::
+	   :nowrap:
+	   
+	   \[
+	   \sum_{p \in \set{Products}: Match(p, r) }
+	   \param{Consumption}_{rp} \var{x}_{rp} \leq \param{Avail}_r
+	   \]
+	   
+	for each  :math:`r \in \set{Resources}`
+    
+  |
+     :model:`Objective:` Maximize the total gain:
+  |
+
+     * Gain maximization:
+
+       .. math::
+	  :nowrap:
+	   
+	  \[
+	  \max \sum_{p, r: Match(p, r)} \param{Gain}_{rp} \var{x}_{rp}
+	  \]
+
+  It can be seen that the structure of this model is  quite close to that of the
+  generic product mix; some variants had to be introduced just in order to
+  take into account the characteristics of  different machine and compatibility issues.
+
+-------------------------------
+Dual of the product mix problem
+-------------------------------
+
+Consider a simplified version of the
+product mix model introduced before:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_p \param{Gain}_p \, \var{x}_p & \\
+   \sum_p \param{Consumption}_{rp} \, \var{x}_p & \leq \param{Avail}_r & \forall \, r \\
+   \var{x}_p & \geq 0 & \forall \, p
+   \end{align*}
+
+The dual of this problem might be easily derived, either by
+reformulating it as a standard linear optimization model, or by
+considering it as the dual of a standard one; in this case the only
+"non standard" aspect of the problem is the non negativity of the
+variables, which can be traced back to a primal with inequalities in
+place of equations.  
+Formally the dual of turns out to be:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_r \param{Avail}_r \mathvar{\lambda}_r & \\
+   \sum_r \param{Consumption}_{rp} \mathvar{\lambda}_r & \geq \param{Gain}_p & \forall \, p \\
+   \mathvar{\lambda}_r & \geq 0 & \forall \, r
+   \end{align*}
+
+This problem lends itself to an economic interpretation. 
+A work agency would like  to buy  the available resources from the
+producer. The agency will try
+to purchase all the available  resources of the company and will
+propose a unit price
+:math:`\mathvar{\lambda}_r` for  resource :math:`r`, trying to  minimize the
+total cost.
+In order to  convince the company to release  manpower and  other
+resources, the proposed  prices  must be
+competitive. The dual constraint associated with product :math:`p`,
+represents the fact that,  if the manufacturer decides to sell the
+resources requested to produce one unit of :math:`p` to the dual agency, the
+revenue will be at least equal to the  unit gain.
+
+Duality  implies that there will be no
+advantage for either actor, neither the producer nor the agency:
+optimal values are identical and a  strictly competitive price (in the
+dual) will be allowed
+only for products types which will not be produced in the  optimal mix.
+ 
+As a simple illustrative example consider the following data.
+
+.. math::
+   :nowrap:
+
+   \[
+   \begin{array}{lrrrrrrrl}
+   \text{prod:}& \text{1} & \text{2} & \text{3} & \text{4} & \text{5} & \text{6} & \text{7} & \\ \hline
+   \text{carpentry} & 7 & 5 & 9 & 10 & 10 & 12 & 15 & \leq 2000 \\
+   \text{coating} & 2 & 2 & 2 & 3 & 3 & 3 & 3 & \leq 1500\\ 
+   \text{assembly} & 2 & 2 & 4 & 7 & 9 & 15 & 18 & \leq 1700\\
+   \text{control} & 1 & 1 & 1 & 2 & 1 & 2 & 2 &  \leq 300 \\
+   \text{packaging} & 1 & 1 & 1 & 1 & 2 & 1 & 0 & \leq 500 \\ \hline
+   \text{Gain} & 10 & 18 & 20 & 25 & 27 & 28 & 35 & \max
+   \end{array}
+   \]
+
+It is readily seen, possibly through a suitable implementation, that an
+optimal solution consists of producing 200 units of product 2 and 100
+of product 5, with  a total gain 6300. The resources "carpentry"
+and "control" are used at full capacity.
+
+Solving the dual, the variable associated to carpentry gets a price
+1.8, the one associated to control 9, all the others being fixed to
+0. With this price, while there is no strict convenience, for the
+product mixer, with respect to the production of products 2 and 5, apparently
+there might be a gain for what concerns other products. As an
+example, selling the resources needed to produce one unit of product 1
+will generate a revenue of 21.6, significantly higher than 10, the
+unit gain on that product. However, the producer has no interest in this
+product, as it does not appear in the optimal solution.  
+
+We note in passing that duality helps in gaining confidence on the
+solution reported by a numerical solver: if we plug the above
+solutions in the primal and dual respectively, we can immediately
+check  that both are feasible and satisfy complementarity, without the
+necessity of going through the computation of a numerical solver.
+ 
+We observe that duality is
+an extremely powerful *modeling*, and not just *computational*,
+tool. Whenever a problem which models a real situation is formulated,
+its dual might  be interpreted in the same context and sometimes
+gives rise to interesting models. Finding a reasonable dual
+interpretation  might not be easy, but is surely worth the effort. 
+
+.. include:: closing.rst
+

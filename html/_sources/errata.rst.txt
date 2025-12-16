@@ -1,0 +1,10 @@
+.. include:: preamble.rst
+
+===================
+Book Errata Corrige
+===================
+
+.. image:: img1.svg
+	   
+.. include:: closing.rst
+

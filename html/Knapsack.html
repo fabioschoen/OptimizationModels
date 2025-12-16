@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>19. Knapsack, Bin Packing and Plant Location problems &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="20. Set covering, packing, partition" href="SetCovering.html" />
+    <link rel="prev" title="17. The fixed charge problem" href="StructuredMIPmodels.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="StructuredMIPmodels.html" title="Previous document"><span class="section-number">17. </span>The fixed charge problem</a>
+        </li>
+        <li>
+          <a href="SetCovering.html" title="Next document"><span class="section-number">20. </span>Set covering, packing, partition</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="knapsack-bin-packing-and-plant-location-problems">
+<h1><span class="section-number">19. </span>Knapsack, Bin Packing and Plant Location problems<a class="headerlink" href="#knapsack-bin-packing-and-plant-location-problems" title="Link to this heading">¶</a></h1>
+<section id="introduction">
+<h2><span class="section-number">19.1. </span>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>One of the “simplest” integer linear optimization  models
+is the so-called <span class="target" id="index-0"></span>knapsack problem. Assume we are  given a
+set of <span class="math notranslate nohighlight">\(n\)</span>
+“objects” and that to each of these both a “value”  and a
+“weight” are associated. Assume also that a finite capacity, a non
+negative real number, is given.
+The problem then becomes to select a
+subset of objects whose total weight does not exceed capacity. Among
+these sets of objects, it is required to find one with the highest possible total
+value.</p>
+<p>Denoting by <span class="math notranslate nohighlight">\(\mathpar{v}_{j}\)</span> the value of the <span class="math notranslate nohighlight">\(j\)</span>-th
+object, with <span class="math notranslate nohighlight">\(\mathpar{w}_{j}\)</span> its weight and
+with <span class="math notranslate nohighlight">\(\mathpar{b}\)</span> the capacity,
+introducing a binary variable
+associated with each object,  the following model is obtained:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_{j = 1}^{n} \mathpar{v}_{j} \mathvar{\delta}_{j} &amp; \\
+\sum_{j = 1}^{n} \mathpar{w}_{j} \mathvar{\delta}_{j} &amp; \leq \mathpar{b} \\
+\mathvar{\delta}_{j} &amp; \in \{0,1 \} &amp; j \in 1,n
+\end{align*}</div><p>This model is very basic, but  applications of
+some practical interest exist, although the main interest in this
+model consists  in the fact that
+its  constraints are often found in other, more complex, models.</p>
+<p>To describe possible applications, we start from
+the name of the model. The idea is that a knapsack is available, which
+can carry at most a certain capacity (which might be weight, volume,
+number of standard pallets, …). A set of objects is available, the
+choice of each of which consumes part of the available capacity. The
+problem consists then in filling the knapsack with the most valuable
+collection of objects. It must be said that this application is just
+used for teaching purposes, and nobody would ever prepare a knapsack this way.
+However, if we slightly change the context, some direct application
+comes to mind. As an example, the knapsack might be a truck, or a
+container; the objects might be parcels to be delivered. The value is
+a measure of the priority or of the urgency of delivery.</p>
+<p>In other contexts, objects might be projects to be chosen. A company
+might have a number of possible projects to perform, each of which
+requires some budget in order to be completed. The budget is the
+weight associated to each project and the capacity is the overall
+budget available. The value of each project is the revenue associated
+to project delivery.  Slightly changing the application, instead of a
+monetary budget, we might have an overall time budget, and different
+projects will have different time consumption and different gains
+associated.
+A similar application arises in advertising: there are a number of
+available slots for placing a TV advertisement. Each slot is sold from
+the TV company, and the price is the “weight” of the object. The available
+budget for this marketing operation is the capacity. The value
+associated to each slot might be the expected audience, i.e., the
+expected number of people who will see the advertisement.</p>
+<p>This model is called <span class="target" id="index-1"></span>binary knapsack, as, for any object, the
+decision to be taken is whether to choose or not each single
+object. It would be trivial to
+extend the model to cover the case in which some objects are available
+in multiple copies, changing  binary variables into
+non negative integer ones, with an upper bound equal to the number of
+available objects.</p>
+<p>The basic knapsack  model is only apparently a
+simple one, with a single constraint (apart from binary constraints).
+In integer optimization, the number of constraints or
+variables is not, in general,  an indicator of the complexity of a
+problem.
+Indeed, often, the reverse is true, with more efficient models
+characterized by formulations with a huge number of constraints.</p>
+<p>There exist many heuristics for the approximate solution of
+knapsack problems; moreover, the simple structure
+of the constraints makes the solution of the linear relaxation
+particularly simple. In fact, the optimal solution of the
+linear relaxation is obtained by first sorting the objects in  non-increasing order
+with respect to the ratio between  value and weight. Scanning this
+list, if an object fits the knapsack, it is chosen (its binary
+variable is set to 1). As soon as a  first object is found which
+cannot be included in the solution, the corresponding variable is set
+to the fraction of the object
+necessary to “saturate” the capacity constraint.</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\bar{\jmath} &amp;:= \arg \max \{i: \sum_{j=1}^{i} \mathpar{w}_{i} \leq b
+\} \\
+\mathvar{\delta}_j &amp; = 1 &amp; \forall \, j \leq \bar{\jmath} \\
+\mathvar{\delta}_{\bar{\jmath}+1} &amp; = \frac{b -
+\sum_{i=1}^{\bar{\jmath}} \mathpar{w}_j}{\mathpar{w}_{\bar{\jmath}+1}}  \\
+\mathvar{\delta}_j &amp; = 0 &amp; \textrm{ otherwise}
+\end{align*}</div><p>A simple implementation of the basic model is given:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Knapsack.mod</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">OBJECTS</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">weight</span><span class="p">{</span>OBJECTS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">value</span><span class="p">{</span>OBJECTS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">cap</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span>OBJECTS<span class="p">},</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span>
+
+<span class="kd">maximize</span><span class="w"> </span><span class="nv">total_value</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>OBJECTS<span class="p">}</span><span class="w"> </span>value<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>j<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">knapsack</span><span class="p">:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>OBJECTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>cap<span class="p">;</span><span class="w"> </span>
+</pre></div>
+</div>
+</div>
+<p>while the following is a tiny numerical example:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">Knapsack.dat</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">OBJECTS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>A<span class="w"> </span>B<span class="w"> </span>C<span class="w"> </span>D<span class="w"> </span>E<span class="w"> </span>F<span class="w"> </span>G<span class="w"> </span>H<span class="w"> </span>I<span class="w"> </span>J<span class="w"> </span>K<span class="w"> </span>L<span class="w"> </span>M<span class="w"> </span>N<span class="w"> </span>O<span class="p">;</span>
+
+param<span class="p">:</span><span class="w"> </span>
+<span class="w">  </span>value<span class="w"> </span>weight<span class="p">:</span><span class="o">=</span>
+A<span class="w"> </span><span class="mi">135</span><span class="w">     </span><span class="mi">70</span><span class="w">    </span>
+B<span class="w"> </span><span class="mi">139</span><span class="w">     </span><span class="mi">73</span><span class="w">    </span>
+C<span class="w"> </span><span class="mi">149</span><span class="w">     </span><span class="mi">77</span><span class="w">    </span>
+D<span class="w"> </span><span class="mi">150</span><span class="w">     </span><span class="mi">80</span><span class="w">    </span>
+E<span class="w"> </span><span class="mi">156</span><span class="w">     </span><span class="mi">82</span><span class="w">    </span>
+F<span class="w"> </span><span class="mi">163</span><span class="w">     </span><span class="mi">87</span><span class="w">    </span>
+G<span class="w"> </span><span class="mi">173</span><span class="w">     </span><span class="mi">90</span><span class="w">    </span>
+H<span class="w"> </span><span class="mi">184</span><span class="w">     </span><span class="mi">94</span><span class="w">    </span>
+I<span class="w"> </span><span class="mi">192</span><span class="w">     </span><span class="mi">98</span><span class="w">    </span>
+J<span class="w"> </span><span class="mi">201</span><span class="w">    </span><span class="mi">106</span><span class="w">    </span>
+K<span class="w"> </span><span class="mi">210</span><span class="w">    </span><span class="mi">110</span><span class="w">    </span>
+L<span class="w"> </span><span class="mi">214</span><span class="w">    </span><span class="mi">113</span><span class="w">    </span>
+M<span class="w"> </span><span class="mi">221</span><span class="w">    </span><span class="mi">115</span><span class="w">    </span>
+N<span class="w"> </span><span class="mi">229</span><span class="w">    </span><span class="mi">118</span><span class="w">    </span>
+O<span class="w"> </span><span class="mi">240</span><span class="w">    </span><span class="mi">120</span><span class="w">    </span>
+<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">cap</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">730</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Solving the model, given its very small size, is indeed very easy. A
+solver like, e.g., CBC, in a fraction of a second, and 24 Branch and
+Bound iterations, returns the optimal solution consisting in choosing
+objects A, B, C, D, H, I, N, O, with total weight 730 ( full capacity)
+and total profit 1418. The relaxed solution has objects
+A, C, G, H, I, N, O fully in the knapsack, while object M is chosen at
+54.78% level. The optimal value of the relaxed problem is 1423.07,
+from which we see that the gap between the optimal and the relaxed
+solution is relatively small (0.36%).</p>
+<p>We can already see from this tiny example that the integer solution is not
+a rounding of the solution of the linear relaxation.</p>
+<section id="advanced-modeling-cover-inequalities">
+<h3><span class="section-number">19.1.1. </span>Advanced modeling: cover inequalities<a class="headerlink" href="#advanced-modeling-cover-inequalities" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><p>Although the purpose of this part is to introduce modeling
+techniques,
+some algorithmic aspects need to be addressed too, as, for difficult
+integer optimization problems, the possibility of finding an optimal  solution
+is connected with the goodness of the formulation, something which  goes beyond
+the purely formal correctness. That is, there might be  different
+correct formulations of the same problem, all of which are exact from the point of view
+of modeling, but  different from the point
+of view of their closedness to the ideal representation. Within
+integer optimization, the boundary between models and algorithms is quite
+vague.</p>
+<p>Many of the most recent
+integer linear optimization approaches require a reformulation of the
+problem using additional constraints whose purpose is,
+mainly, to improve the value of the linear relaxation,
+decreasing the gap between the optimal solution and the relaxed one.
+Inserting additional constraints without eliminating any
+feasible solution leads to a smaller polyhedron in the relaxation and,
+as a consequence, to a possible improvement in the value of the relaxed problem.
+There exist no general and efficient technique to define
+these additional constraints, and specific classes need to be devised
+for each specific class of problems.
+Finding classes of these inequalities is, thus, in a certain sense a
+modeling problem, albeit
+different from those encountered so far.</p>
+<p>For the binary backpack problem, a few simple arguments
+allow us to deduce some valid constraints for the problem which are in
+general not valid for the  linear relaxation. The
+family of <em>cover inequalities</em> can be deduced
+from the trivial observation that if <span class="math notranslate nohighlight">\(k\)</span> items
+have a total weight greater than the capacity,
+then no more than <span class="math notranslate nohighlight">\(k-1\)</span> of them can belong to a feasible solution.
+In formulae, if <span class="math notranslate nohighlight">\(S\)</span> is a subset of objects
+such that</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_{j \in S} \mathpar{w}_{j}&gt; \mathpar{b}
+\]</div><p>then the following inequality is valid</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_{j \in S} \mathvar{\delta}_{j} \leq |S| -1
+\]</div><p>where <span class="math notranslate nohighlight">\(| S |\)</span> denotes the cardinality of the set <span class="math notranslate nohighlight">\(S\)</span>.</p>
+<p>An inequality like this one is not necessarily satisfied in the points of
+linear relaxation polyhedron.
+Adding all possible cover inequalities to the formulation
+is not a feasible approach, in general, as their number can be huge; moreover,
+many of these inequalities are redundant, as they are dominated by
+others of the same family. An improvement
+on this family of inequalities  corresponds to
+considering only <em>minimal</em> sets,  with respect to the property of
+being a cover (that is, to contain objects that exceed the
+capacity of the container).</p>
+<p>Let us consider a simpler numerical example, to outline the basic idea
+of adding cover inequalities. Consider a knapsack problem with the
+following objects:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array}{ccccccc|c}
+A &amp; B &amp; C &amp; D &amp; E &amp; F &amp; G &amp; b \\
+11 &amp; 6 &amp; 6 &amp; 5 &amp; 5 &amp; 4 &amp; 1 &amp; 19
+\end{array}
+\end{align*}</div><p>We do not write the objective function as our purpose here is just to
+show how to improve the formulation, i.e., how to add valid
+inequalities. In a real situation, however, a procedure, called
+<em>separation</em> should be defined which, given the solution of a
+relaxation of the problem, finds at least one cut inequality, i.e., a
+valid inequalities which makes the current solution of the relaxed
+problem infeasible. Adding such a cut would lead to an improvement in
+the relaxation and to finding a different solution of the relaxed
+problem.</p>
+<p>Consider objects A, B, C: their total weight is 23, thus they can be
+used to form a cover inequality:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A + \mathvar{\delta}_B + \mathvar{\delta}_C &amp; \leq 2
+\end{align*}</div><p>If we consider, e.g., C, D, E, F, G, their total weight is 21, so we
+might define a cover inequality form these objects, with right hand
+side 4 (no more than 4 of these 5 can be in any knapsack). However,
+the objects still form a cover if we cancel object G, the lightest
+one. So the inequality</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_C + \mathvar{\delta}_D + \mathvar{\delta}_E +
+\mathvar{\delta}_F &amp; \leq 3
+\end{align*}</div><p>is a valid cover inequality and it dominates the one obtained
+including object G.</p>
+<p>Another observation is worth at this point: if at most 3 out of the
+set of objects <span class="math notranslate nohighlight">\(C,D,E,F\)</span> can be inserted in a feasible
+knapsack, it is clear that, including in the set also objects
+<span class="math notranslate nohighlight">\(A,B\)</span>, whose weight is even larger, will not lead to the
+possibility of inserting more than 3 objects. It is thus true that the
+following inequality</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A + \mathvar{\delta}_B + \mathvar{\delta}_C +
+\mathvar{\delta}_D + \mathvar{\delta}_E +
+\mathvar{\delta}_F &amp; \leq 3
+\end{align*}</div><p>is also valid. Moreover, this inequality is stronger that the cover inequality
+associated to the whole set <span class="math notranslate nohighlight">\(A,B,C,D,E,F\)</span>, since this
+would need a right hand side
+equal to 5. This kind of inequality is called an <span class="target" id="index-2"></span>extension
+of the cover inequality. In general, given a cover associated to a subset of
+objects <span class="math notranslate nohighlight">\(S\)</span>, and extended cover inequality is given by</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j \in S} \mathvar{\delta}_j + \sum_{j \not\in S : \mathpar{w}_j \geq
+\mathpar{w}_k \forall\,k \in S}  \mathvar{\delta}_j &amp; \leq |S| -1
+\end{align*}</div><p>It can be recalled here that these inequalities, i.e.,
+non-dominated cover inequalities and extended cover inequalities,
+are already a potentially large family of valid inequalities;
+however, although large, this set of inequalities is not sufficient
+to fully describe the ideal polyhedron for the binary knapsack
+problem. Other inequalities, in particular those known as
+<span class="target" id="index-3"></span>lifted inequalities can be defined and added to the
+set. We refer the interested reader to the vast literature on this
+subject, starting, e.g., by <span id="id1">[<a class="reference internal" href="Bibliography.html#id17" title="George Nemhauser and Laurence Wolsey. Integer and Combinatorial Optimization. John Wiley &amp; Sons, Inc., 1999.">Nemhauser and Wolsey, 1999</a>]</span>.
+In any case, for moderate to large size problem instances,
+generating and adding all these inequalities to the formulation is
+usually out of question. What can be done is to solve a relaxation
+of the problem, to design a procedure
+to separate the solution of the relaxation, if not feasible; and
+then to add this inequality to the formulation, solve again and
+repeat the loop. Recall however that separation, i.e., finding a
+violated inequality within the family of cover and lifted
+inequalities, is as hard as solving the problem from scratch and,
+in general, heuristic separation methods are used. These methods
+can often generate a valid inequality which cuts off the current
+solution, but, sometimes, cannot find one even if it exists.</p>
+<p>The emphasis we have given to this advanced topic here is connected
+to the fact that the importance of knapsack valid inequalities goes
+far beyond the problem itself. In fact any inequality with
+binary constraints can be seen as a knapsack inequality,
+possibly after a few variable substitutions.
+Consider, as an example the generic inequality</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+3 \mathvar{\delta}_1 - 5 \mathvar{\delta}_2 +2
+\mathvar{\delta}_3 -2\mathvar{\delta}_4 &amp; \leq 1
+\end{align*}</div><p>If we replace the variables with a  negative coefficient with their
+complement to 1, we obtain</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+3 \mathvar{\delta}_1 - 5 (1- \mathvar{\bar{\delta}}_ 2) +2
+\mathvar{\delta}_3 -2 (1- \mathvar{\bar{\delta}}_ 4) &amp; \leq 1
+\end{align*}</div><p>which simplifies to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+3 \mathvar{\delta}_1 + 5 \mathvar{\bar{\delta}}_ 2 +2
+\mathvar{\delta}_3 +2 \mathvar{\bar{\delta}}_ 4 &amp; \leq 8
+\end{align*}</div><p>and this is exactly  a binary knapsack constraint. We can, thus, add
+cover inequalities and their generalizations in order to strengthen the
+formulation. A  similar technique can be applied in the case
+of  <span class="math notranslate nohighlight">\(\geq\)</span> constraints; thus  any inequality constraint
+in binary variables is equivalent to a knapsack inequality
+and, therefore, can be strengthened through the techniques seen
+in this paragraph. This is indeed done by many of the advanced
+exact mixed integer optimization solvers available.</p>
+</div></blockquote>
+</section>
+</section>
+<section id="multiple-knapsacks-cutting-stock">
+<h2><span class="section-number">19.2. </span>Multiple knapsacks, Cutting Stock<a class="headerlink" href="#multiple-knapsacks-cutting-stock" title="Link to this heading">¶</a></h2>
+<p>The knapsack model can be easily generalized to the case of multiple knapsacks
+(or multiple containers). The problem may still be that of choosing
+the maximum  “value” of the selected objects, with constraints
+imposing not to exceed the  capacity of each of the available containers.
+The “natural” formulation  of the problem is quite immediate, after the
+presentation of the binary knapsack problem. However an important
+difference characterizes these models. Now the decision to be taken is
+not just whether an object is to be chosen or not:  if an object
+is chosen, we need to decide also to which container will the object
+be allocated. We can obtain this result by using two indices for each
+binary variable, one associated to each object,
+the other one  associated to each container. Let
+<span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij}\)</span> be a binary variable with value 1 if and only
+if the object <span class="math notranslate nohighlight">\(j\)</span>  is placed in
+container <span class="math notranslate nohighlight">\(i\)</span>. With this choice of variables, the  formulation
+closely follows that
+of the standard knapsack;  the main variants are the presence of a
+capacity constraint for each container  and a constraint which forbids
+the same object to be included into more than one container.</p>
+<p>Let us denote by
+<span class="math notranslate nohighlight">\(\mathpar{n}\)</span>, as before, the number of objects and by <span class="math notranslate nohighlight">\(\mathpar{C}\)</span> the
+number of containers, each of which characterized by a finite capacity
+<span class="math notranslate nohighlight">\(\mathpar{Cap}_i\)</span>.
+A model for this problem might be written as follows:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max_{\mathvar{\delta}}  \sum_{j=1}^n  \sum_{i=1}^C  \mathpar{v}_j
+\mathvar{\delta}_{ij} &amp; \\
+\sum_{i=1}^C \mathvar{\delta}_{ij} &amp; \leq 1 &amp; \forall\,j=1,\ldots,n \\
+\sum_{j=1}^n \mathpar{w}_j \mathvar{\delta}_{ij} &amp; \leq \mathpar{Cap}_i &amp;
+\forall\,i=1,\ldots,C \\
+\mathvar{\delta}_{ij} &amp; \in \{0,1\}  &amp; \forall\,i,j
+\end{align*}</div><p>The first group of inequalities state that each object can be placed
+<em>at most</em> once in a single container. The second group is composed of
+knapsack constraints, one for each container, each of which
+characterized by a maximum capacity.
+It is worth observing that these knapsack inequalities might also be
+generalized to cope with multiple, different, capacity measures for each
+container. Consider, as an example, loading a group of trucks, taking
+into account both the weight as well as the volume required and
+available. Then, for each truck, two knapsack inequalities can be
+imposed, one for the total weight, and another one for the total
+volume. Of course volume computation is especially hard, if this
+depends on how the parcels are loaded in the three-dimensional
+available space. However, in many cases, the actual loading pattern
+might be disregarded, and a total volume occupancy can be simply
+computed. This is the case, e.g., for goods delivered in pallets: the
+volume occupied by a pallet depends only on the base surface, as all
+of the vertical space above the pallet is unavailable for further loading. It
+remains the problem of deciding a two-dimensional arrangement, but
+pallet measures are standard and efficient loading patterns can be decided a
+priori.</p>
+<p>A classical application of this model, apart from the natural one in
+transport logistics, is  related to one dimensional <span class="target" id="index-4"></span>cutting
+stock problems:
+given a set of one-dimensional objects (for example cables)
+and a set of purchase orders, defined as lengths of cable to be cut for
+a customer, a problem might be that of deciding which order to satisfy
+and from which of the available cables to cut it, in order to maximize
+a total value, which, in some cases, is a measure of the priority of
+each order.</p>
+<p>In the following we report an example of implementation of a tiny
+example:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">cutstock.mod</span><a class="headerlink" href="#id4" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">OBJECTS</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">CONTAINERS</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">weight</span><span class="p">{</span>OBJECTS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">value</span><span class="p">{</span>OBJECTS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">capacity</span><span class="p">{</span>CONTAINERS<span class="p">};</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span>CONTAINERS<span class="p">,</span><span class="w"> </span>OBJECTS<span class="p">},</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span>
+
+<span class="kd">maximize</span><span class="w"> </span><span class="nv">total_value</span><span class="p">:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>CONTAINERS<span class="p">,</span><span class="w"> </span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>OBJECTS<span class="p">}</span><span class="w"> </span>value<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+<span class="w">   </span>
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">OneAtMost</span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>OBJECTS<span class="p">}:</span>
+<span class="w">  </span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>CONTAINERS<span class="p">}</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">CapacityConstraints</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>CONTAINERS<span class="p">}:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>OBJECTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>capacity<span class="p">[</span>i<span class="p">];</span>
+<span class="w">   </span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">cutstock.dat</span><a class="headerlink" href="#id5" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">OBJECTS</span><span class="p">:</span><span class="w"> </span><span class="nv">weight value</span><span class="p">:</span><span class="o">=</span>
+A<span class="w"> </span><span class="mi">20</span><span class="w">  </span><span class="mi">10</span>
+B<span class="w"> </span><span class="mi">18</span><span class="w">   </span><span class="mi">5</span>
+C<span class="w"> </span><span class="mi">17</span><span class="w">   </span><span class="mi">7</span>
+D<span class="w"> </span><span class="mi">15</span><span class="w">   </span><span class="mi">6</span>
+E<span class="w"> </span><span class="mi">14</span><span class="w">   </span><span class="mi">9</span>
+F<span class="w"> </span><span class="mi">12</span><span class="w">  </span><span class="mi">10</span>
+G<span class="w"> </span><span class="mi">10</span><span class="w">  </span><span class="mi">12</span>
+H<span class="w"> </span><span class="mi">5</span><span class="w">    </span><span class="mi">4</span>
+I<span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="mi">4</span>
+J<span class="w"> </span><span class="mi">2</span><span class="w">    </span><span class="mi">1</span>
+<span class="p">;</span>
+
+<span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">CONTAINERS</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">capacity </span><span class="p">:</span><span class="o">=</span>
+C1<span class="w"> </span><span class="mi">35</span>
+C2<span class="w"> </span><span class="mi">30</span>
+C3<span class="w"> </span><span class="mi">28</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>The example is referred to a cutting stock elementary case.
+In the example, we assume to  have three cables, whose lengths are 35, 30, 28,
+respectively, and we wish to cut them in order to satisfy orders,
+given in the data file, according to their required quantity and to
+their value (priority).
+When solved with a good quality branch and bound method, we obtain the optimal
+solution  consisting in allocating orders A and D to cable 1 (using
+its full capacity), orders E, F, I to cable 2 (again, used at full
+capacity) and orders C and G to cable 3, using 27 out of 28 units. Orders
+B, H , J could not be satisfied.</p>
+</section>
+<section id="bin-packing-container-optimization">
+<h2><span class="section-number">19.3. </span>Bin packing -  container optimization<a class="headerlink" href="#bin-packing-container-optimization" title="Link to this heading">¶</a></h2>
+<p>An important variant of the multiple knapsack model
+consists in the optimization of the total number or total cost
+of the <em>containers</em> needed to host all of the objects. The model
+becomes more complex in this case. In fact it becomes necessary to add
+a  variable for each container, whose value is 1 if and only if the
+container is used. We define a
+binary variable <span class="math notranslate nohighlight">\(\var{y}_i, i =1,C\)</span> and,
+through suitable constraints, we  impose that this variable has
+value 1 if and only if container <span class="math notranslate nohighlight">\(i\)</span> contains  at least
+an object.
+There are several ways to formulate this constraint, some of which
+related to the formulation of logical constraints as we have seen in
+chapter <a class="reference internal" href="MIPModels.html#using-binary-variables-in-logical-constraints"><span class="std std-ref">Using binary variables in logical constraints</span></a>. In fact the
+link between object allocation and container usage
+can be formulated as:</p>
+<div class="math notranslate nohighlight">
+\[
+\exists \, j: \mathvar{\delta}_{ij} = 1 \implies \var{y}_i = 1
+\]</div><p>or, equivalently,</p>
+<div class="math notranslate nohighlight">
+\[
+\var{y}_i = 0 \implies  \mathvar{\delta}_{ij} = 0 \quad \forall \, j
+\]</div><p>The opposite implication is not needed as, in general, to each
+container a positive cost is associated, so that there is no incentive
+to have the binary variable associated to a container have value 1
+when no object is placed in that container.</p>
+<p>Let <span class="math notranslate nohighlight">\(\mathpar{c}_i\)</span> denote the cost of using
+container <span class="math notranslate nohighlight">\(i\)</span>. If all costs are equal to one, the problem
+becomes that of finding the minimum number of containers which are
+sufficient to carry all of the required load. Otherwise the problem
+consists in minimizing the cost of used containers.
+The generic bin-packing problem can thus be formulated as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{y}, \mathvar{\delta}}  \sum_{i=1}^C \mathpar{c}_i
+\var{y}_i \\
+\sum_{i=1}^C \mathvar{\delta}_{ij} &amp; = 1 &amp; \forall\,j=1,\ldots,n \\
+\exists \, j: \mathvar{\delta}_{ij} = 1 &amp; \implies \var{y}_i = 1 &amp;
+\forall\,i=1,C \\
+\sum_{j=1}^n \mathpar{w}_j
+\mathvar{\delta}_{ij} &amp; \leq \mathpar{Cap}_i &amp;
+\forall\,i=1,\ldots,C \\
+\mathvar{\delta}_{ij} &amp; \in \{0,1\}  &amp; \forall\,i,j \\
+\var{y}_i &amp; \in \{0,1\} &amp; \forall\, i
+\end{align*}</div><p>A possible formulation of the implication is the following:
+the logical statement <span class="math notranslate nohighlight">\(\mathvar{\delta} _ {ij} = 0 \, \forall \, j\)</span> can be
+written as</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_{j=1}^n \mathvar{\delta}_{ij} \leq 0 \quad
+\forall\,i =1,C
+\]</div><p>so that the implication becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{y}_i = 0 &amp; \implies \sum_{j =1}^n
+\mathvar{\delta}_{ij} \leq 0
+\end{align*}</div><p>Recalling  modeling techniques with logical variables,
+a redundant constraint needs to be imposed for the case in which the implicant
+is false. Here if <span class="math notranslate nohighlight">\(\var{y}_i = 1\)</span>
+an upper bound needs to be chosen for the right hand side. A simple
+upper bound is given by the cardinality of the set of objects: in
+fact, if a container is used, the total number of objects which might
+be assigned to it is bounded by the total number of available objects.</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j=1}^n \mathvar{\delta}_{ij} \leq \mathpar{M}_i &amp;&amp; \forall \,
+i =1,C
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\mathpar{M}_i\)</span> can be chosen equal to
+<span class="math notranslate nohighlight">\(n\)</span>. As an alternative, this constant might be
+chosen equal to an upper bound on the number of objects which can be
+assigned to the container taking into account also their weight. If objects
+are sorted in non decreasing order with respect to the weight, then we
+might choose</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+M_i &amp;= \max \{k : \sum_{j=1}^k \mathpar{w}_j \leq \mathpar{Cap}_i\}
+\end{align*}</div><p>Given a correct upper bound, the logical constraint can be transformed
+into a linear one:</p>
+<div class="math notranslate nohighlight" id="equation-bpform1">
+\begin{align*}
+\sum_{j=1}^n \mathvar{\delta}_{ij} &amp;\leq \mathpar{M}_i
+\var{y}_i &amp; \forall \, i = 1,C
+\end{align*}</div><p>There exist other correct  formulations for the same constraint.
+The logical implication might also be
+seen as equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{y}_i = 0 &amp; \implies \mathvar{\delta}_{ij} = 0 &amp;  \forall \, i
+= 1, C, j = 1, n
+\end{align*}</div><p>This corresponds to the linear model</p>
+<div class="math notranslate nohighlight" id="equation-bpform2">
+\begin{align*}
+\mathvar{\delta}_{ij} &amp;\leq \var{y}_i &amp; \forall \, i =1,C, j=1,n
+\end{align*}</div><p>Finally another  modeling possibility consists in considering the
+knapsack inequality and using the binary variable associated to the
+container to switch the actual capacity between zero and the real
+capacity, depending on the value of the binary variable.</p>
+<div class="math notranslate nohighlight" id="equation-bpform3">
+\begin{align*}
+\sum_{j=1}^n \mathpar{w}_{j} \mathvar{\delta}_{ij}
+&amp;\leq \mathpar{Cap}_{i} \var{y}_i &amp; \forall \, i = 1,C
+\end{align*}</div><section id="comparison-between-the-formulations">
+<h3><span class="section-number">19.3.1. </span>Comparison between the formulations<a class="headerlink" href="#comparison-between-the-formulations" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><p>The first formulation  given above,
+<span class="math notranslate nohighlight">\(\sum_{j=1}^n \mathvar{\delta}_{ij} \leq \mathpar{M}_i \var{y}_i\)</span>, is weaker than
+the second one, <span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij} \leq \var{y}_i\)</span>,
+at least when the upper bound chosen for
+the logical implication is the total number of objects. In fact, to
+see this, observe that if we sum, with respect to the objects,
+all of the inequalities of
+the second formulation  we obtain the first one:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ij} &amp; \leq \var{y}_i  &amp; \implies \\
+\sum_{j=1}^n \mathvar{\delta}_{ij} &amp;\leq \sum_{j
+=1}^n  \var{y}_i  \\
+&amp; = n \var{y}_i
+\end{align*}</div><p>This means that the polyhedron obtained by relaxing the binary
+constraint on all variables in the second formulation
+is contained in the polyhedron obtained from
+the first one.  Thus the second formulation is at least as
+strong as the first one. In order to check whether it is strictly
+stronger, and, thus, preferable from the point of view of the
+quality of the relaxation, we need to exclude that the two
+polyhedra are identical. But this is true as we can always find a
+solution in the first  polyhedron which does not belong to the
+second one, provided that the number of objects is
+greater than one. As an example, let</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ij} &amp;= 0 &amp; \forall \, j \ne 1 \\
+\mathvar{\delta}_{i1} &amp;= 1 \\
+\var{y}_i &amp; =  1 / n
+\end{align*}</div><p>This is an example of a solution which satisfies the constraints of
+the first formulation, but violates some of the constraints in the
+second one. Observe that, in order to show an example like this one,
+we had to search among non binary solutions. In fact, both
+formulations are correct, which means that they describe exactly
+the same set of binary feasible solutions. If a difference exists
+between the two formulation, this needs to be searched in the
+relaxed, non binary, set of solutions.</p>
+<p>For what concerns the third
+formulation, <span class="math notranslate nohighlight">\(\sum_{j=1}^n \mathpar{w}_{j} \mathvar{\delta}_{ij} \leq \mathpar{Cap}_{i} \var{y}_i\)</span>, this is
+not directly comparable with the others: depending on  the values
+of the parameters, it could be
+stronger, weaker, or even neither stronger nor weaker than the
+other ones. This means that the relaxation of this formulation
+might neither be contained nor containing any of the other two.
+In this case, a possibility might be to use both formulations, in
+order to strengthen the resulting model.</p>
+<p>Here we have shown that the second formulation is stronger than the
+first one. However, it contains many more constraints and thus,
+for large problems,
+the overhead due to the need to solve large linear optimization problems
+might mitigate the advantages of a stronger formulation.
+A possibility, for large problems,  could be
+that of using the strongest formulation in an implicit, dynamic, way.
+As we have already seen, the idea is to avoid the explicit
+insertion of  all of the constraints in the initial formulation, but
+adding some of them, as needed and when needed.
+We might  solve the problem without any constraint
+linking logical variables associate to objects with those
+associated to containers. Then we might insert
+only those constraints of the  type <span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij}
+\leq \var{y}_i\)</span> that are violated in the
+current solution. Solving the problem  obtained in this way
+either  a feasible solution is obtained, in which case it will be
+also  optimal for the original problem. Otherwise,  there must
+exist some violated constraint among those
+not yet included in the formulation. These constraints are added to the
+formulation and the whole process is iterated.</p>
+<p>In the general formulation of bin packing problems, a requirement prescribes
+to choose exactly one copy of each item to be placed in one of the
+containers (and only one). If we change the constraint  allowing  an
+integer number of copies, <span class="math notranslate nohighlight">\(\mathpar{N}_j\)</span> of each
+object to be chosen, the problem remains quite similar in formulation, except that
+the constraints now becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{y}, \mathvar{\delta}}  \sum_{i=1}^C \mathpar{c}_i
+\var{y}_i \\
+\sum_{i=1}^C \mathvar{\delta}_{ij} &amp; = \mathpar{N}_j &amp; \forall\,j=1,\ldots,n \\
+\exists \, j: \mathvar{\delta}_{ij} = 1 &amp; \implies \var{y}_i = 1 &amp;
+\forall\,i=1,C \\
+\sum_{j=1}^n \mathpar{w}_j
+\mathvar{\delta}_{ij} &amp; \leq \mathpar{Cap}_i &amp;
+\forall\,i=1,\ldots,C \\
+\mathvar{\delta}_{ij} &amp; \in \{0,1\}  &amp; \forall\,i,j \\
+\var{y}_i &amp; \in \{0,1\} &amp; \forall\, i
+\end{align*}</div><p>This model generalizes the
+cutting stock one to the case in which all orders have to
+be satisfied.</p>
+<p>An application of bin-packing to a context different from that of
+loading containers frequently found in logistics, or optimally cutting
+parts from a minimum number of cables, is in the context of production
+scheduling.
+Here the containers are production machines, or plants, with their
+maximum capacity (e.g., hours in a day); objects are jobs, with a
+duration. If each machine has a cost, the problem becomes that of
+scheduling all of the jobs so that the minimum (number or cost) of
+necessary machines is found. A related problem is that of minimizing
+the <span class="target" id="index-5"></span>makespan, i.e. the completion time of the last finishing
+job. This problem can be easily modeled introducing an additional
+variable, the makespan, which is greater or equal to the total sum of
+used capacity in each machine (it is indeed an instance of <a class="reference internal" href="Objectives.html#minimax-problems"><span class="std std-ref">Minimax problems</span></a>).</p>
+</div></blockquote>
+</section>
+</section>
+<section id="plant-location">
+<h2><span class="section-number">19.4. </span>Plant location<a class="headerlink" href="#plant-location" title="Link to this heading">¶</a></h2>
+<p>These problems arise in a quite different context, but share some
+interesting modeling aspect with the models just presented. Assume
+that a set of <span class="math notranslate nohighlight">\(n\)</span> customers, with a known demand for a product
+are to be served by a set of plants, or inventories, whose location
+has to be chosen based on cost considerations. A set of <span class="math notranslate nohighlight">\(C\)</span>
+possible locations are known, and building a facility at location
+<span class="math notranslate nohighlight">\(i\)</span> has a cost <span class="math notranslate nohighlight">\(\mathpar{c}_i\)</span>. The (expected) demand
+of each customer is <span class="math notranslate nohighlight">\(\mathpar{w}_j\)</span> and the maximum capacity of
+each location is <span class="math notranslate nohighlight">\(\mathpar{Cap}_i\)</span>. Every customer chooses one of
+the available facilities in order to satisfy all of the
+demand. Another relevant information is the cost of connecting a
+customer with a location: a quantity <span class="math notranslate nohighlight">\(\mathpar{TC}_{ij}\)</span> is
+given which represents the cost of serving customer <span class="math notranslate nohighlight">\(j\)</span> from
+location <span class="math notranslate nohighlight">\(i\)</span> - this might be thought of as a transportation
+cost. The overall model thus becomes:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{y}, \mathvar{\delta}}  \sum_{i=1}^C \mathpar{c}_i
+\var{y}_i  + \sum_{i=1}^C \sum_{j=1}^n \mathpar{TC}_{ij} \mathvar{\delta}_{ij} \\
+\sum_{i=1}^C \mathvar{\delta}_{ij} &amp; = 1 &amp; \forall\,j=1,\ldots,n \\
+\exists \, j: \mathvar{\delta}_{ij} = 1 &amp; \implies \var{y}_i = 1 &amp;
+\forall\,i=1,C \\
+\sum_{j=1}^n \mathpar{w}_j
+\mathvar{\delta}_{ij} &amp; \leq \mathpar{Cap}_i &amp;
+\forall\,i=1,\ldots,C \\
+\mathvar{\delta}_{ij} &amp; \in \{0,1\}  &amp; \forall\,i,j \\
+\var{y}_i &amp; \in \{0,1\} &amp; \forall\, i
+\end{align*}</div><p>and the similarity with the bin-packing model is evident. Of course,
+the logical implication should be modeled as a regular constraint, as
+we have already seen.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="StructuredMIPmodels.html" title="Previous document"><span class="section-number">17. </span>The fixed charge problem</a>
+        </li>
+        <li>
+          <a href="SetCovering.html" title="Next document"><span class="section-number">20. </span>Set covering, packing, partition</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">19. Knapsack, Bin Packing and Plant Location problems</a><ul>
+<li><a class="reference internal" href="#introduction">19.1. Introduction</a><ul>
+<li><a class="reference internal" href="#advanced-modeling-cover-inequalities">19.1.1. Advanced modeling: cover inequalities</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multiple-knapsacks-cutting-stock">19.2. Multiple knapsacks, Cutting Stock</a></li>
+<li><a class="reference internal" href="#bin-packing-container-optimization">19.3. Bin packing -  container optimization</a><ul>
+<li><a class="reference internal" href="#comparison-between-the-formulations">19.3.1. Comparison between the formulations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plant-location">19.4. Plant location</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="StructuredMIPmodels.html" title="previous chapter"><span class="section-number">17. </span>The fixed charge problem</a></li>
+      <li>Next: <a href="SetCovering.html" title="next chapter"><span class="section-number">20. </span>Set covering, packing, partition</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/Knapsack.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

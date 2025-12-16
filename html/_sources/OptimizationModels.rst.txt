@@ -1,0 +1,158 @@
+.. include:: preamble.rst
+
+#######
+Preface
+#######
+
+A first version of this volume was born several years ago, in Italian, as the main
+reference material for an advanced course on optimization modeling for students
+in Management Engineering at my  `Università degli Studi di Firenze <https://www.unifi.it/>`_. That
+course is no more active and the  material remained unused for quite  a few
+years. I have decided now to reconsider it as I think that, in these days,
+modeling skills are  fundamental, possibly even more than before. Differently
+from when I wrote my Italian book, nowadays data, data science, analytics
+are terms we can find everywhere.  Every company is moving towards
+data-driven approaches, mainly following the giant waves of machine
+learning and artificial intelligence.  However, some companies are
+experiencing difficulties, as the return on investment seems to be
+below expectations. I have neither an explanation nor a recipe for
+this. I suspect there might be many reasons: from one side the too
+high expectation, but, from another side, the fact that managers
+forgot that most of modern data science and machine learning is devoted
+to *predictive* analytics. Having the
+possibility of learning from data so that future trends (demand, production,
+yield, interest rates, ...) can be reliably and robustly estimated is
+absolutely wonderful. However, after a reliable forecast becomes available, managers
+still need to *take decisions*. And this is where optimization
+(operations research) comes into play.
+
+Optimization is *the* tool for good decision making or, better,
+for good decision support. In order to be able to suggest rational and
+effective decisions the Operations Research scientific community has
+offered courses,  developed  methods, analyzed theoretical aspects of *optimization*. However I
+feel there is still a wide gap which separates academic research from
+day to day adoption. And, in my opinion, part of this
+is due to the lack of sufficient modeling skills. If we cannot model
+a problem, no matter how sophisticated our optimization algorithms are,
+we will not be able to solve it nor suggest any decision. We need to communicate our
+problem to a solver. And to do this we need a deep knowledge of
+models.
+
+Modeling is  a creative skill, which is best learned by doing;
+however, especially for more advanced models involving integer
+variables or graph theory, modeling practice should be paired with a deep theoretical
+knowledge, if we wish to be able to solve large scale problems. 
+
+My interest in modeling arose by chance, thanks to a
+very stimulating activity as a book reviewer that I performed in my early years in the
+academia. Among the many books I received, I got to review, at some time, the
+fundamental volume of Hans Paul Williams :cite:`Williams13` (indeed it
+was a much earlier edition than the one cited here). That book opened
+a new world to me: up to that time I had been thinking to the
+algorithmic aspects of optimization as the most relevant ones. 
+That book made me understand that without suitable formulation no
+problem can ever be solved, whichever the refined algorithms we have
+available. This seemingly trivial observation has indeed many
+consequences. One of these is the fact that we need to be organized
+and disciplined in formulating an optimization model;
+formulating a linear optimization model is not something which can be
+done simply after having learned the details of the simplex algorithm:
+practice and modeling theory is needed before a robust, reliable,
+useful model can be produced. Williams' book opened my eyes on this
+fascinating subject; more or less at the same time I also had the
+opportunity of learning and using `GAMS <https://www.gams.com/>`_ - Generalized Algebraic
+Modeling System. This modeling tool let
+me understand that even to formulate a "simple" linear optimization
+problem it is not enough to be able to write the cost vector, the
+constraint matrix, the right hand side. Or, to be more precise: it
+would be enough. But the effort in preparing these data can be
+enormously reduced if a modeling language is used; moreover the
+readability and the possibility of maintaining large models is
+enormously enhanced when using a modeling language. This is even more
+true when dealing with non linear models. GAMS is nowadays
+not the unique modeling system  available. I have been using
+`AMPL <https://www.ampl.com>`_ - A Mathematical Programming Language,
+`AIMMS <https://www.aimms.com/>`_, 
+which are commercial products, or `JuMP <https://jump.dev/>`_ (Julia Mathematical
+Programming)  and `Pyomo <http://www.pyomo.org/>`_ (Python Optimization
+Modeling) which are open source.  There
+exist many others, most of which however are limited to specific classes
+of problems like, e.g., linear models only.
+
+Given the availability of Williams' book and of several software
+modeling languages, one may ask why I felt the need to write a book on optimization
+modeling.  First of all, of course, I confess I like writing and
+teaching and this is something I would do even if proven to be useless...
+But I also think that it is quite unusual that for such an important
+topic the most authoritative textbook (if not the only one) is still the excellent book by
+Williams which although re-published several times, is more or less
+unchanged since the 80's, when the first edition appeared. I think
+there is a space nowadays for a more modern view of that classical
+textbook, which is and remains a fundamental reference for me as well
+as for many in the optimization community. But in these years many things
+happened: advances in software, in modeling environments, in
+programming languages, in application domains. And, among the many
+novelties, also the way in which we publish radically changed.
+I took the decision to publish my book mainly as a web site, with a companion
+GitHub repo for models and data and, only recently, as a traditional
+printed book. The idea is that of a dynamic book,
+which can easily change thanks to the addition of models, data,
+modeling languages. For many different reasons, I became more familiar
+with the AMPL language than any other. But I would like to ask my readers
+to contribute with translations of AMPL models in other modeling
+environments (and, of course, to suggest modification and corrections
+to those I wrote). The printed edition of this book is
+for those who prefer having a book on paper but the on line web
+edition will in any case be the most up-to-date one.
+
+Most of the applications in this book are quite classical, from
+blending to production to routing on road networks. They mostly come
+from many years of teaching to Management Science Engineers. Very
+recently, however, I have been involved in the world of non-profit
+organizations and discovered the enormous possibilities that may exist
+to apply optimization models for improving the quality of life of many
+people. Thanks to the collaboration with the Analytics for a Better World
+`ABW <https://analyticsbetterworld.org/>`_  group I discovered
+that, as an example, the elementary diet problem which, for many
+years, I refused to teach as I considered it to be too silly an
+example, indeed has been enriched and used and contributed to fight
+hunger for millions of people. And similarly, many other models:
+locating health care facilities, locating ambulances, planning routes
+for emergency, organizing the logistics after a disaster, even
+cleaning the ocean from plastic are relevant social problem which can
+enormously benefit from optimization. I plan, in the future, to expand
+this volume with specific chapters on humanitarian logistics. 
+
+In writing this book I also decided, for the first time in my long academic
+life, not to write a book
+(or a paper) in `LaTeX <https://www.latex-project.org/>`_ from beginning to end. It was a difficult
+choice, as I cannot think of any other way to write  math. But modern
+markup languages and systems, like `Sphinx <https://www.sphinx-doc.org/en/master/>`_, make the effort in writing a web book
+so light that eventually I decided to use this system. Of course,
+however, all of the mathematical formul\ae and the figures have been
+composed in LaTeX, with the help of the `tikz
+<https://www.ctan.org/pkg/pgf>`_ package and the printed book was
+composed with the help of many packages, one of the most important of
+which is the memoir LaTeX class.
+
+Finally: in a modern book on modeling, it is impossible to avoid
+sharing the developed models. Most of modeling, in fact, can be learned not
+only by studying existing modeling techniques, but also by
+experimenting with models and real data. Thus I created a
+`github repository <https://github.com/fabioschoen/OptimizationModels>`_  devoted
+to the
+material presented in this book. I invite
+readers not only to browse these models and use  them, but also to
+suggest modifications, improvements and, in particular, to add models
+in all possible modeling languages. At the moment of writing this
+preface,  only  `AMPL <https://www.ampl.com>`_  models are fully available, as described in the
+book. Volunteers are more than welcome to contribute new or existing
+models implemented in
+`Julia/Jump <https://jump.dev/JuMP.jl/stable>`_, `Pyomo <http://www.pyomo.org/>`_,
+`GAMS <https://www.gams.com/>`_, `Aimms <https://www.aimms.com/>`_,
+`SCIP <https://www.scipopt.org/>`_ or any other high level modeling language.
+This can be easily done through the `github repository <https://github.com/fabioschoen/OptimizationModels>`_.
+I thank in advance any reader who will help to improve and extend this material.
+
+.. include:: closing.rst
+

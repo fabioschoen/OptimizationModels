@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>12. Objectives in optimization models &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="14. Constraints in linear optimization models" href="Constraints.html" />
+    <link rel="prev" title="11. Dynamic flows" href="Dynamic.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Dynamic.html" title="Previous document"><span class="section-number">11. </span>Dynamic flows</a>
+        </li>
+        <li>
+          <a href="Constraints.html" title="Next document"><span class="section-number">14. </span>Constraints in linear optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="objectives-in-optimization-models">
+<h1><span class="section-number">12. </span>Objectives in optimization models<a class="headerlink" href="#objectives-in-optimization-models" title="Link to this heading">¶</a></h1>
+<section id="feasibility-problems-no-objective-function">
+<h2><span class="section-number">12.1. </span>Feasibility problems (no objective function)<a class="headerlink" href="#feasibility-problems-no-objective-function" title="Link to this heading">¶</a></h2>
+<p>Sometimes it is not required to optimize any objective, but
+it is sufficient to check if a set of constraints admits a feasible
+solution. It is in particular required that a feasible solution is
+returned, or, otherwise, a proof is given that the feasible set is empty.</p>
+<p>As an example, in a scrap blending example it might be useful to know
+if it is possible
+to get a blend with
+given chemical characteristics.
+An easy way to cast a feasibility problem into an optimization one is
+to add an objective function which is constantly equal to <span class="math notranslate nohighlight">\(0\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min 0^T \var{x} &amp; \\
+\param{A} \var{x} &amp; = \param{b} \\
+\var{x} &amp; \geq 0
+\end{align*}</div><p>This problem admits optimum (with value 0) if and
+only if the original problem is feasible. However
+if the problem is not feasible, there would be no cues on
+the reason for infeasibility. By this, we mean an indication of a set
+of constraints which could not be satisfied. For example, in a blend problem,
+we might have required too small a percentage of Iron.</p>
+<p>It might be useful in these cases to model an auxiliary problem (so
+called <em>Phase I</em> optimization problem) whose aim is exactly that of
+checking feasibility. By the way, this auxiliary problem is very often
+automatically formulated and solved by optimization algorithms when an
+initial feasible solution is not readily available.</p>
+<p>Consider a generic feasibility problem (here we present the case of a
+system of linear equations and non negativity constraints, but generalizations
+are possible quite simply):</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\param{A} \var{x} &amp; = \param{b}\\
+\var{x} &amp; \geq 0
+\end{align*}</div><p>It is assumed, without loss of generality, that <span class="math notranslate nohighlight">\(\param{b} \geq 0\)</span>. If
+this were not the case, a simple multiplication of both sides of the
+corresponding equation by <span class="math notranslate nohighlight">\(-1\)</span> would restore this assumption.
+This feasibility problem can be converted into an optimization one through the
+insertion of a set of non negative slack variables whose sum is
+penalized in the objective function:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \mathbf{1}^T \var{s}  &amp; \\
+\param{A} \var{x} + \var{s} &amp; = \param{b}\\
+\var{x} &amp; \geq 0  \\
+\var{s} &amp; \geq 0
+\end{align*}</div><p>Here <span class="math notranslate nohighlight">\(\mathbf{1}\)</span> is an array whose elements are all equal to 1.
+It can be proven that this linear optimization problem  always admits an
+optimal solution. Moreover the objective function is equal to
+zero if and only if the original set of constraints is feasible. Thus,
+if the optimization returns a solution with value <span class="math notranslate nohighlight">\(0\)</span>, the
+<span class="math notranslate nohighlight">\(\var{x}\)</span> vector   at the optimal solution is an example of a
+feasible solution. Otherwise, if the optimum value is positive, it can
+be proven that the original system is not feasible. Non zero values of
+the slack variables in the optimal solution might be interpreted as a
+possible cause of infeasibility, although  their interpretation is
+usually not easy.</p>
+<p>A problem connected with this situation consists in
+finding a minimum set of constraints whose relaxation (or whose
+elimination) would make the problem feasible. This is indeed a widely
+studied optimization problem with high computational complexity. A
+related problem is that of finding minimal irreducibly inconsistent
+subset of constraints, i.e. a minimal set of constraints which are
+inconsistent (their intersection is the empty set). A standard
+reference for this research topic is <span id="id1">[<a class="reference internal" href="Bibliography.html#id29" title="John W. Chinneck and Erik W. Dravnieks. Locating minimal infeasible constraint sets in linear programs. ORSA Journal on Computing, 3(2):157-168, 1991.">Chinneck and Dravnieks, 1991</a>]</span>, although in
+recent years many papers appeared on this subject.</p>
+</section>
+<section id="multiple-objectives">
+<h2><span class="section-number">12.2. </span>Multiple Objectives<a class="headerlink" href="#multiple-objectives" title="Link to this heading">¶</a></h2>
+<p>At the opposite extreme of the
+previous case (no objectives) we analyze here  the case of
+optimization problems in which
+more then one  criterion has to be  “optimized”. From a formal point of view, an
+optimization problem with multiple objectives is not well defined. The reason
+is related to the fact that  Euclidean spaces
+whose dimension is greater  than 1 lack a total ordering and,
+therefore, it is in general impossible to
+compare different feasible solutions with respect to multiple
+optimization criteria.</p>
+<p>Consider, as an example, an assignment problem in which there are two
+different criteria on which matching decision should be taken: the
+preferences expressed by each person on the different tasks, but also
+a cost which, e.g., might be the time needed to train each person for
+each of the available duties. An example of simplified data is
+contained in the following code fragment:</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">biobj-assignment.dat</span><a class="headerlink" href="#id6" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">ORIGINS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>A<span class="w"> </span>B<span class="w"> </span>C<span class="w"> </span>D<span class="w"> </span>E<span class="w"> </span>F<span class="w"> </span>G<span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">DESTINATIONS</span><span class="p">:</span><span class="o">=</span><span class="w"> </span>Job1<span class="w"> </span>Job2<span class="w"> </span>Job3<span class="w"> </span>Job4<span class="w"> </span>Job5<span class="w"> </span>Job6<span class="w"> </span>Job7<span class="p">;</span>
+
+<span class="c1">#Preferences - 1: most preferred, 7 least preferred</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Cost1</span><span class="p">:</span><span class="w"> </span>Job1<span class="w"> </span>Job2<span class="w">   </span>Job3<span class="w">   </span>Job4<span class="w">   </span>Job5<span class="w">   </span>Job6<span class="w">   </span>Job7<span class="w"> </span><span class="p">:</span><span class="o">=</span>
+<span class="w">         </span>A<span class="w">   </span><span class="mi">5</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">7</span><span class="w">      </span><span class="mi">6</span><span class="w">      </span><span class="mi">2</span>
+<span class="w">         </span>B<span class="w">   </span><span class="mi">5</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">7</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">6</span>
+<span class="w">         </span>C<span class="w">   </span><span class="mi">1</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">6</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">7</span>
+<span class="w">         </span>D<span class="w">   </span><span class="mi">7</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">6</span><span class="w">      </span><span class="mi">2</span>
+<span class="w">         </span>E<span class="w">   </span><span class="mi">2</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">7</span><span class="w">      </span><span class="mi">6</span>
+<span class="w">         </span>F<span class="w">   </span><span class="mi">5</span><span class="w">      </span><span class="mi">6</span><span class="w">      </span><span class="mi">7</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">3</span>
+<span class="w">         </span>G<span class="w">   </span><span class="mi">3</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">7</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">6</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="c1">#Training time</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Cost2</span><span class="p">:</span>
+<span class="w">           </span>Job1<span class="w">   </span>Job2<span class="w">   </span>Job3<span class="w">   </span>Job4<span class="w">   </span>Job5<span class="w">   </span>Job6<span class="w">   </span>Job7<span class="w"> </span><span class="p">:</span><span class="o">=</span>
+<span class="w">        </span>A<span class="w">    </span><span class="mi">3</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">5</span>
+<span class="w">        </span>B<span class="w">    </span><span class="mi">3</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">2</span>
+<span class="w">        </span>C<span class="w">    </span><span class="mi">2</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">1</span>
+<span class="w">        </span>D<span class="w">    </span><span class="mi">3</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">1</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">3</span>
+<span class="w">        </span>E<span class="w">    </span><span class="mi">1</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">5</span>
+<span class="w">        </span>F<span class="w">    </span><span class="mi">3</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">2</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">3</span>
+<span class="w">        </span>G<span class="w">    </span><span class="mi">1</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">4</span><span class="w">      </span><span class="mi">3</span><span class="w">      </span><span class="mi">5</span><span class="w">      </span><span class="mi">5</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>In this data-file there are two cost matrices. The first one refers to
+preferences: worker A prefers Job3, while the second choice is
+Job7 and the least desirable one is  Job5.</p>
+<p>The second cost matrix reports training time. In order to train A to
+perform Job3 4 days are necessary, while 5 would be required for Job7;
+training A for Job5 however would require only 3 days.</p>
+<p>So it is evident that the two objectives, minimizing the total preference
+index and minimizing the total training time are partially
+conflicting.
+In fact, optimizing the first objective, the following assignment is
+obtained:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array}{cccc}
+Person &amp; Job &amp; Pref &amp; Cost \\ \hline
+A &amp; Job3 &amp; 1 &amp; 4\\
+B &amp; Job5 &amp; 1 &amp; 3\\
+C &amp; Job1 &amp; 1 &amp; 2\\
+D &amp; Job2 &amp; 1 &amp; 3\\
+E &amp; Job4 &amp; 1 &amp; 4\\
+F &amp; Job6 &amp; 2 &amp; 4\\
+G &amp; Job7 &amp; 1 &amp; 5 \\ \hline
+Total&amp;   &amp; 8 &amp;  25
+\\ \hline
+\end{array}
+\end{align*}</div><p>If we optimize instead the total training time, the following is
+obtained:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array}{cccc}
+Person &amp; Job &amp; Pref &amp; Cost \\ \hline
+A &amp; Job6 &amp; 6 &amp; 2\\
+B &amp; Job2 &amp; 4 &amp; 1\\
+C &amp; Job7 &amp; 7 &amp; 1\\
+D &amp; Job4 &amp; 3 &amp; 1\\
+E &amp; Job5 &amp; 5 &amp; 3\\
+F &amp; Job3 &amp; 7 &amp; 2\\
+G &amp; Job1 &amp; 3 &amp; 1 \\ \hline
+Total&amp;   &amp; 35 &amp;  11
+\\ \hline
+\end{array}
+\end{align*}</div><p>If we consider both criteria, then it is not possible to choose
+between these two options, although they are quite radically different
+one from the other.
+Even without resorting to these extreme solutions, in some cases it is
+not possible to decide which one is preferable. If we assigned jobs in
+the  order 3, 2, 6, 4, 5, 7, 1 we would obtain a cost of assignment 21
+and a training time 14: neither preferable not discardable with
+respect to the solution presented before. However, if the assignment were, in the order,
+7, 4, 6, 5, 1, 2, 3, we would obtain a cost of assignment 25 and a
+training time 21: both costs are worse then the above solution. Thus
+we can, without any doubt, avoid taking this solution into
+consideration, as it is less appreciated and also requires more
+training time with respect to another feasible assignment.</p>
+<p>The presence of many objectives is quite
+frequent in applications. For example, in production problems,  it
+is often required to plan  production
+at the least possible cost while maximizing
+a quality index. In environmental management problems it is
+frequent the case in which two conflicting objectives must be optimized:
+an economic objective corresponding to
+cost minimization and an environmental one, such as, for example, risk minimization.
+(e.g., for the  transport of dangerous and polluting substances).</p>
+<p>We can formalize the ideas behind this example as follows. Consider
+the multi-objective problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \left \{f_{1} (\var{x}), f_{2} (\var{x}),
+\ldots, f_{k} ( \var{x}) \right \}  \\
+\var{x} \in X \subseteq \R^n
+\end{align*}</div><p>where we would like to simultaneously minimize more than one function
+<span class="math notranslate nohighlight">\(f_1, f_2, \dots, f_k\)</span>.</p>
+<p>It is reasonable to limit the search of solutions to <span class="target" id="index-0"></span>non dominated
+or <span class="target" id="index-1"></span>Pareto ones. We say
+that a feasible solution <span class="math notranslate nohighlight">\(\var{y}\)</span>   is (weakly) <em>dominated</em>
+by another feasible solution <span class="math notranslate nohighlight">\(\var{x}\)</span>, if</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f_{j} (\var{x}) &amp; \leq f_{j} (\var{y}) &amp; \forall \, j \in 1,k
+\end{align*}</div><p>The solution <span class="math notranslate nohighlight">\(\var{y}\)</span> is (strongly)  <em>dominated</em> by
+<span class="math notranslate nohighlight">\(\var{x}\)</span> if, besides being weakly dominated,  there exists
+at least one index <span class="math notranslate nohighlight">\(\bar{\jmath}\)</span> such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f_{\bar{\jmath}} (\var{x}) &amp; &lt;f_{\bar{\jmath}} (\var{y})
+\end{align*}</div><p>A solution is <em>Pareto optimal</em>  if it is not dominated by any other, i.e., if no other feasible solution
+exists for which every objective is at least as good as  this one,
+and, in at least one case, strictly better.</p>
+<p>The Pareto condition can be graphically represented in the
+case of problems with two objectives.
+Consider the following elementary artificial bi-objective problem:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x},\var{y},\var{z}}&amp; \{-2\var{x}+\var{y}+\var{z},
+\var{x}-2\var{y}+2\var{z}\} \\
+\var{x}+\var{y}-\var{z} &amp; \leq 1 \\
+\var{x}-\var{y}+\var{z} &amp; \leq 1 \\
+-\var{x}+\var{y}+\var{z} &amp; \leq 1 \\
+\var{x},\var{y},\var{z} &amp; \geq 0
+\end{align*}</div><p>The feasible set is a polyhedron whose vertices are <span class="math notranslate nohighlight">\((0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,1,1)\)</span> and
+which can be represented as follows:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-d4cd07a630764a494afab0ce8b6946cff9427561.png" alt="Figure made with TikZ" /></p>
+</div><p>Mapping each feasible solution to the 2-dimensional space of the two
+objective functions, the following set of objective values is
+obtained (we denoted by <span class="math notranslate nohighlight">\(P^\prime\)</span> the image of a feasible point <span class="math notranslate nohighlight">\(P\)</span>):</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-275760dad0d93abbc96480812455da75de698214.png" alt="Figure made with TikZ" /></p>
+</div><p>It might be proven that when both the objectives and the constraints
+are linear, then the image of the feasible set in the space of
+objectives is a polyhedron. Besides, the vertices of this polyhedron
+are the images of some of the vertices of the feasible set.
+From this picture it is immediately seen that vertex <span class="math notranslate nohighlight">\(C\)</span> is not Pareto
+optimal, as it is, as an example, dominated by each of the remaining
+vertices. However, also vertex  <span class="math notranslate nohighlight">\(O\)</span> is not Pareto, although no
+other vertex dominates it; it is in fact dominated, e.g., by point
+<span class="math notranslate nohighlight">\((1/2,1/2,0)\)</span>, whose objective function values are
+<span class="math notranslate nohighlight">\((-1/2,-1/2)\)</span>. Graphically, in the space of objectives, Pareto
+solutions are those feasible points whose image is
+characterized by the absence of other image points in the bottom-left
+quadrant:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-7b8fbbb307d1c3802e21cebf4cc2f9e9f98ce643.png" alt="Figure made with TikZ" /></p>
+</div><p>From this it can be readily understood that the image in the space of
+objectives of Pareto solutions is a subset of the frontier, called
+<span class="target" id="index-2"></span>efficient frontier. In the example above the efficient
+frontier is outlined in bold and the set of Pareto optima is the edge
+<span class="math notranslate nohighlight">\((A,B)\)</span> of the feasible set.</p>
+<p>Many software tools exist for solving multi-objective problems;
+frequently they are capable of generating, sometimes in a partially
+interactive way, some or even all Pareto solutions.</p>
+<p>A simple way to generate some solutions to multi-objective problems consists
+in reducing the problem to one with a
+single objective.</p>
+<p>A first possibility, useful only at an initial stage of the analysis,
+consists in optimizing each of the objectives in turn, disregarding
+all of the others; this
+optimization phase consists of  an exploration of the  most extreme
+solutions. In the example above, <span class="math notranslate nohighlight">\(A\)</span> and <span class="math notranslate nohighlight">\(B\)</span> minimize,
+respectively, the first and the second objective. In the assignment
+example before,  the two extreme solutions correspond one to the
+assignment value of 8 and training time 25, while the other gives the
+assignment index 35 with a training time 11, as we have seen before. These solutions are
+usually Pareto (unless a different solution, with the same value of
+the optimized objective exists for which a better objective exists with
+respect to the remaining ones).</p>
+<p>Usually  these solutions are not satisfactory, since they completely neglect
+the presence of multiple objectives. In problems like this one,
+characterized by linear, and thus convex, constraints, any convex
+combination of feasible solution is feasible. Thus it is possible to
+generate a family of solutions by combining Pareto optimal ones. As an
+example, taking a convex combination of the two extreme solutions in
+the geometrical example above we obtain the set</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(\lambda,1-\lambda,0) &amp; &amp; \lambda \in [0,1]
+\end{align*}</div><p>which corresponds to edge <span class="math notranslate nohighlight">\((A,B)\)</span> and, in this case, is the
+set of Pareto optimal solutions. The situation is slightly different
+in the assignment example, as the feasible set is no more convex: in
+fact, although integrality is granted when optimizing a linear
+objective function, it must be recalled that the feasible set is
+composed of binary solution and, thus, a linear combination of
+feasible solution is not feasible in general.</p>
+<p>A second possibility to tackle multi-objective problems,
+related to the previous one  but somewhat  less radical, consists
+in optimizing a single objective in turn, as before. However, now all the
+other objectives  are included as  constraints. In particular, an objective to be minimized
+becomes a <span class="math notranslate nohighlight">\(\leq\)</span> constraint; the right hand side
+might be chosen based on the results obtained in the
+optimization of that single objective.</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min f_{h} (\var{x}) &amp; \\
+f_{j} (\var{x}) &amp; \leq \beta_{j} &amp; \forall \, j \neq h \\
+\var{x} &amp; \in X
+\end{align*}</div><p>In the geometrical example given above, considering that the minimum
+value for the second objective is <span class="math notranslate nohighlight">\(-2\)</span>, solving:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x},\var{y},\var{z}}&amp; -2\var{x}+\var{y}+\var{z} \\
+\var{x}+\var{y}-\var{z} &amp; \leq 1 \\
+\var{x}-\var{y}+\var{z} &amp; \leq 1 \\
+-\var{x}+\var{y}+\var{z} &amp; \leq 1 \\
+\var{x},\var{y},\var{z} &amp; \geq 0 \\
+\var{x}-2\var{y}+2\var{z} &amp; \leq -2 + \varepsilon
+\end{align*}</div><p>for different positive values of <span class="math notranslate nohighlight">\(\varepsilon\)</span> would produce
+several compromise solutions.</p>
+<p>In the example on assignment, considering the extreme solution with
+assignment values 8 and 25, we might optimize the total training time,
+imposing that the assignment index is, say, at most 9. In this case an
+assignment with values 9, 22 is obtained. Increasing the right hand
+side for the first objective to 12, a solution with objectives 12,19
+is obtained, which seems to be quite a good compromise. This way a set
+of interesting solutions can be automatically built and proposed to
+the decision maker.</p>
+<p>Another possibility, which becomes particularly reasonable when the
+different objective functions share the same unit of measurement and,
+possibly, the same range of values, is to build a surrogate objective
+function through a linear combination:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min &amp; \sum_{j} \param{\lambda}_{j} f_{j} (\var{x}) \\
+\var{x} &amp; \in X;
+\end{align*}</div><p>where the non negative coefficients <span class="math notranslate nohighlight">\(\param{\lambda}_j\)</span>  can be chosen
+to reflect the different importance of the objectives and to span the
+set of feasible solution to generate several candidates.</p>
+<p>Finally, another possibility is to use a <span class="target" id="index-3"></span>goal programming
+approach, consisting in choosing non negative constants
+<span class="math notranslate nohighlight">\(\lambda_j\)</span>, exactly as in the previous approach, and solving</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x},\var{y}} \sum_{j} \param{\lambda}_{j} \var{y}_{j} &amp; \\
+f_{j} (\var{x}) &amp; \leq \var{y}_{j} &amp; \forall \, j \\
+\var{x} &amp; \in X
+\end{align*}</div><p>In this
+approach we seek for a compromise solution by “pushing” the right
+hand sides as much as possible towards low values. It can be proven
+that this approach is in a sense equivalent to the previous one.</p>
+</section>
+</section>
+<section id="some-nonlinear-problems-that-can-be-transformed-into-linear-ones">
+<h1><span class="section-number">13. </span>Some nonlinear problems that can be transformed into linear ones<a class="headerlink" href="#some-nonlinear-problems-that-can-be-transformed-into-linear-ones" title="Link to this heading">¶</a></h1>
+<p>There exists a tiny set of non linear optimization problems which,
+thanks to sometimes rather ingenious tricks,
+can be transformed into equivalent linear ones. These few
+cases are extremely important, as they correspond to a large and very
+interesting set of possible applications.</p>
+<section id="minimax-problems">
+<span id="sect-minmax"></span><h2><span class="section-number">13.1. </span>Minimax problems<a class="headerlink" href="#minimax-problems" title="Link to this heading">¶</a></h2>
+<p>Consider the optimization  problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x} \in X} \max \{f_1 (\var{x}), f_2 (\var{x}), \ldots, f_k (\var{x}) \}
+\end{align*}</div><p>This is  a nonlinear problem and, frequently,  a non smooth one. By
+this we mean that it is not granted that the objective
+function is everywhere continuously differentiable, even if each of
+the single functions is. Even in the linear case, differentiability is
+in general lost and the objective is
+piece-wise linear.</p>
+<p>Minimax models can  be seen  as another way to tackle
+multi-objective optimization problems: in order  to
+simultaneously  minimize multiple objectives, here we minimize the
+pointwise  worst one. If we
+associate to each feasible solution  a point in the
+space of objective function values whose coordinates are the values of individuals
+objectives, the minimax approach corresponds to finding a
+feasible solution  which corresponds   to the minimal
+<span class="math notranslate nohighlight">\(\ell^\infty\)</span> norm of the objective function values.</p>
+<p>Consider as a simple illustrative problem the following one:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x},\var{y}} &amp;\max \{\var{x}-\var{y}; -\var{x}+
+2\var{y}\}\\
+\var{x} + \var{y} &amp; \leq 3 \\
+\var{y} &amp; \leq 2 \\
+\var{x}, \var{y} &amp; \geq 0
+\end{align*}</div><div class="figure" style="text-align: center"><p><img  src="_images/tikz-1a69dc401430c701d3c2d355cff3d18d27cbb087.png" alt="Figure made with TikZ" /></p>
+</div><p>In the figure above we report the feasible set, a few level curves of the
+objective function and the gradients of the two components of the
+objective functions (we recall that the gradient of a function points
+towards increasing levels and is normal to the level curve). Along the
+dashed red line, which corresponds to the set on which the two
+objectives have the same value, the objective function is non
+differentiable.</p>
+<p>It is possible to transform the minimax problem into an equivalent
+one, according to the following scheme. We first introduce an auxiliary real variable <span class="math notranslate nohighlight">\(\var{z}\)</span> and
+re-write the problem in the following equivalent form:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{z}} \var{z} &amp;  \\
+\var{z} &amp; = \max \{f_1 (\var{x}), f_2 (\var{x}), \ldots, f_k (\var{x}) \} \\
+\var{x} &amp; \in X
+\end{align*}</div><p>where the nonlinearity of the objective function has been simply
+transferred into a  constraint. Recalling the definition of the
+maximum of  a finite set of numbers we can relax the above problem as:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{z}} \var{z}  \\
+\var{z} &amp; \geq f_{i} (\var{x})  &amp; \forall \, i = 1, k  \\
+\var{x} &amp; \in X
+\end{align*}</div><p>This is indeed a relaxation as the requirement <span class="math notranslate nohighlight">\(\var{z}  \geq
+f_{i} (\var{x})\)</span>  is necessary but not sufficient for <span class="math notranslate nohighlight">\(\var{z}\)</span>
+to be the maximum of the <span class="math notranslate nohighlight">\(k\)</span> functions: it is in fact lacking a
+required constraint which forces <span class="math notranslate nohighlight">\(\var{z}\)</span> to be exactly equal to
+at least one of the <span class="math notranslate nohighlight">\(k\)</span> functions.
+In other words, the constraints correctly model only the requirement</p>
+<div class="math notranslate nohighlight">
+\[
+\var{z} \geq \max_{i=1,k} \{f_{i} (\var{x}) \}
+\]</div><p>Therefore feasible solutions might exist in which the
+value of <span class="math notranslate nohighlight">\(\var{z}\)</span> is strictly greater than the maximum
+of the objectives.</p>
+<p>However it is easy to show that the model is indeed correct when the
+optimal solution is considered. In fact,
+assume that an optimal solution
+<span class="math notranslate nohighlight">\((\var{x}^\star,\var{z}^\star)\)</span> has been found and that</p>
+<div class="math notranslate nohighlight">
+\[
+\var{z}^\star &gt; f_i(\var{x}^\star) \qquad \forall\, i
+\]</div><p>In this case,
+since no other constraint is imposed on <span class="math notranslate nohighlight">\(\var{z}\)</span>
+it would be possible to find another solution
+<span class="math notranslate nohighlight">\((\var{x}^\star,\var{z}^\star-\varepsilon)\)</span> with
+<span class="math notranslate nohighlight">\(\varepsilon &gt;0\)</span> which is still feasible but with a lower
+value of the objective function. But this is absurd, as it was assumed
+that the solution was indeed optimal.</p>
+<p>When both the objective functions and the constraints are linear, this
+transformation reduces the problem to a linear optimization one.
+Following a very similar set of transformation, it is very easy to see
+how also maximin problems can be transformed into equivalent ones.</p>
+<p>It is however not possible to use the same technique to transform
+<em>minimin</em>  or  <em>maximax</em> problems, as the objective function will not
+anymore “push” the auxiliary variable against one of the objective
+functions. Apparently this case would require the use of disjunctive
+(logical OR) constraints to model the fact that the auxiliary variable
+needs to be equal to one of the functions.
+However, in these special cases, it is quite easy to
+solve the problem anyway. In fact, e.g., for a minimin problem, we can
+minimize each single function and return the optimal solution
+associated with the minimum of the minima found. Thus the problem can
+be solved by finding the optimal solution to <span class="math notranslate nohighlight">\(k\)</span> problems</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+z_i^\star &amp; = \min_{\var{x} \in X} f_i(\var{x}) &amp; i=1,k
+\end{align*}</div><p>and returning <span class="math notranslate nohighlight">\(\min_i z_i^\star\)</span> as the optimal value.</p>
+<p>Minimax problems (and the others discussed here) have many
+applications. As a simple example, most taxation systems define the amount to
+be paid as a piece-wise linear function with increasing slopes: this
+rule follows the general principle that not only those who have more
+should pay more taxes, but the marginal increase of taxes to be paid should be
+greater than that of lower income persons. The
+taxation rate for Italian income in fiscal year 2021 is represented  in the following graph:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-42015dbf21132c4cfdc0fa9d13779de3aae3a7a8.png" alt="Figure made with TikZ" /></p>
+</div><p>It can be readily seen that the function corresponding to the  5
+increasing  slopes in the above graphical representation might be
+obtained as the pointwise maximum of 5 straight lines.</p>
+<p>In order to model generic  piece-wise linear convex
+cost functions, it is possible to slightly generalize
+the above approach. Let <span class="math notranslate nohighlight">\(c_1^T \var{x}+a_1, c_2^T
+\var{x} + a_2,\dots, c_k^T \var{x} + a_k\)</span> be <span class="math notranslate nohighlight">\(k\)</span>  <em>affine</em>
+functions. Then the piece-wise linear objective function can be modeled
+as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{z}} \var{z} \\
+c_i^T \var{x} + a_i &amp; \leq \var{z} &amp; i = 1,k \\
+\end{align*}</div><blockquote id="fair-assignment">
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-4"></span>Fair assignment</p>
+</dd>
+</dl>
+<p>The problem of fair assignment has been already introduced in chapter <a class="reference internal" href="Assignment.html#assignment-or-bi-partite-matching"><span class="std std-ref">Assignment or bi-partite matching</span></a>. The mathematical
+formulation is the following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{f}} \, \max_{\substack{(i, j) \in \\  \set{E}}} \{\param{Cost}_{ij}
+\var{f}_{ij} \} &amp; \\
+\sum_{i: (i,j) \in \set{Arcs}} \var{f}_{ij} &amp; = 1 &amp; \forall\,j
+\in \set{V}\\
+\sum_{j: (i,j) \in \set{Arcs}} \var{f}_{ij} &amp; = 1 &amp; \forall\,i
+\in \set{V}
+\\
+\var{f}_{ij} &amp; \in \{0,1\} &amp; \forall\, (i,j) \in \set{E}
+\end{align*}</div><p>This problem is also known as the <span class="target" id="index-5"></span>Bottleneck Assignment problem.
+Using the transformation just presented, the problem can
+be equivalently written as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \var{z} &amp; \\
+\var{z} &amp; \geq \param{Cost}_{ij} \var{f}_{ij}  &amp; \forall\, (i,j)
+\in \set{E}\\
+\sum_{i: (i,j) \in \set{Arcs}} \var{f}_{ij} &amp; = 1 &amp; \forall\,j
+\in \set{V}\\
+\sum_{j: (i,j) \in \set{Arcs}} \var{f}_{ij} &amp; = 1 &amp; \forall\,i \in \set{V}
+\\
+\var{f}_{ij} &amp; \in \{0,1\} &amp; \forall\, (i,j) \in \set{E}
+\end{align*}</div><p>This formulation, although linear, has also integrality
+requirements on the main variable which cannot be canceled, as the
+problem is no more a network flow one and, indeed, solving the
+continuous relaxation usually produces fractional solutions. It
+might be observed that this problem  can be efficiently solved by
+specialized algorithms; however this linear representation does not
+enjoy the integrality property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-6"></span>Zero-sum games</p>
+</dd>
+</dl>
+<p>An application, strictly linked with the birth of
+<span class="target" id="index-7"></span>duality theory  is connected with
+<span class="target" id="index-8"></span>non cooperative zero-sum games (see, e.g.,   <span id="id2">[<a class="reference internal" href="Bibliography.html#id24" title="John von Neumann and O. Morgenstern. Theory of games and economic behavior. Princeton University Press, 1944.">von Neumann and Morgenstern, 1944</a>]</span>).
+The example we will be
+using in this presentation is related to a children game, the “Chinese
+morra”, but the resulting model is quite general. Assume there are two
+players, denoted by R and C (these names are linked to the Rows and
+Columns of a matrix we will introduce shortly). The two
+players, simultaneously and without any communication,
+choose one out of <span class="math notranslate nohighlight">\(n\)</span> (3, in our example) possible “moves”:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(r\)</span> (Rock)</p></li>
+<li><p><span class="math notranslate nohighlight">\(p\)</span> (Paper)</p></li>
+<li><p><span class="math notranslate nohighlight">\(s\)</span> (Scissor)</p></li>
+</ul>
+<p>and the general rule is that Rock wins over Scissor, but loses with
+Paper, while Paper loses with Scissor. If the moves chosen by the
+two players are different,
+one of the two players wins; otherwise, if they both choose the
+same move, there is a tie. In a standard game, players just count
+the number of wins and losses. It is easy to imagine, although this
+can be formally proven, that in the standard case no player has an
+advantage over the other. The “best” strategy of
+both players is to choose, uniformly, a move at random. However we
+might think of a variant of the game in which the amount to win or
+lose in a game depends on the chosen moves. As an example, consider
+the following matrix:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+Q &amp; =
+\begin{array}{c|rrr}
+  &amp; r &amp; p &amp; s \\ \hline
+r &amp; 0 &amp; 1 &amp; -3 \\
+p &amp; -2 &amp;0 &amp; 5 \\
+s &amp; 6 &amp; -4 &amp; 0 \\ \hline
+\end{array}
+\end{align*}</div><p>This matrix is called <span class="target" id="index-9"></span>payoff matrix and it has the following
+interpretation: assume player R chooses row <span class="math notranslate nohighlight">\(i\)</span> in the
+matrix and player C chooses column <span class="math notranslate nohighlight">\(j\)</span>.  Then player R will
+“loose” an amount <span class="math notranslate nohighlight">\(\param{Q}_{ij}\)</span>, while player C will “gain” the same
+amount. When a gain is negative, it is indeed a cost and when a
+loss is negative, it corresponds to a gain. As an example if player
+R chooses Rock and player C chooses Scissor, R will win 3,
+while  C
+will loose 3. If R chooses Rock   and C chooses Paper, then R
+will loose 1 and C will gain 1.</p>
+<p>A <span class="target" id="index-10"></span>strategy for player R is defined as a vector
+<span class="math notranslate nohighlight">\(\var{x} \in \R^n\)</span> such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{i=1}^n \var{x}_i &amp; =  1 \\
+\var{x}_i &amp; \geq 0 &amp; \forall\, i=1,n
+\end{align*}</div><p>A strategy for the second
+player can be defined in a totally analogous way. A strategy is thus defined as the choice of a discrete
+probability distribution. Given a strategy, a player will decide a
+move based on a random sampling from the chosen distribution. A
+<span class="target" id="index-11"></span>pure strategy (also called a <span class="target" id="index-12"></span>deterministic strategy) is
+given by a binary strategy vector. In other words, in a pure
+strategy we choose, with probability one, a specific move, without
+any randomization.</p>
+<p>In order to analyze a possible way to build a rational strategy,
+assume, for the moment, that player C is in the best possible
+condition, i.e., that player C knows the strategy of player R,
+<span class="math notranslate nohighlight">\(\bar{x}\)</span>. Thus, we can evaluate the expected gain  of player C,
+depending on the chosen strategy <span class="math notranslate nohighlight">\(\var{y}\)</span>, as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{y}_1 (\sum_i \bar{x}_i \param{Q}_{i1} ) +
+\var{y}_2 (\sum_i \bar{x}_i \param{Q}_{i2} ) + \cdots +
+\var{y}_n (\sum_i \bar{x}_i \param{Q}_{in} ) \\
+= \bar{x}^T \param{Q} \var{y}
+\end{align*}</div><p>and the best option for player C will be the one which solves the
+following optimization problem (where with <span class="math notranslate nohighlight">\(\mathbf{1}\)</span> we
+denote a vector of suitable dimension whose components are all
+equal to one):</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max_{\var{y}} \bar{x}^T \param{Q} \var{y} &amp; \\
+\mathbf{1}^T \var{y} &amp; = 1 \\
+\var{y} &amp; \geq 0
+\end{align*}</div><p>This is a standard linear optimization problem with a single
+equation. A
+basic optimal solution thus will have a single non zero
+variable which will be necessarily equal to 1.
+The optimal solution would be, therefore, a pure
+deterministic strategy with value:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \{\bar{x}^T \param{Q}_1, \bar{x}^T \param{Q}_w, \ldots, \bar{x}^T \param{Q}_n  \}
+\end{align*}</div><p>Here <span class="math notranslate nohighlight">\(\param{Q}_j\)</span> denotes the <span class="math notranslate nohighlight">\(j\)</span> –th column of the payoff
+matrix. Going back to the best strategy for player R (rows), we can now
+assume that this player will try to minimize the expected loss incurred in
+the worst possible case, i.e. when the adversarial discovers the
+strategy of the player. This approach corresponds to a cautious
+strategy which tries to obtain the best possible result in the
+worst possible scenario. It is quite frequently used in games
+against an intelligent opponent. Given this assumption on the
+objective of the R player, we would like to solve the optimization
+problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}} \max \{\var{x}^T \param{Q}_1, \var{x}^T \param{Q}_w, \ldots,
+\var{x}^T \param{Q}_n  \} &amp; \\
+\mathbf{1}^T \var{x} &amp; =1 \\
+\var{x} &amp; \geq 0
+\end{align*}</div><p>and this problem is easily recognized to belong to the class of
+minimax problems we analyzed in this chapter. Thus, as we have
+already seen, the
+best strategy of the R player can be found, equivalently, by solving the linear
+optimization problem:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x},\var{z}}  \var{z} \\
+\var{z} &amp; \geq \var{x}^T \param{Q}_j &amp; j=1,n \\
+\mathbf{1}^T \var{x} &amp; = 1\\
+\var{x} &amp; \geq 0
+\end{align*}</div><p>A simple implementation of this model follows:</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">game.mod</span><a class="headerlink" href="#id7" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">ACTIONS</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Payoff</span><span class="p">{</span>ACTIONS<span class="p">,</span><span class="w"> </span>ACTIONS<span class="p">};</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">z</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">x</span><span class="p">{</span>ACTIONS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">RowLoss</span><span class="p">:</span><span class="w"> </span>z<span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">MinMax</span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>ACTIONS<span class="p">}:</span>
+<span class="w">	</span>z<span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>ACTIONS<span class="p">}</span><span class="w"> </span>x<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>Payoff<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">Normalization</span><span class="p">:</span>
+<span class="w">	</span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>ACTIONS<span class="p">}</span><span class="w"> </span>x<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Consider the  data of the current example:</p>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">game.dat</span><a class="headerlink" href="#id8" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">ACTIONS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>r<span class="w"> </span>p<span class="w"> </span>s<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Payoff</span><span class="p">:</span>
+<span class="w">    </span>r<span class="w">  </span>p<span class="w">  </span>s<span class="w">  </span><span class="p">:</span><span class="o">=</span>
+r<span class="w">   </span><span class="mi">0</span><span class="w">  </span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="mi">3</span>
+p<span class="w">  </span><span class="o">-</span><span class="mi">2</span><span class="w">  </span><span class="mi">0</span><span class="w">  </span><span class="mi">5</span>
+s<span class="w">   </span><span class="mi">6</span><span class="w"> </span><span class="o">-</span><span class="mi">4</span><span class="w">  </span><span class="mi">0</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Solving the problem we get the following optimal strategy for
+player R:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+x_p &amp; =  33,6449\% \\
+x_r &amp; = 54.2056\% \\
+x_s &amp;= 12.1495\%
+\end{align*}</div><p>with an objective function value <span class="math notranslate nohighlight">\(0.05607476636\)</span>. This means
+that the game is not balanced and even with the best possible
+strategy (in the minimax sense) the R player will incur in a
+positive expected loss.</p>
+<p>It is quite easy to see that the best (maximin) strategy for the
+opponent, the C player, can be found by following an identical
+path. And, if this is done, we can discover that the best strategy
+of the C player is the solution of the dual problem of the linear
+optimization model faced by the R player. This important result is
+linked to the birth of duality theory and can be traced back to
+discussions between the “father” of linear optimization,
+George B. Dantzig, and the “father” of many scientific achievements,
+including the modern computer and the modern theory of economic
+behavior, John von Neumann.</p>
+<p>Thanks to this property, the best strategy of the opponent can be
+easily and immediately found to be</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+y_p &amp; = 50.4673 \% \\
+y_r &amp; = 34.5794\% \\
+y_s &amp;= 14.9533\%
+\end{align*}</div><p>The model presented here is extremely elementary and might be
+extended in many ways. As an example, the payoff matrix needs not
+be square, as the available actions of the players might differ.
+There might even exist two different payoff matrices, in the so
+called non-zero sum games in which the loss of a player is not
+necessarily equal to the gain of the opponent. There might be more
+than two players, and there might be different ways to define an
+“optimal” strategy. Game theory is extremely rich and deep, and it
+deals with profound concepts like that of equilibrium (Nash
+equilibria as an example) or cooperative and coalition games. It is
+however remarkable how everything started from elementary
+duality in linear optimization models.</p>
+</div></blockquote>
+</section>
+<section id="absolute-values-in-the-objective">
+<h2><span class="section-number">13.2. </span>Absolute values in the objective<a class="headerlink" href="#absolute-values-in-the-objective" title="Link to this heading">¶</a></h2>
+<p>Consider the optimization problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{y}} \sum_{j} c_{j} | \var{x}_{j} | + \sum_k d_k \var{y}_k\\
+(\var{x}, \var{y}) &amp; \in  X \\
+\var{y} &amp; \geq  0
+\end{align*}</div><p>Here some of the variables, which of course are not  constrained to be
+non negative, appear
+in the objective in absolute value. Similarly to the previous case of
+minimax problems, here too the objective function is only piece-wise
+linear, and in general not everywhere differentiable.
+In some cases however the problem can be transformed into an
+equivalent one in which the non linear objective is transformed into a
+linear one with linear additional constraints.</p>
+<p>In order to transform the problem it is worth observing that
+the function <span class="math notranslate nohighlight">\(| \var{x} |\)</span> can be seen as the
+pointwise maximum between two linear functions:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+| \var{x} | = \max \{\var{x}, - \var{x} \}.
+\end{align*}</div><p>Thus, following the same path as in the transformation of minimax
+problems,  the general problem can be represented as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{y}} \sum_{j} c_{j} \max \{\var{x}_j, - \var{x}_j \} +
+\sum_k d_k \var{y}_k &amp; \\
+(\var{x}, \var{y}) &amp; \in X \\
+\var{y} &amp; \geq 0
+\end{align*}</div><p>and, introducing  an auxiliary variable <span class="math notranslate nohighlight">\(\var{z}_j\)</span> for each
+<span class="math notranslate nohighlight">\(\var{x}_j\)</span> variable the problem can be rewritten as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{y}, \var{z}} \sum_{j} c_{j} \var{z}_j + \sum_k d_k
+\var{y}_k &amp; \\
+\var{z}_j &amp; = \max \{\var{x}_j, - \var{x}_j \} \\
+(\var{x}, \var{y}) &amp; \in X \\
+\var{y}, \var{z} &amp; \geq 0.
+\end{align*}</div><p>Similarly to the minimax case,  the
+constraint associated to the  definition of the auxiliary variables
+can be relaxed, but only <em>under the assumption that the cost
+coefficients</em> <span class="math notranslate nohighlight">\(c_{j}\)</span> <em>are strictly positive</em>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{y}, \var{z}} \sum_{j} c_{j} \var{z}_j + \sum_k d_k
+\var{y}_k &amp; \\
+\var{z}_j &amp; \geq \var{x}_j \\
+\var{z}_j &amp; \geq - \var{x}_j \\
+(\var{x}, \var{y}) &amp; \in X \\
+\var{y}, \var{z} &amp; \geq 0
+\end{align*}</div><p>or</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}, \var{y}, \var{z}} \sum_{j} c_{j} \var{z}_j + \sum_k d_k
+\var{y}_k &amp; \\
+- \var{z}_j &amp; \leq \var{x}_j \leq \var{z}_j \\
+(\var{x}, \var{y}) &amp; \in X \\
+\var{y}, \var{z} &amp; \geq 0.
+\end{align*}</div><p>Equivalence, for the case of positive cost coefficients, can be proven
+in exactly the same way as we did for minimax problems. If even a
+single coefficient  has a negative sign than the whole model fails to
+correctly represent the original one and, in general, the problem
+becomes much harder to solve. We might observe that
+with positive coefficients the objective function is <em>convex</em>, while
+if even a single one is negative convexity is lost. Null coefficients
+of course cause no difficulties as the corresponding variable can be
+canceled from the objective function.</p>
+<p>The same problem can be transformed, under the same assumptions, into
+a linear optimization one following a different, yet equivalent, path. In generic linear
+optimization models the standard transformation applied to free
+variables, i.e., to variables which are not constrained to be non
+negative, is to replace those variables with the difference of
+two non negative ones:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_{j}  &amp; = \var{x}^+_{j} - \var{x}^-_{j} \\
+\var{x}^+_{j}, \var{x}^-_{j} &amp; \geq 0
+\end{align*}</div><p>The optimization problem can thus be equivalently written as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}^+, \var{x}^-, \var{y}} \sum_{j} c_{j} | \var{x}^+_{j} -
+\var{x}^-_j | + \sum_k d_k \var{y}_k  \\
+(\var{x}^+ - \var{x}^-, \var{y}) &amp; \in  X \\
+\var{x}^+, \var{x}^+, \var{y} &amp; \geq  0.
+\end{align*}</div><p>This substitution transforms the original problem into an equivalent
+one; however the mapping between solutions in the two feasible sets is
+not one-to-one: if <span class="math notranslate nohighlight">\(\var{x}_{j} \geq0\)</span> it is always possible to choose</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}^+_{j} &amp; = \var{x}_{j} + \mathvar{\Delta}_j \\
+&amp; = | \var{x}_j | + \mathvar{\Delta}_j \\
+\var{x}^-_{j} &amp; = \mathvar{\Delta}_j
+\end{align*}</div><p>for any choice of <span class="math notranslate nohighlight">\(\mathvar{\Delta}_j \geq0\)</span>. If on the
+contrary, <span class="math notranslate nohighlight">\(\var{x}_{j} \leq0\)</span>,
+it is possible to choose</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}^+_{j} &amp; = \mathvar{\Delta}_j \\
+\var{x}^-_{j} &amp; = - \var{x}_{j} + \mathvar{\Delta}_j \\
+&amp; = | \var{x}_j | + \mathvar{\Delta}_j
+\end{align*}</div><p>with <span class="math notranslate nohighlight">\(\mathvar{\Delta}_j \geq0\)</span>.</p>
+<p>It can be seen that, if <span class="math notranslate nohighlight">\(\mathvar{\Delta}_j = 0\)</span>, at least one of the two
+components, <span class="math notranslate nohighlight">\(\mathvar{x}^+_{j}\)</span> or <span class="math notranslate nohighlight">\(\mathvar{x}^-_{j}\)</span>, is <span class="math notranslate nohighlight">\(0\)</span>
+while the other  is equal to <span class="math notranslate nohighlight">\(|\var{x}_{j}|\)</span>.
+It can also be observed thus
+that the <em>sum</em> of the two auxiliary variables is</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}^+_j + \var{x}^-_j &amp; =  | \var{x}_j | + 2 \mathvar{\Delta}_j
+\end{align*}</div><p>Replacing in the objective  function each occurrence of
+<span class="math notranslate nohighlight">\(| \var{x}_{j} |\)</span> with the <em>sum</em> of the components <span class="math notranslate nohighlight">\(\var{x}^+_{j}\)</span> and
+<span class="math notranslate nohighlight">\(\var{x}^+_{j}\)</span>, if, as it was assumed, the cost
+coefficients are positive, in the optimal solution we will surely have
+<span class="math notranslate nohighlight">\(\mathvar{\Delta} = 0\)</span>.</p>
+<p>The model is therefore equivalent to the following:</p>
+<div class="math notranslate nohighlight">
+   \begin{align*}
+   \min_{\var{x}^+, \var{x}^-, \var{y}} \sum_{j} c_{j} (\var{x}^+_{j} + \var{x}^-_j) + \sum_k d_k \var{y}_k &amp;  \\
+   (\var{x}^+ - \var{x}^-, \var{y}) &amp; \in  X \\
+   \var{x}^+, \var{x}^-, \var{y} &amp; \geq  0.
+   \end{align*}</div><p>It is important to recall  that if even a single  coefficient <span class="math notranslate nohighlight">\(c_{j}\)</span>
+is negative, the linear model is not correct: the
+negative cost factor would in this case be an incentive to
+choose both <span class="math notranslate nohighlight">\(\var{x}^+_{j}\)</span> and  <span class="math notranslate nohighlight">\(\var{x}^-_{j}\)</span>
+as high as possible (leading, in fact, to an unbounded problem).</p>
+<p>It is important to observe that the replacement of a free variable
+with the <em>sum</em> of the two auxiliary ones is done
+only in the objective, while in all other parts of the model the
+usual transformation is applied. As an  example, the problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min | \var{x} | + 2 | \var{y} | - \var{z} &amp; \\
+\var{x} - \var{y} + 2\var{z} &amp; \geq 0 \\
+-\var{x} + 2\var{y} + \var{z} &amp; \leq 1 \\
+\var{z} &amp; \geq 0
+\end{align*}</div><p>can be transformed into the equivalent linear problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \var{x}^+ + \var{x}^- + 2\var{y}^+ + 2\var{y}^ - - \var{z} &amp; \\
+\var{x}^+ - \var{x}^- - \var{y}^+ + \var{y}^- + 2\var{z} &amp; \geq 0 \\
+-\var{x}^+ + \var{x}^- + 2\var{y}^+ -2 \var{y}^- + \var{z} &amp; \leq 1 \\
+\var{x}^+, \var{x}^-, \var{y}^+, \var{y}^-, \var{z} &amp; \geq 0.
+\end{align*}</div></section>
+<section id="regression-or-best-approximation-models">
+<h2><span class="section-number">13.3. </span>Regression (or best approximation) models<a class="headerlink" href="#regression-or-best-approximation-models" title="Link to this heading">¶</a></h2>
+<p>One of the most important and
+frequently used  applications of  numerical optimization
+consists of the approximation of  experimental data with analytical
+models. The idea of approximating data with a function from a
+sufficiently rich family of models is quite old and is motivated both
+by the desire to understand relationships among data and by the need
+of producing reliable forecasts.</p>
+<p>As an example, consider the data represented
+in the following picture:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-665c876b26deb1d9d7e6c1aaa882d64bf384c39d.png" alt="Figure made with TikZ" /></p>
+</div><p>The picture reports  a few experimental observations of the mass
+of the brain versus the  body mass in some mammal species.
+From this picture it is reasonable to assume a  correlation between the
+two masses. We would like to fit a line to the data so as to
+“minimize” a measure of the error.  There are many assumptions to be
+done in order to frame this problem in a correct way. Let us consider
+the following picture representing a possible fit to the above data
+through a linear model <span class="math notranslate nohighlight">\(y = ax + b\)</span>:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-ff83b318f930705d4d4d60d17936e21e9f6edd2e.png" alt="Figure made with TikZ" /></p>
+</div><p>Is the continuous straight line a good model of the observed data? Can
+we trust it as a plausible explanation of the correlation between
+brain and body mass? Can we reliably use this line as a predictor for
+the brain mass of a yet unseen mammal?
+The answer to these question is not easy in general.
+The first important problem to be solved is how to measure the error between an
+experimental data and an approximation function; this is fundamental
+as this definition will guide towards different possible “best”
+approximation models.  Assume the simplest possible model, an affine function:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\param{Y} = \var{a} \param{X} + \var{b}
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\var{a}\)</span> and <span class="math notranslate nohighlight">\(\var{b}\)</span> are unknown
+variables to be determined.
+Consider a single data point, identified by <span class="math notranslate nohighlight">\(P\)</span> in the above
+figure. The most frequently used error measure for this data point is
+the difference between the ordinate of the point and the
+ordinate of the corresponding point in the approximation line. For
+linear approximation, if the coordinates of this data point are
+<span class="math notranslate nohighlight">\((\param{X}_i,\param{Y}_i)\)</span>, the error is defined as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{E}_i = \param{Y}_i - (\var{a} \param{X}_i + \var{b})
+\end{align*}</div><p>In the figure, the absolute value of the error corresponds to the
+length of the line segment
+<span class="math notranslate nohighlight">\((P,P_1)\)</span>.
+This error measure is related to the assumption, which is reasonable
+in many, although not all, cases,
+that the observations of the independent variable
+<span class="math notranslate nohighlight">\(\param{X}\)</span> are not affected by measurement errors and
+therefore, given an observation,  the uncertainty is
+associated just  with the ordinate value associated with <span class="math notranslate nohighlight">\(\param{X}\)</span>.
+Of course, this assumption is not always justified:  in our example, for every
+data point, both observations (body mass as well as
+brain mass) are affected by measurement errors and, therefore,  there
+seems to be no reason why  the error with respect to one of the two variables is
+to be considered differently from the other one.
+In cases like this one a possibly more
+reasonable model might be based on a definition of the error as the
+Euclidean distance between the observation and the regression line.
+This distance can be easily computed and, in the one-dimensional
+case, it turns out to be equal to:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{E}_i = \frac{\param{Y}_i - (\var{a} \param{X}_i + \var{b})}{\sqrt{1+\var{a}^2}}
+\end{align*}</div><p>(again we are defining the error measure with sign, but usually this
+value will enter an objective function to be minimized through its
+absolute value).
+In the figure above this distance is represented by the length  of
+segment <span class="math notranslate nohighlight">\((P,P_3)\)</span>
+Another model, although much less frequently used, measures the error
+along the horizontal axis:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{E}_i = \param{X}_i - (\param{Y}_i - \var{b})/\var{a}
+\end{align*}</div><p>as represented in the figure by the length of segment
+<span class="math notranslate nohighlight">\((P,P_2)\)</span>. In what follows we will use the first of the three
+error measures  reported here, as it is the most common one in
+practice. However our intent here was to draw the reader’s attention
+to the many diverse possible choices for this fundamental measure. We
+observe in passing that also weighted error measures might be
+considered, one of them being to measure the <em>relative</em> instead of
+the <em>absolute</em> error, which can be obtained by dividing the classical
+error measure by <span class="math notranslate nohighlight">\(\param{Y}_i\)</span> (obviously, if non zero).</p>
+<p>Once an error measure has been defined, the problem remains of
+defining an objective function to be minimized. The problem, in fact,
+is inherently a multi–objective one as we would like to minimize all
+of the error measures with a single choice of the parameters of the
+regression line.</p>
+<p>Regression models generally assume a  parametric model
+like, e.g., an affine one as  just
+introduced. The parameters of the model can then be chosen solving the
+problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min F \{| \var{E}_i |, i = 1, \ldots, N \}
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(N\)</span> is the number of observations made and <span class="math notranslate nohighlight">\(F\)</span>
+is a function designed to aggregate all of the individual error measures into
+a single one. As this is indeed a multi-objective problem, some of the
+techniques presented before might be employed, like that of minimizing
+a linear combination of the absolute errors. We present here a few of
+the most interesting approaches for the problem.</p>
+<section id="minimax-regression">
+<h3><span class="section-number">13.3.1. </span>Minimax regression<a class="headerlink" href="#minimax-regression" title="Link to this heading">¶</a></h3>
+<p>If, as an aggregation operator <span class="math notranslate nohighlight">\(F\)</span>, we choose the operator <span class="math notranslate nohighlight">\(\max\)</span>, in the linear case
+we are led to the determination of  the unknown
+parameters <span class="math notranslate nohighlight">\(\var{a}, \var{b}\)</span> by solving</p>
+<div class="math notranslate nohighlight">
+\[
+\min_{\var{a}, \var{b}} \max_{i = 1, \ldots, N} | \param{Y}_{i} - \var{a} \param{X}_{ i} - \var{b} |
+\]</div><p>This can easily be transformed into a linear optimization  problem. In fact, using the
+transformation just presented  for minimax problems,
+introducing an auxiliary variable we can write</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{a}, \var{b}, \var{z}} \var{z} &amp; \\
+| \param{Y}_{i} - \var{a} \param{X}_{i} - \var{b} | &amp; \leq \var{z}
+&amp;  \forall \, i = 1, \ldots, N
+\end{align*}</div><p>and, thanks to the well known properties of the absolute value, the
+problem  can be  transformed  in the equivalent linear optimization
+form</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{a}, \var{b}, \var{z}} \var{z} &amp; \\
+-\var{z} \leq \param{Y}_{i} - \var{a} \param{X}_{i} - \var{b}  &amp; \leq  \var{z}  &amp; \forall \, i = 1, \ldots, N
+\end{align*}</div><p>The case just presented is based on linear approximation of
+univariate data; that is, each observation corresponds to a
+pair of numerical values, one of which is typically associated with
+an independent variable, or under the control of the
+experimenter, while the other one is
+the actual observation of the phenomenon, and corresponds to the
+dependent variable.</p>
+<p>Nothing prevents us from considering
+more general models.
+As an example, it is  possible that
+observations are associated with more than one independent variable. In
+this case the term  <em>multivariate regression</em> is used. Assuming again
+a linear model,  we  would like to
+estimate  the parameters of the function</p>
+<div class="math notranslate nohighlight">
+\[
+f(x) = \sum_{j=1}^k \var{a}_j x_j + \var{b}
+\]</div><p>so that  an aggregate measure of the error is minimized. For  minimax regression,
+the following general model can be defined:</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Multivariate Minimax Linear Regression</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{L}\)</span>: a set of labels associated with data;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\param{K}\)</span>: the dimension of the “independent variables” (equal
+to one in the univariate case)</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{X}_{ij}\)</span>: value of component <span class="math notranslate nohighlight">\(j \in \{1,K\}\)</span>
+of the  <span class="math notranslate nohighlight">\(i\)</span>-th observation, <span class="math notranslate nohighlight">\(i \in \set{L}\)</span>;
+in the case of simple univariate regression,
+this is just the abscissa of  observation <span class="math notranslate nohighlight">\(i\)</span>. As an
+example, assume we would like to find an approximate relation between
+the sale price of a security, for example a treasury bill,
+and other variates, like, e.g.,  the exchange rate of  euro against  dollar
+and the consumer price index (inflation rate); for each time instant <span class="math notranslate nohighlight">\(i\)</span>
+there will be two observations of “independent” variables, one
+relating to the Euro / dollar rate,
+the other to the consumer price index</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Y}_i\)</span>: observed value of the dependent
+variable, <span class="math notranslate nohighlight">\(i \in \set{L}\)</span>;
+in the example above, this is the observed value of the
+treasury bill sale price;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{a}_j\)</span>: value of   parameter <span class="math notranslate nohighlight">\(j \in
+\{1,\param{K}\}\)</span> in the linear regression model;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\var{b}\)</span>: constant term in the linear regression formula</p></li>
+<li><p><span class="math notranslate nohighlight">\(\var{z}\)</span>: auxiliary variable, necessary for the
+transformation of the minimax problem into an equivalent linear one;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>bounds of the maximum error in the regression:</p>
+<div class="math notranslate nohighlight">
+\[
+- \var{z} \leq \param{Y}_i -
+\sum_{j=1}^{\param{K}} \left (\param{X}_{ij} \var{a}_j + \var{b} \right)
+\leq \var{z}
+\]</div></li>
+</ul>
+<blockquote>
+<div><p>for every <span class="math notranslate nohighlight">\(i \in L\)</span>;</p>
+</div></blockquote>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>minimization of the maximum error:</p>
+<div class="math notranslate nohighlight">
+\[
+\min \var{z}
+\]</div></li>
+</ul>
+</div></blockquote>
+<p>An example of implementation of this model for the univariate case is
+given below:</p>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">r-minmax.mod</span><a class="headerlink" href="#id9" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="c1"># linear reression with optimal minimax error </span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">LABEL</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Xdata</span><span class="p">{</span>LABEL<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Ydata</span><span class="w"> </span><span class="p">{</span>LABEL<span class="p">};</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">a</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">b</span><span class="p">;</span>
+
+<span class="c1"># model Y = a X + b</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">zeta</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">minimax_regr</span><span class="p">:</span><span class="w"> </span>zeta<span class="p">;</span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">def_minimax_left</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>LABEL<span class="p">}:</span>
+<span class="w">  </span>Ydata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span>a<span class="w"> </span><span class="o">*</span><span class="w"> </span>Xdata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span>b<span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="o">-</span>zeta<span class="p">;</span><span class="w"> </span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">def_minimax_right</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>LABEL<span class="p">}:</span>
+<span class="w">  </span>Ydata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span>a<span class="w"> </span><span class="o">*</span><span class="w"> </span>Xdata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span>b<span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>zeta<span class="p">;</span><span class="w"> </span>
+</pre></div>
+</div>
+</div>
+<p>and, running this model on the brain mass vs body mass example  the
+following result is obtained, corresponding to
+<span class="math notranslate nohighlight">\(\var{a}=0.0419847, \var{b}=1.58275\)</span>:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-f2c15900c0f640ad9f273f5904cc069726372be4.png" alt="Figure made with TikZ" /></p>
+</div><p>Visual inspection reveals that this  approximation is of quite bad
+quality, with significant errors in most data points.</p>
+<p>Minimax  (or <em>infinite</em>) regression models
+minimize  the <span class="math notranslate nohighlight">\(\ell^{\infty}\)</span>  norm of the error vector and, thus,
+are very  sensitive to “bad” observations or to “outliers”. However,
+these models have the property of spreading errors quite evenly among
+the data points, which, in some application, might be a much desired
+feature.</p>
+</section>
+<section id="absolute-regression">
+<h3><span class="section-number">13.3.2. </span>Absolute regression<a class="headerlink" href="#absolute-regression" title="Link to this heading">¶</a></h3>
+<p>In absolute or <span class="math notranslate nohighlight">\(\ell^{1}\)</span> regression models the
+aggregation operator <span class="math notranslate nohighlight">\(F\)</span> is defined as  the sum of
+absolute differences between model prediction and observed data. In
+the linear univariate case,</p>
+<div class="math notranslate nohighlight">
+\[
+F = \sum_i |\var{E}_i| = \sum_{i = 1}^{N} | \param{Y}_{i} -
+\var{a} \param{X}_{i} - \var{b} |
+\]</div><p>An absolute regression model can be formulated as follows, taking into
+account that sets and parameters are exactly the same as in the
+minimax regression case:</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Multivariate Absolute Linear Regression</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{a}_j\)</span>: value of   parameter <span class="math notranslate nohighlight">\(j \in
+\{1,\param{K}\}\)</span> in the linear regression model;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\var{b}\)</span>: constant term in the linear regression formula</p></li>
+<li><p><span class="math notranslate nohighlight">\(\var{z}_i\)</span>: auxiliary variables, <span class="math notranslate nohighlight">\(i \in \set{L}\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>bounds of the maximum error in the regression:</p>
+<div class="math notranslate nohighlight">
+\[
+- \var{z}_i \leq \param{Y}_i -
+\sum_{j=1}^{\param{K}} \left (\param{X}_{ij} \var{a}_j + \var{b} \right)
+\leq \var{z}_i
+\]</div></li>
+</ul>
+<blockquote>
+<div><p>for every <span class="math notranslate nohighlight">\(i \in E\)</span>;</p>
+</div></blockquote>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>minimization of sum of absolute errors:</p>
+<div class="math notranslate nohighlight">
+\[
+\min \sum_{i \in \set{L}}\var{z}_i
+\]</div></li>
+</ul>
+</div></blockquote>
+<p>In the following a possible implementation is reported:</p>
+<div class="literal-block-wrapper docutils container" id="id10">
+<div class="code-block-caption"><span class="caption-text">r-absolute.mod</span><a class="headerlink" href="#id10" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="c1"># linear reression with optimal absolute error </span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">LABEL</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Xdata</span><span class="p">{</span>LABEL<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Ydata</span><span class="w"> </span><span class="p">{</span>LABEL<span class="p">};</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">a</span><span class="p">;</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">b</span><span class="p">;</span>
+
+<span class="c1"># model Y = a X + b</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">zeta</span><span class="p">{</span>LABEL<span class="p">};</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">minimax_abs</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>LABEL<span class="p">}</span><span class="w"> </span>zeta<span class="p">[</span>i<span class="p">];</span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">def_left</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>LABEL<span class="p">}:</span>
+<span class="w">  </span>Ydata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span>a<span class="w"> </span><span class="o">*</span><span class="w"> </span>Xdata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span>b<span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="o">-</span>zeta<span class="p">[</span>i<span class="p">];</span><span class="w"> </span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">def_right</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>LABEL<span class="p">}:</span>
+<span class="w">  </span>Ydata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span>a<span class="w"> </span><span class="o">*</span><span class="w"> </span>Xdata<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">+</span>b<span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>zeta<span class="p">[</span>i<span class="p">];</span><span class="w"> </span>
+</pre></div>
+</div>
+</div>
+<p>and, running this model on the brain mass vs body mass example  the
+following result is obtained, corresponding to
+<span class="math notranslate nohighlight">\(\var{a}=0.108165, \var{b}=0.0479401\)</span>:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-c402a0ff5ee437f33dc8c44ae73313c966b7ca2f.png" alt="Figure made with TikZ" /></p>
+</div></section>
+<section id="quadratic-least-squares-regression">
+<h3><span class="section-number">13.3.3. </span>Quadratic (least squares) regression<a class="headerlink" href="#quadratic-least-squares-regression" title="Link to this heading">¶</a></h3>
+<p>In most cases regression models are estimated by means of least
+squares or <span class="math notranslate nohighlight">\(\ell^2\)</span> error minimization. In the quadratic or
+least squares model  the aggregation function takes the form:</p>
+<div class="math notranslate nohighlight">
+\[
+F = \sum_i (\var{E_i})^2 = \sum_{i = 1}^{N} (\param{Y}_{i} -
+\var{a} \param{X}_{i} - \var{b})^{2}
+\]</div><p>This is a non linear model, but it is reported here for the sake of
+comparison with the other regression models presented.
+Among the reasons for the popularity of this model
+surely there is the fact that the optimal estimate of parameters
+<span class="math notranslate nohighlight">\(\var{a}\)</span> and <span class="math notranslate nohighlight">\(\var{b}\)</span> in the linear univariate case
+can be computed using well known analytical expressions in
+closed explicit form.</p>
+<p>It is not reasonable to use a nonlinear optimization algorithm to fit,
+e.g., the mass data used in this chapter. However this would be easy
+to do and might prove useful for more complex cases in which an
+analytical expression of the optimal parameters is not available. This
+might happen, e.g., in nonlinear regression, or when constraints are
+imposed over some of the parameters.
+The regression line obtained through quadratic regression is somewhat
+intermediate between the minimax and the absolute one. In fact, the
+distortion caused by squaring the errors make the resulting line quite
+sensitive to large errors or to outliers, even if not in an extreme
+way as in the case of minimax.</p>
+<p>The following picture reports the three regression lines for the same
+dataset. For quadratic regression the optimal parameters turn out to be
+<span class="math notranslate nohighlight">\(a=0.0916022, b=0.428914\)</span>:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-c699c6a955c084f30020111953be8f21fe8f4dd6.png" alt="Figure made with TikZ" /></p>
+</div><p>In order to better appreciate the differences between the three
+regression models just presented, in the following figures histograms
+of the errors are reported.</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-e075ca805123b70a2f3083b2645c01f35b0781c0.png" alt="Figure made with TikZ" /></p>
+</div><div class="figure" style="text-align: center"><p><img  src="_images/tikz-6ae211b1eb63cd953d20a1eb8f57b2e37e96b75f.png" alt="Figure made with TikZ" /></p>
+</div><div class="figure" style="text-align: center"><p><img  src="_images/tikz-d909473404a06df1f03cd0c1c2e476b58fcc38b0.png" alt="Figure made with TikZ" /></p>
+</div><p>From the above histograms we can observe the expected behavior of
+different regression models. Minimax regression is characterized by
+many errors, which, however, are never too large. On the contrary,
+absolute regression generates a large portion of errors quite close to
+zero, but in some rare cases produces very large deviations. Quadratic
+regression is somewhat between these two.</p>
+<p>As a final remark on the models presented here it is important to
+observe that we gave three examples on how to aggregate errors in
+order to find a regression line. It should not be too difficult to
+extend these models to more general measures, like percentage errors,
+or weighted errors, in which some observations need to be estimated
+more accurately than others. When the independent variable is time,
+another possibility could be that of discounted errors, i.e., of
+giving smaller and smaller weight to errors in past observations.</p>
+<p>Another aspect which is worth considering is that the ideas presented
+here extend quite nicely to generic parametric approximation
+models. If a rich family of functions (a “basis”) is given, non linear
+regression model might be obtained easily through suitable linear
+combination of those functions, and the resulting optimization models
+would still be linear optimization ones (or quadratic in the case of
+least square regression). Let in fact</p>
+<div class="math notranslate nohighlight">
+\[
+\{\phi_k(x)\}_{k=1}^{K}
+\]</div><p>be a family of functions. As an example:</p>
+<div class="math notranslate nohighlight">
+\[
+\phi_k(x) = x^k
+\]</div><p>(for polynomial regression). Then a regression model can be obtained
+through linear optimization by solving</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{E}, \var{\lambda}} F(|\var{E}_1|, \ldots, |\var{E}_N|) &amp; \\
+\var{E}_i &amp; = \param{Y}_i - \sum_{k=1}^K \var{\lambda}_k \phi_k(\param{X}_i)
+\end{align*}</div><p>More advanced modeling might be employed to obtain <em>sparse</em>
+regression models (i.e., models with a small number of non zero
+<span class="math notranslate nohighlight">\(\var{\lambda}\)</span> coefficients) or low order regression models,
+i.e. models for which the largest index of non zero coefficients is as
+small as possible. Here the idea is that if, as an example, going from
+a quadratic regression model to a cubic one gives only a modest
+improvement in the accuracy, then a simpler model is preferred.</p>
+<p>Finally it is also important to recall that in many practical cases,
+it might be useful to transform the data before
+starting with the  estimation of regression coefficients. These
+transformations are aimed towards making, if possible, a linear
+dependence between the data more evident.
+In the example, using a logarithmic scale for both the
+independent variable as well as for the dependent one, it becomes quite evident
+that a strong linear relation exists, as it can be seen from the figure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-18661131d80d01302a7eabb847a6b0f33f09fdb1.png" alt="Figure made with TikZ" /></p>
+</div><p>Considering, as an example, absolute regression, the solution in this
+case turns out to be <span class="math notranslate nohighlight">\(a = 1.11686, b = -2.42759\)</span> and, thus,
+the model is</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\log y &amp;  = 1.11686 \log x -2.42759
+\end{align*}</div><p>or</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+ y &amp;  = \exp(1.11686 \log x -2.42759)
+\end{align*}</div><p>which is plotted in the following figure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-189afb70ac8657a4a816fd6b3a49bcf9441324c0.png" alt="Figure made with TikZ" /></p>
+</div><p>Although not totally evident from the figure, the regression
+represented above is a non linear one.</p>
+</section>
+</section>
+<section id="rational-objectives">
+<h2><span class="section-number">13.4. </span>Rational Objectives<a class="headerlink" href="#rational-objectives" title="Link to this heading">¶</a></h2>
+<p>In some applications the criterion to be minimized (or maximized)  is
+given by the ratio between two linear or two affine functions:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \frac{\sum_j \param{c}_j \var{x}_j+\param{a}} {\sum_j \param{d}_j \var{x}_j+\param{b}} \\
+\sum_j \param{A}_{ij} \var{x}_j &amp; \leq \param{b}_i &amp; i = 1, \ldots, m  \\
+\var{x}_j &amp; \geq0 &amp; j = 1, \ldots, n   \end{align*}</div><p>In what follows, for simplicity, we will analyze the case
+<span class="math notranslate nohighlight">\(a=b=0\)</span>, i.e., the ratio of linear functions. The extension to
+the general case is straightforward.</p>
+<p>In this context special care has to be taken to avoid that, within the
+feasible set, a solution exists in which the denominator is zero.
+Frequently it is assumed that the denominator has a constant sign
+(usually positive). When it is not a priori known whether the sign of
+the denominator is constant, a simple auxiliary optimization problem
+might be solved:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j \param{d}_j \var{x}_j \\
+\sum_j \param{A}_{ij} \var{x}_j &amp; \leq \param{b}_i &amp; i = 1, \ldots, m  \\
+\var{x}_j &amp; \geq0
+\end{align*}</div><p>If the optimal solution value of this problem is positive, than we can
+conclude that the denominator is positive in the feasible set; if it
+is zero, the problem cannot be solved, as there exists a feasible
+solution with zero denominator in the objective function. If this
+optimal value is negative, by solving a similar, maximization, problem
+we might check whether the sign of the denominator is always negative.</p>
+<p>In what follows we will assume a positive denominator.
+Although this problem is not linear, it enjoys a so-called <em>hidden
+convexity</em> property (see <span id="id3">[<a class="reference internal" href="Bibliography.html#id32" title="Marco Locatelli and Fabio Schoen. Global Optimization: theory, algorithms, and applications. Volume MO15 of MOS-SIAM Series on Optimization. Society for Industrial and Applied Mathematics and the Mathematical Optimization Society, Philadelphia, USA, 2013.">Locatelli and Schoen, 2013</a>]</span>).
+Thanks to a transformation
+suggested by Charnes and Cooper in 1978  <span id="id4">[<a class="reference internal" href="Bibliography.html#id25" title="A. Charnes, W. Cooper, and E. Rhodes. Measuring efficiency of decision-making units. European Journal of Operational Research, pages 429–444, 1978.">Charnes <em>et al.</em>, 1978</a>]</span> we can,
+under suitable assumptions, transform it into an equivalent linear
+optimization one.</p>
+<p>The objective function, being  a fraction, will not change if we
+multiply both the numerator and the denominator by the same non zero
+quantity <span class="math notranslate nohighlight">\(\var{q}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \frac{\sum_j c_j \var{x}_j} {\sum_j d_j \var{x}_j} \cdot
+\frac{\var{q}} {\var{q}} &amp;  \\
+\sum_j A_{ij} \var{x}_j &amp; \leq b_i &amp; i = 1, \ldots, m \\
+\var{x}_j &amp; \geq0
+\end{align*}</div><p>The variable quantity  <span class="math notranslate nohighlight">\(\var{q}\)</span> can always be chosen in such a way as to
+make the denominator equal to 1:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j c_j \var{x}_j \var{q} &amp; \\
+\sum_j d_j \var{x}_j \var{q} &amp; = 1 \\
+\sum_j A_{ij} \var{x}_j &amp; \leq b_i &amp; i = 1, \ldots, m \\
+\var{x}_j &amp; \geq0.
+\end{align*}</div><p>Thanks to the assumption on the sign of
+the denominator, variable <span class="math notranslate nohighlight">\(\var{q}\)</span> will  be strictly
+positive. Thus, it is safe to multiply both sides of each
+constraint in the model by <span class="math notranslate nohighlight">\(\var{q}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j c_j \var{x}_j \var{q} &amp; \\
+\sum_j d_j \var{x}_j \var{q} &amp; = 1 \\
+\sum_j A_{ij} \var{x}_j \var{q} &amp; \leq b_i \var{q} &amp; i = 1, \ldots, m \\
+\var{x}_j \var{q} &amp; \geq 0.
+\end{align*}</div><p>This model is still a non linear one, with bi-linear terms (products
+of two variables) appearing
+in many parts. We recall that, in general, bi-linear optimization is
+a very hard  optimization problem. However, in this special case, the
+main variable of the original problem is everywhere multiplied by
+<span class="math notranslate nohighlight">\(\var{q}\)</span>, so that we can make a change of variable:</p>
+<div class="math notranslate nohighlight">
+\[\var{y}_j := \var{x}_j\var{q}\]</div><p>and the model becomes  a linear one:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j c_j \var{y}_j &amp; \\
+\sum_j d_j \var{y}_j &amp; = 1 \\
+\sum_j A_{ij} \var{y}_j - b_i \var{q} &amp; \leq 0 &amp; i = 1, \ldots, m \\
+\var{y}_j &amp; \geq 0.
+\end{align*}</div><p>This is a linear problem in the variables <span class="math notranslate nohighlight">\(\var{y} \in \R^n\)</span>
+and  <span class="math notranslate nohighlight">\(\var{q}\in\R\)</span> .
+It can be proven  (see, for example, <span id="id5">[<a class="reference internal" href="Bibliography.html#id26" title="M. Bazaraa, H. Sherali, and C. and Shetty. Nonlinear Programming: Theory and Algorithms. John Wiley &amp; Sons, 1993.">Bazaraa <em>et al.</em>, 1993</a>]</span>), that if
+the feasible set is <em>limited</em> (that is, if it is possible to limit from
+above and below all variables) then
+in an optimal solution to this linear optimization problem  the variable
+<span class="math notranslate nohighlight">\(\var{q}\)</span> will be nonzero. Once the linear problem is
+solved it will be possible to recover the optimal solution of the
+original problem through the substitution <span class="math notranslate nohighlight">\(\var{x}_j = \var{y}_j / \var{q}\)</span>.</p>
+<p>Problems of this kind arise in several contexts, from economics to
+telecommunications. As a simple example we might consider production
+planning problems in which, instead of minimizing the cost we minimize
+the unit cost per product, i.e., the ratio between total cost and total
+quantity produced. But the best known application of this fractional
+optimization problem is related to efficiency evaluation, and is the
+subject of the next section.</p>
+<section id="comparative-efficiency-evaluation">
+<h3><span class="section-number">13.4.1. </span>Comparative efficiency evaluation<a class="headerlink" href="#comparative-efficiency-evaluation" title="Link to this heading">¶</a></h3>
+<p>We momentarily abandon the optimization framework to describe a very
+important managerial problem. Eventually we will see how this is
+turned into an optimization problem which fits the rational objective
+function model just presented.</p>
+<p>Consider the situation in which several “units” have to be compared in
+terms of “efficiency”. Units might be production plants, different
+wards in hospitals, research departments, …
+The task is to compare these units in order to put into evidence those
+which are, in a sense to be made more precise, inefficient in
+comparison to the other ones. It is thus a peer-to-peer efficiency
+evaluation, in which we are not certifying absolute efficiency but
+just relative inefficiency. Consider, as a pedagogical example, the
+following data concerning some healthcare-related statistics in some regions:</p>
+<div class="literal-block-wrapper docutils container" id="id11">
+<div class="code-block-caption"><span class="caption-text">healthcare.dat</span><a class="headerlink" href="#id11" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">INPUTS</span><span class="p">:</span><span class="o">=</span>
+Doctors<span class="w">  </span><span class="c1"># per 100k</span>
+beds<span class="w">     </span><span class="c1"># beds per 100K ab</span>
+<span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">OUTPUTS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span>
+HomeAss<span class="w">  </span><span class="c1"># home assistance cases per 100K ab</span>
+Patients<span class="w"> </span><span class="c1"># per doctor</span>
+recipes<span class="w">  </span><span class="c1"># recipes issued per 1000 ab</span>
+<span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">UNITS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>U01<span class="w"> </span>U02<span class="w"> </span>U03<span class="w"> </span>U04<span class="w"> </span>U05<span class="w"> </span>U06<span class="w"> </span>U07<span class="w"> </span>U08<span class="w"> </span>U09<span class="w"> </span>U10
+U11<span class="w"> </span>U12<span class="w"> </span>U13<span class="w"> </span>U14<span class="w"> </span>U15<span class="w"> </span>U16<span class="w"> </span>U17<span class="w"> </span>U18<span class="w"> </span>U19<span class="w"> </span>U20<span class="w"> </span>U21<span class="w"> </span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">iodata</span><span class="p">:</span>
+<span class="w">       </span>Doctors<span class="w"> </span>Patients<span class="w"> </span>HomeAss<span class="w"> </span>beds<span class="w">  </span>recipes<span class="p">:</span><span class="o">=</span>
+U01<span class="w">     </span><span class="mi">72</span><span class="w">      </span><span class="mi">1227</span><span class="w">     </span><span class="mi">778</span><span class="w">    </span><span class="mi">806</span><span class="w">      </span><span class="mi">99</span>
+U02<span class="w">     </span><span class="mi">73</span><span class="w">      </span><span class="mi">1202</span><span class="w">     </span><span class="mi">170</span><span class="w">    </span><span class="mi">141</span><span class="w">      </span><span class="mi">88</span>
+U03<span class="w">     </span><span class="mi">66</span><span class="w">      </span><span class="mi">1322</span><span class="w">     </span><span class="mi">924</span><span class="w">    </span><span class="mi">840</span><span class="w">      </span><span class="mi">81</span>
+U04<span class="w">     </span><span class="mi">54</span><span class="w">      </span><span class="mi">1565</span><span class="w">     </span><span class="mi">145</span><span class="w">    </span><span class="mi">833</span><span class="w">      </span><span class="mi">61</span>
+U05<span class="w">     </span><span class="mi">68</span><span class="w">      </span><span class="mi">1262</span><span class="w">     </span><span class="mi">971</span><span class="w">    </span><span class="mi">988</span><span class="w">      </span><span class="mi">82</span>
+U06<span class="w">     </span><span class="mi">67</span><span class="w">      </span><span class="mi">1299</span><span class="w">    </span><span class="mi">1418</span><span class="w">    </span><span class="mi">902</span><span class="w">      </span><span class="mi">83</span>
+U07<span class="w">     </span><span class="mi">77</span><span class="w">      </span><span class="mi">1139</span><span class="w">    </span><span class="mi">2175</span><span class="w">    </span><span class="mi">799</span><span class="w">      </span><span class="mi">87</span>
+U08<span class="w">     </span><span class="mi">77</span><span class="w">      </span><span class="mi">1157</span><span class="w">    </span><span class="mi">1171</span><span class="w">    </span><span class="mi">569</span><span class="w">     </span><span class="mi">104</span>
+U09<span class="w">     </span><span class="mi">70</span><span class="w">      </span><span class="mi">1252</span><span class="w">    </span><span class="mi">2828</span><span class="w">    </span><span class="mi">651</span><span class="w">      </span><span class="mi">96</span>
+U10<span class="w">     </span><span class="mi">75</span><span class="w">      </span><span class="mi">1169</span><span class="w">    </span><span class="mi">2812</span><span class="w">    </span><span class="mi">486</span><span class="w">     </span><span class="mi">103</span>
+U11<span class="w">     </span><span class="mi">83</span><span class="w">      </span><span class="mi">1053</span><span class="w">    </span><span class="mi">1222</span><span class="w">    </span><span class="mi">474</span><span class="w">      </span><span class="mi">12</span>
+U12<span class="w">     </span><span class="mi">76</span><span class="w">      </span><span class="mi">1152</span><span class="w">     </span><span class="mi">850</span><span class="w">    </span><span class="mi">333</span><span class="w">      </span><span class="mi">11</span>
+U13<span class="w">     </span><span class="mi">81</span><span class="w">      </span><span class="mi">1071</span><span class="w">    </span><span class="mi">1101</span><span class="w">    </span><span class="mi">189</span><span class="w">     </span><span class="mi">109</span>
+U14<span class="w">     </span><span class="mi">84</span><span class="w">      </span><span class="mi">1047</span><span class="w">    </span><span class="mi">1371</span><span class="w">    </span><span class="mi">210</span><span class="w">     </span><span class="mi">119</span>
+U15<span class="w">     </span><span class="mi">86</span><span class="w">      </span><span class="mi">1032</span><span class="w">     </span><span class="mi">960</span><span class="w">     </span><span class="mi">80</span><span class="w">     </span><span class="mi">105</span>
+U16<span class="w">     </span><span class="mi">75</span><span class="w">      </span><span class="mi">1135</span><span class="w">     </span><span class="mi">634</span><span class="w">     </span><span class="mi">68</span><span class="w">      </span><span class="mi">10</span>
+U17<span class="w">     </span><span class="mi">80</span><span class="w">      </span><span class="mi">1091</span><span class="w">     </span><span class="mi">565</span><span class="w">    </span><span class="mi">228</span><span class="w">     </span><span class="mi">111</span>
+U18<span class="w">     </span><span class="mi">87</span><span class="w">      </span><span class="mi">1015</span><span class="w">     </span><span class="mi">157</span><span class="w">     </span><span class="mi">98</span><span class="w">     </span><span class="mi">112</span>
+U19<span class="w">     </span><span class="mi">82</span><span class="w">      </span><span class="mi">1065</span><span class="w">     </span><span class="mi">692</span><span class="w">    </span><span class="mi">173</span><span class="w">     </span><span class="mi">119</span>
+U20<span class="w">     </span><span class="mi">82</span><span class="w">      </span><span class="mi">1054</span><span class="w">     </span><span class="mi">951</span><span class="w">     </span><span class="mi">82</span><span class="w">     </span><span class="mi">114</span>
+U21<span class="w">     </span><span class="mi">78</span><span class="w">      </span><span class="mi">1142</span><span class="w">     </span><span class="mi">714</span><span class="w">    </span><span class="mi">113</span><span class="w">     </span><span class="mi">114</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>As we can see, each unit (here corresponding to a geographical region
+in Italy) is represented through a set of
+statistics. In the example the available data is partitioned into
+some inputs (the number of available medicine doctors, the number of
+available beds) and outputs (number of home care assistance events,
+number of patients per medicine doctor, number of recipes issued).
+All these data is referred to a standard population in order to
+make the data less sensitive to the size of each region. Please
+take into account that the aim of this example is purely
+illustrative, by no means it is intended as a realistic comparison,
+even if data has been obtained from official statistics. The choice of
+the sets of inputs and outputs in this example is quite arbitrary and does not consider many
+aspects which should be taken into account in a realistic scenario.</p>
+<p>Inputs are associated to resources, while outputs are,
+in a sense, “products”. As a general rule, inputs are performance
+parameters that, in order to be labeled as efficient, we would like to
+keep as low as possible. On the other hand, outputs are production
+measurements and, as such, we would like to have these as large as
+possible. It
+might be quite  questionable to associate the label output to the number
+of recipes: it might very well be the case that an efficient healthcare system issues less
+recipes than an inefficient one!
+Sometimes there might be some ambiguity in this classification and, in
+fact, in some applications the same element is considered both as an
+input and as an output. An example of this situation might be,e.g.,
+the yearly budget: it surely is a
+resource, but it can be also a product, as in a competitive
+environment being able to get a large budget is a result of efficiency.</p>
+<p>A comparison among the different units might be very easy when there
+is a single input and a single output.
+In such a case a reasonable  efficiency measure would be the ratio between
+the output and the input. From this ratio a ranking might be
+generated, the most efficient  units being those for which the
+output / input ratio is maximum. This ratio represents the total
+production per unit resource. If we applied this criterion to the
+health care data above, considering just the number of home assistance
+cases and the
+number of medicine doctors, unit U09 would result as the most efficient
+one, with a ratio of more than 40, as opposed to, say,
+units U18 with 1.80  cases per doctor or U02 with 2.3.</p>
+<p>It is clear however that this single ratio cannot capture the
+multi-objective nature of the comparison. Units are different and,
+while one might excel in home care, another one
+might be instead specialized in a different kind of “output”, and a comparison
+based  simply on home care  would be too penalizing and, in the end, unfair.</p>
+<p>When, as is usually the case, every unit is characterized by a number
+of different input and output data, a possibility for the
+efficiency index would be to define a suitable ratio between a linear
+combination of the outputs and a linear combination of the inputs.
+Let</p>
+<div class="math notranslate nohighlight">
+\[
+\param{I}_{1}^{u}, \param{I}_{2}^{u}, \ldots, \param{I}_{h}^{u} \quad
+\param{O}_{1}^{u}, \param{O}_{2}^{u}, \ldots, \param{O}_{k}^{u}
+\]</div><p>the input and output levels of unit
+<span class="math notranslate nohighlight">\(u\)</span>. An efficiency index can be defined for this unit by choosing
+the weights <span class="math notranslate nohighlight">\(\mathvar{\pi}\)</span> and <span class="math notranslate nohighlight">\(\mathvar{\lambda}\)</span>
+to form a linear combination of the inputs and
+the outputs respectively:</p>
+<div class="math notranslate nohighlight">
+\[
+\var{Eff}_{u}(\mathvar{\lambda},\mathvar{\pi}) =
+\frac{\sum_{i = 1}^{k} \mathvar{\lambda}_{i} \param{O}_{i}^{u}}{\sum_{i =
+1}^{h} \mathvar{\pi}_{i} \param{I}_{i}^{u}}
+\]</div><p>As it is emphasized in the above definition, the efficiency index
+is a function of the coefficients  used to weight both inputs and outputs.
+The problem of choosing the weights is indeed  a complex one, as every
+choice leads to differences in treatment of one unit with respect to
+others.</p>
+<p>An interesting possibility, introduced by Charnes and Cooper and known
+under the name of
+<span class="target" id="index-13"></span>Data Envelopment Analysis (<span class="target" id="index-14"></span>DEA), consists in letting every unit choose the
+most convenient coefficients.
+That is, every unit in turn is asked to decide the weights; of course
+each unit will try to choose the coefficients which maximimize its own
+index. However, with the same weights, all the other units need also to be
+evaluated and their efficiency score computed. If, even with this
+freedom of choice, a unit cannot find a set of weights which allows it
+to excel over all the others, than that unit will be labeled
+as inefficient.</p>
+<p>As all efficiency indices are given as a ratio of linear combinations
+of inputs and outputs, we can always constraint the resulting fraction
+to be bounded above by 1 (which corresponds to 100% efficiency).
+By introducing a constraint that limits all
+output/input ratios  to the range <span class="math notranslate nohighlight">\([0,1]\)</span> we will define as
+“inefficient” a unit that cannot decide a set of weights which let it
+reach  its output/input  ratio 1 while keeping limited by 1 the
+indices of all the remaining units, evaluated with the same weight factors.</p>
+<p>From a modeling point of view,
+the evaluation of the most convenient index for each unit <span class="math notranslate nohighlight">\(u\)</span> corresponds to the
+solution of a set of optimization problems, one for each unit, of the
+form:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{Eff}^\star_{u} = &amp;
+\max_{\mathvar{\lambda}, \mathvar{\mu}} \frac{\sum_{i = 1}^{k} \mathvar{\lambda}_{i} \param{O}_{i}^{u}} {\sum_{i = 1}^{h}
+\mathvar{\pi}_{i} \param{I}_{i}^{u}} \\
+\frac{\sum_{i = 1}^{k} \mathvar{\lambda}_{i} \param{O}_{i}^{s}}{\sum_{i =
+1}^{h} \mathvar{\pi}_{i} \param{I}_{i}^{s}}
+&amp;
+\leq 1 &amp; \forall \, s \in \set{Units}  \\
+\mathvar{\lambda}, \mathvar{\pi} &amp; \geq 0
+\end{align*}</div><p>The objective is to maximize
+the efficiency indicator for  unit <span class="math notranslate nohighlight">\(u\)</span>,
+with the constraints preventing the
+efficiency indices of other units to exceed 100%.</p>
+<p>This non linear problem can be easily transformed into an equivalent
+linear one, as we have seen previously. First, the denominator has
+positive sign, being a non negative combination of positive numbers.
+Actually the
+denominator might be zero, when the coefficients of the non zero
+inputs of the current unit are chosen to be zero. If this might
+happen, a small positive constant might be added to the lower bound on
+each variable.
+The transformation of this problem as an equivalent  linear one can be
+easily obtained. Here not only the objective is fractional, but also
+the constraints.
+However, it is trivial to transform the constraints into linear
+equivalent ones, multiplying both sides by the denominator.
+Following the transformation given previously, we reduce the problem
+into one of maximizing the output indicator of the current unit,
+subject to a normalization constraint on its input index:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{Eff}^\star_u &amp; = \max_{\var{x},\var{y}} \sum_{i=1}^{k} \param{O}_{i}^{u} \var{x}_{i} \\
+\sum_{i = 1}^{h} \param{I}_{i}^{u} \var{y}_{i} &amp; = 1 \\
+\sum_{i = 1}^{k} \param{O}_{i}^{s} \var{x}_{i} - \sum_{i = 1}^{h} \param{I}_{i}^{s} \var{y}_{i}
+&amp; \leq0 &amp;    \forall \, s  \in \set{Units} \\
+\var{x}, \var{y} &amp; \geq 0
+\end{align*}</div><p>It can be observed that, differently from the general case,
+the use of the  auxiliary variable <span class="math notranslate nohighlight">\(\var{q}\)</span> was not
+required here, as the  right hand sides of all inequalities are zero.</p>
+<p>An implementation of this model might be the following:</p>
+<div class="literal-block-wrapper docutils container" id="id12">
+<div class="code-block-caption"><span class="caption-text">dea.mod</span><a class="headerlink" href="#id12" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">INPUTS</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">OUTPUTS</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">IO</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="kt">IN</span>PUTS<span class="w"> </span><span class="kr">union</span><span class="w"> </span><span class="kt">OUT</span>PUTS<span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">UNITS</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">u</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>UNITS<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">iodata</span><span class="p">{</span>UNITS<span class="p">,</span><span class="w"> </span>IO<span class="p">};</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">weight</span><span class="p">{</span>IO<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">maximize</span><span class="w"> </span><span class="nv">eff</span><span class="p">:</span><span class="w"> </span><span class="kr">sum</span><span class="p">{</span>o<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="kt">OUT</span>PUTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>o<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>iodata<span class="p">[</span>u<span class="p">,</span>o<span class="p">];</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">normalization</span><span class="p">:</span>
+<span class="w">	</span><span class="kr">sum</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="kt">IN</span>PUTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>i<span class="p">]</span><span class="o">*</span><span class="w"> </span>iodata<span class="p">[</span>u<span class="p">,</span>i<span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">comparison</span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>UNITS<span class="p">}:</span>
+<span class="w">     </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>o<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="kt">OUT</span>PUTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>o<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>iodata<span class="p">[</span>j<span class="p">,</span>o<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span>
+<span class="w">     </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="kt">IN</span>PUTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>iodata<span class="p">[</span>j<span class="p">,</span>i<span class="p">]</span><span class="w">  </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w"> </span>
+</pre></div>
+</div>
+</div>
+<p>The model can now be run, looping over all possible units to find the
+maximal efficiency achievable. An implementation of the commands to
+run all these optimization and prepare an output statistics is the
+following:</p>
+<div class="literal-block-wrapper docutils container" id="id13">
+<div class="code-block-caption"><span class="caption-text">dea.run</span><a class="headerlink" href="#id13" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kr">model</span><span class="w"> </span>dea.<span class="kr">mod</span><span class="p">;</span>
+<span class="kr">data</span><span class="w"> </span>healthcare.dat<span class="p">;</span>
+<span class="kr">option</span><span class="w"> </span>solver<span class="w"> </span>gurobi<span class="p">;</span>
+
+<span class="kr">for</span><span class="w"> </span><span class="p">{</span>unit<span class="w"> </span><span class="kr">in</span><span class="w"> </span>UNITS<span class="p">}</span><span class="w"> </span><span class="p">{</span>
+<span class="w">     </span><span class="c1"># chose one unit to optimize </span>
+<span class="w">     </span><span class="kd">let</span><span class="w"> </span><span class="nv">u</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>unit<span class="p">;</span>
+<span class="w">     </span><span class="kr">solve</span><span class="p">;</span><span class="w">           </span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;==========================================================\n&quot;</span><span class="p">;</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;Unit %s eff: %f\n&quot;</span><span class="p">,</span>u<span class="p">,</span>eff<span class="p">;</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;positive weights:\t&quot;</span><span class="p">;</span>
+<span class="w">     </span><span class="kr">for</span><span class="w"> </span><span class="p">{</span>io<span class="w"> </span><span class="kr">in</span><span class="w"> </span>IO<span class="w"> </span><span class="p">:</span><span class="w"> </span>weight<span class="p">[</span>io<span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1.e-7</span><span class="p">}{</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;%s: %f\t&quot;</span><span class="p">,</span>io<span class="p">,</span>weight<span class="p">[</span>io<span class="p">];</span>
+<span class="w">     </span><span class="p">};</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;\n Peer Comparison:\n&quot;</span><span class="p">;</span>
+<span class="w">     </span><span class="kr">for</span><span class="w"> </span><span class="p">{</span>ui<span class="w"> </span><span class="kr">in</span><span class="w"> </span>UNITS<span class="p">}{</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;%s: %f\t&quot;</span><span class="p">,</span>ui<span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>o<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="kt">OUT</span>PUTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>o<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>iodata<span class="p">[</span>ui<span class="p">,</span>o<span class="p">])</span><span class="w"> </span><span class="o">/</span>
+<span class="w">                          </span><span class="p">(</span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="kt">IN</span>PUTS<span class="p">}</span><span class="w"> </span>weight<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>iodata<span class="p">[</span>ui<span class="p">,</span>i<span class="p">]);</span>
+<span class="w">     </span><span class="p">};</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;\n Competitors (Dual weights):\n&quot;</span><span class="p">;</span>
+<span class="w">     </span><span class="kr">for</span><span class="w"> </span><span class="p">{</span>ui<span class="w"> </span><span class="kr">in</span><span class="w"> </span>UNITS<span class="p">:</span><span class="w"> </span>comparison.body<span class="p">[</span>ui<span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="o">-</span><span class="mf">1.e-7</span><span class="p">}{</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;%s: %f\t&quot;</span><span class="p">,</span>ui<span class="p">,</span>comparison<span class="p">[</span>ui<span class="p">];</span>
+<span class="w">     </span><span class="p">};</span>
+<span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;\n&quot;</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>and, with the data presented before, a portion of the generated  output is the following:</p>
+<div class="literal-block-wrapper docutils container" id="id14">
+<div class="code-block-caption"><span class="caption-text">dea.out</span><a class="headerlink" href="#id14" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>Gurobi<span class="w"> </span><span class="mf">9.1</span>.<span class="mi">1</span><span class="p">:</span><span class="w"> </span>optimal<span class="w"> </span><span class="kr">solution</span><span class="p">;</span><span class="w"> </span><span class="kr">objective</span><span class="w"> </span><span class="mf">0.9835582016</span>
+<span class="mi">6</span><span class="w"> </span>simplex<span class="w"> </span>iterations
+<span class="o">==========================================================</span>
+Unit<span class="w"> </span>U01<span class="w"> </span>eff<span class="p">:</span><span class="w"> </span><span class="mf">0.983558</span>
+positive<span class="w"> </span>weights<span class="p">:</span><span class="w">       </span>Doctors<span class="p">:</span><span class="w"> </span><span class="mf">0.013889</span><span class="w">       </span>HomeAss<span class="p">:</span><span class="w"> </span><span class="mf">0.000004</span>
+Patients<span class="p">:</span><span class="w"> </span><span class="mf">0.000179</span><span class="w">      </span>recipes<span class="p">:</span><span class="w"> </span><span class="mf">0.007683</span><span class="w">       </span>
+<span class="w"> </span>Peer<span class="w"> </span>Comparison<span class="p">:</span>
+U01<span class="p">:</span><span class="w"> </span><span class="mf">0.983558</span><span class="w">   </span>U02<span class="p">:</span><span class="w"> </span><span class="mf">0.880186</span><span class="w">   </span>U03<span class="p">:</span><span class="w"> </span><span class="mf">0.941254</span><span class="w">   </span>U04<span class="p">:</span><span class="w"> </span><span class="mf">1.000000</span>
+U05<span class="p">:</span><span class="w"> </span><span class="mf">0.910482</span><span class="w">   </span>U06<span class="p">:</span><span class="w"> </span><span class="mf">0.941156</span><span class="w">   </span>U07<span class="p">:</span><span class="w"> </span><span class="mf">0.823319</span><span class="w">   </span>U08<span class="p">:</span><span class="w"> </span><span class="mf">0.945165</span>
+U09<span class="p">:</span><span class="w"> </span><span class="mf">1.000000</span><span class="w">   </span>U10<span class="p">:</span><span class="w"> </span><span class="mf">0.970616</span><span class="w">   </span>U11<span class="p">:</span><span class="w"> </span><span class="mf">0.247614</span><span class="w">   </span>U12<span class="p">:</span><span class="w"> </span><span class="mf">0.278727</span>
+U13<span class="p">:</span><span class="w"> </span><span class="mf">0.918704</span><span class="w">   </span>U14<span class="p">:</span><span class="w"> </span><span class="mf">0.948876</span><span class="w">   </span>U15<span class="p">:</span><span class="w"> </span><span class="mf">0.833285</span><span class="w">   </span>U16<span class="p">:</span><span class="w"> </span><span class="mf">0.271407</span>
+U17<span class="p">:</span><span class="w"> </span><span class="mf">0.945546</span><span class="w">   </span>U18<span class="p">:</span><span class="w"> </span><span class="mf">0.863351</span><span class="w">   </span>U19<span class="p">:</span><span class="w"> </span><span class="mf">0.972753</span><span class="w">   </span>U20<span class="p">:</span><span class="w"> </span><span class="mf">0.938090</span>
+U21<span class="p">:</span><span class="w"> </span><span class="mf">1.000000</span><span class="w">   </span>
+<span class="w"> </span>Competitors<span class="w"> </span><span class="p">(</span>Dual<span class="w"> </span>weights<span class="p">):</span>
+U04<span class="p">:</span><span class="w"> </span><span class="mf">0.217976</span><span class="w">   </span>U09<span class="p">:</span><span class="w"> </span><span class="mf">0.094137</span><span class="w">   </span>U21<span class="p">:</span><span class="w"> </span><span class="mf">0.672511</span><span class="w">   </span>
+Gurobi<span class="w"> </span><span class="mf">9.1</span>.<span class="mi">1</span><span class="p">:</span><span class="w"> </span>optimal<span class="w"> </span><span class="kr">solution</span><span class="p">;</span><span class="w"> </span><span class="kr">objective</span><span class="w"> </span><span class="mi">1</span>
+<span class="mi">3</span><span class="w"> </span>simplex<span class="w"> </span>iterations
+<span class="o">==========================================================</span>
+Unit<span class="w"> </span>U02<span class="w"> </span>eff<span class="p">:</span><span class="w"> </span><span class="mf">1.000000</span>
+positive<span class="w"> </span>weights<span class="p">:</span><span class="w">       </span>Doctors<span class="p">:</span><span class="w"> </span><span class="mf">0.012208</span>
+beds<span class="p">:</span><span class="w"> </span><span class="mf">0.000772</span><span class="w">  </span>Patients<span class="p">:</span><span class="w"> </span><span class="mf">0.000832</span><span class="w">      </span>
+<span class="w"> </span>Peer<span class="w"> </span>Comparison<span class="p">:</span>
+U01<span class="p">:</span><span class="w"> </span><span class="mf">0.680119</span><span class="w">   </span>U02<span class="p">:</span><span class="w"> </span><span class="mf">1.000000</span><span class="w">   </span>U03<span class="p">:</span><span class="w"> </span><span class="mf">0.756473</span><span class="w">   </span>U04<span class="p">:</span><span class="w"> </span><span class="mf">1.000000</span>
+U05<span class="p">:</span><span class="w"> </span><span class="mf">0.659284</span><span class="w">   </span>U06<span class="p">:</span><span class="w"> </span><span class="mf">0.713830</span><span class="w">   </span>U07<span class="p">:</span><span class="w"> </span><span class="mf">0.608773</span><span class="w">   </span>U08<span class="p">:</span><span class="w"> </span><span class="mf">0.697973</span>
+U09<span class="p">:</span><span class="w"> </span><span class="mf">0.767632</span><span class="w">   </span>U10<span class="p">:</span><span class="w"> </span><span class="mf">0.753548</span><span class="w">   </span>U11<span class="p">:</span><span class="w"> </span><span class="mf">0.635259</span><span class="w">   </span>U12<span class="p">:</span><span class="w"> </span><span class="mf">0.808933</span>
+U13<span class="p">:</span><span class="w"> </span><span class="mf">0.785240</span><span class="w">   </span>U14<span class="p">:</span><span class="w"> </span><span class="mf">0.733495</span><span class="w">   </span>U15<span class="p">:</span><span class="w"> </span><span class="mf">0.772345</span><span class="w">   </span>U16<span class="p">:</span><span class="w"> </span><span class="mf">0.975385</span>
+U17<span class="p">:</span><span class="w"> </span><span class="mf">0.787492</span><span class="w">   </span>U18<span class="p">:</span><span class="w"> </span><span class="mf">0.742198</span><span class="w">   </span>U19<span class="p">:</span><span class="w"> </span><span class="mf">0.780936</span><span class="w">   </span>U20<span class="p">:</span><span class="w"> </span><span class="mf">0.823857</span>
+U21<span class="p">:</span><span class="w"> </span><span class="mf">0.914037</span><span class="w">   </span>
+<span class="w"> </span>Competitors<span class="w"> </span><span class="p">(</span>Dual<span class="w"> </span>weights<span class="p">):</span>
+U02<span class="p">:</span><span class="w"> </span><span class="mf">1.000000</span><span class="w">   </span>U04<span class="p">:</span><span class="w"> </span><span class="mf">0.000000</span><span class="w">   </span>
+Gurobi<span class="w"> </span><span class="mf">9.1</span>.<span class="mi">1</span><span class="p">:</span><span class="w"> </span>optimal<span class="w"> </span><span class="kr">solution</span><span class="p">;</span><span class="w"> </span><span class="kr">objective</span><span class="w"> </span><span class="mf">0.9412539207</span>
+<span class="mi">5</span><span class="w"> </span>simplex<span class="w"> </span>iterations
+<span class="o">==========================================================</span>
+Unit<span class="w"> </span>U03<span class="w"> </span>eff<span class="p">:</span><span class="w"> </span><span class="mf">0.941254</span>
+positive<span class="w"> </span>weights<span class="p">:</span><span class="w">       </span>Doctors<span class="p">:</span><span class="w"> </span><span class="mf">0.015152</span><span class="w">       </span>HomeAss<span class="p">:</span><span class="w"> </span><span class="mf">0.000004</span>
+Patients<span class="p">:</span><span class="w"> </span><span class="mf">0.000196</span><span class="w">      </span>recipes<span class="p">:</span><span class="w"> </span><span class="mf">0.008382</span><span class="w">       </span>
+<span class="w"> </span>Peer<span class="w"> </span>Comparison<span class="p">:</span>
+</pre></div>
+</div>
+</div>
+<p>It can be seen that with these data, the following maximal efficiency
+can be obtained (in the table we report the optimal weights found by
+each unit):</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array}{l|r|rrrrr}
+Unit &amp; Eff &amp; Doctors &amp; beds &amp; HomeAss &amp; Patients &amp; recipes \\ \hline
+U01 &amp; 0.984 &amp; 0.0139 &amp; 0 &amp; 0 &amp; 0.000179 &amp; 0.00768\\
+U02 &amp; 1 &amp; 0.0122 &amp; 0.000772 &amp; 0 &amp; 0.000832 &amp; 0\\
+U03 &amp; 0.941 &amp; 0.0152 &amp; 0 &amp; 0 &amp; 0.000196 &amp; 0.00838\\
+U04 &amp; 1 &amp; 0.0185 &amp; 0 &amp; 0 &amp; 0.000239 &amp; 0.0102\\
+U05 &amp; 0.91 &amp; 0.0147 &amp; 0 &amp; 0 &amp; 0.00019 &amp; 0.00814\\
+U06 &amp; 0.941 &amp; 0.0149 &amp; 0 &amp; 0 &amp; 0.000193 &amp; 0.00826\\
+U07 &amp; 0.823 &amp; 0.013 &amp; 0 &amp; 0 &amp; 0.000168 &amp; 0.00718\\
+U08 &amp; 0.945 &amp; 0.013 &amp; 0 &amp; 0 &amp; 0.000168 &amp; 0.00718\\
+U09 &amp; 1 &amp; 0.0143 &amp; 0 &amp; 0 &amp; 0.000185 &amp; 0.0079\\
+U10 &amp; 1 &amp; 0.00244 &amp; 0.00168 &amp; 0.000356 &amp; 0 &amp; 0\\
+U11 &amp; 0.719 &amp; 0.00907 &amp; 0.000521 &amp; 0 &amp; 0.000582 &amp; 0\\
+U12 &amp; 0.863 &amp; 0.0105 &amp; 0.000604 &amp; 0.0001 &amp; 0.000675 &amp; 0\\
+U13 &amp; 0.935 &amp; 0.0111 &amp; 0.000533 &amp; 0.000118 &amp; 0 &amp; 0.00739\\
+U14 &amp; 0.996 &amp; 0.0106 &amp; 0.00051 &amp; 0.000113 &amp; 0 &amp; 0.00707\\
+U15 &amp; 1 &amp; 0 &amp; 0.0125 &amp; 0.00104 &amp; 0 &amp; 0\\
+U16 &amp; 1 &amp; 0 &amp; 0.0147 &amp; 0 &amp; 0.000881 &amp; 0\\
+U17 &amp; 0.949 &amp; 0.0125 &amp; 0 &amp; 0 &amp; 0 &amp; 0.00855\\
+U18 &amp; 0.913 &amp; 0.01 &amp; 0.00129 &amp; 0 &amp; 0 &amp; 0.00815\\
+U19 &amp; 0.993 &amp; 0.0122 &amp; 0 &amp; 0 &amp; 0 &amp; 0.00834\\
+U20 &amp; 1 &amp; 0.0108 &amp; 0.00139 &amp; 0 &amp; 0 &amp; 0.00877\\
+U21 &amp; 1 &amp; 0.0108 &amp; 0.00139 &amp; 0 &amp; 0 &amp; 0.00877\\ \hline
+\end{array}
+\end{align*}</div><p>From the result above, it can be seen that a few units are labeled as
+not efficient. As an example, unit U11 has an efficiency score of only
+0.719. This means that with the best possible choice of weights, this
+unit cannot reach higher efficiency score, as other units, which we
+call competitors, reach their maximum index 1 with that choice. For
+unit U11 the competitors, i.e. those units which display 100%
+efficiency when evaluated with the weights which are the most
+convenient for U11, turn out to be: U04, U09, U16. From
+weights values we can observe the relative importance of inputs and
+outputs. Of course, as the efficiency index is a ratio of linear
+expressions, it does not change multiplying every weight by  a positive
+constant. Thus it is more appropriate to consider relative weights
+(ratios between two weights).</p>
+<p>This comparative efficiency  model is the simplest one; there exist
+many variations of the basic model which can give different
+evaluations. The model above prescribes maximizing the output/input
+ratio. It is easy to write a model in which instead, we minimize the
+input/output ratio; perhaps quite surprisingly, this input-oriented
+model can produce different efficiency rankings.
+In all models,
+further constraints might be introduced to limit the choice of
+weights. It is possible, in fact, to prescribe that some weights are larger than others,
+to reflect the relative importance of different input and output
+categories). Some extensions try to take into account scale economies
+or diseconomies by introducing some non linearity, useful when
+comparing units  of very different sizes. We refer to the very abundant
+literature on this subject for further details.</p>
+<section id="dual-of-the-efficiency-evaluation-model">
+<h4><span class="section-number">13.4.1.1. </span>Dual of the efficiency evaluation model<a class="headerlink" href="#dual-of-the-efficiency-evaluation-model" title="Link to this heading">¶</a></h4>
+<p>It is not difficult, yet quite interesting, to analyze the dual of the
+linear efficiency optimization model. In order to obtain a dual
+representation, let us first slightly reformulate the problem:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+-\min \sum_{i=1}^{k} -\param{O}_{i}^{u} \var{x}_{i} \\
+\sum_{i = 1}^{h} \param{I}_{i}^{u} \var{y}_{i} &amp; = 1 \\
+\sum_{i = 1}^{k} \param{O}_{i}^{s} \var{x}_{i} - \sum_{i = 1}^{h} \param{I}_{i}^{s} \var{y}_{i}
+&amp; \leq0 &amp;
+\forall \, s  \in \set{Units} \\
+\var{x}, \var{y} &amp; \geq0
+\end{align*}</div><p>In order to formulate the dual, we observe that this problem has two
+groups of constraints: a single normalization constraint for the
+current unit and a group of normalization constraints, one for each
+unit. Let us associate a single dual variable
+<span class="math notranslate nohighlight">\(\mathvar{\theta}\)</span> to the normalization constraint of the
+current unit, and the set of dual variables
+<span class="math notranslate nohighlight">\(\mathvar{\lambda}_s\)</span> for the second group.  The constraints
+in the dual will be associated to the two groups of primal variables:
+the input weights and the output weights. Following the standard dual
+transformation for linear problems, we get:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+- \max \mathvar{\theta} &amp; \\
+\param{I}_i^{u} \mathvar{\theta} - \sum_{s \in \set{Units}} \param{I}_i^s
+\mathvar{\lambda}_s &amp; \leq 0 &amp; \forall \, i \in \set{Inputs} \\
+\sum_{s \in \set{Units}} \param{O}_i^s \mathvar{\lambda}_s &amp; \leq -\param{O}_i^{u}
+&amp; \forall \, i \in \set{Outputs} \\
+\mathvar{\lambda}_s &amp; \leq 0 &amp; \forall\,s \in \set{Units}
+\end{align*}</div><p>For convenience, let us substitute  each variable with the opposite
+one. We obtain:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \mathvar{\theta} &amp;  \\
+\sum_{s  \in \set{Units}} \param{I}_i^s
+\mathvar{\lambda}_s &amp; \leq \param{I}_i^{u} \mathvar{\theta} &amp;
+\forall \, i \in \set{Inputs} \\
+\sum_{s  \in \set{Units}} \param{O}_i^s \mathvar{\lambda}_s &amp; \geq \param{O}_i^{u}
+&amp; \forall \, i \in \set{Outputs} \\
+\mathvar{\lambda}_s &amp; \geq 0  &amp; \forall\, s  \in \set{Units}
+\end{align*}</div><p>From  duality theory we know that the optimum of
+this problem will be equal to that of the primal and  will always be
+between 0 and  1. Even without using duality,
+it is easy to see that the optimal value of
+<span class="math notranslate nohighlight">\(\mathvar{\theta}\)</span> cannot  exceed 1, since  a feasible solution
+of value  1  can always be found by choosing  <span class="math notranslate nohighlight">\(\mathvar{\lambda}_{u}=1\)</span>  and all  other components of
+<span class="math notranslate nohighlight">\(\mathvar{\lambda}\)</span> to zero.</p>
+<p>The dual model lends itself to an important interpretation.
+From the left hand side of the constraints we see that, for every input or output,
+a linear combination of units  is composed.
+We may think that we are building a “virtual” unit, not existing in
+real life, obtained by combining with non negative coefficients the
+data of the available units. If, besides the request of non
+negativity, we added a normalization constraint asking for the weights
+to sum to 1 at most, then this operation would lead to the convex
+envelop (or convex combination) of all units in the input/output
+feature space. From this geometrical interpretation, the efficiency
+evaluation model gets the name “Data Envelopment Analysis” or
+<span class="target" id="index-15"></span>DEA. However we do not require the normalization constraint.</p>
+<p>This virtual unit composed of a mixture of real ones, including the
+one we are currently evaluating, <span class="math notranslate nohighlight">\(u\)</span>, for a generic output
+feature <span class="math notranslate nohighlight">\(i\)</span>, has a virtual output equal to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{s  \in \set{Units}} \param{O}_i^s \mathvar{\lambda}_s &amp;
+&amp; \forall \, i \in \set{Outputs}
+\end{align*}</div><p>The associated constraint asks for this virtual output to be at least
+as good as the real one, <span class="math notranslate nohighlight">\(\param{O}_i^{u}\)</span>. Notice that, within the
+units which can be used in order to form the virtual one, there is
+also unit <span class="math notranslate nohighlight">\(u\)</span>. Thus it is very easy to satisfy these
+constraints. However, the analogous constraint on the virtual value
+associated to inputs has a right hand side which is <span class="math notranslate nohighlight">\(\param{I}_i^{u}
+\mathvar{\theta}\)</span>.
+Thus, choosing <span class="math notranslate nohighlight">\(\mathvar{\theta} =1\)</span>, which is a feasible
+choice, we always can satisfy all of the constraints. However, thanks
+to the objective function, we are interested in checking whether a
+linear combination of the units, different from the trivial one,
+exists which allows to obtain a value  <span class="math notranslate nohighlight">\(\mathvar{\theta} &lt;1\)</span>.
+If this is possible, then the current unit will be labeled as not
+efficient, as there exists a virtual unit (a unit in the envelop of
+the others) which produces at least as much output but with strictly
+less resources (no more than  <span class="math notranslate nohighlight">\(\mathvar{\theta}\)</span> times the
+resources of <span class="math notranslate nohighlight">\(u\)</span>).</p>
+<p>Thus this dual model allows us to see the efficiency evaluation
+problem from a different, complementary, point of view: if and only if
+a unit is inefficient, we can find a set of competitors which,
+suitably combined, can produce enough output with lower input
+levels. These are the units from which the inefficient one should
+learn how to improve. They are a benchmark for this unit.</p>
+<p>In the example, looking at the dual values when optimizing the index
+of unit U11, we obtain the weights:</p>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>U04<span class="p">:</span><span class="w"> </span><span class="mf">0.113482</span>
+U09<span class="p">:</span><span class="w"> </span><span class="mf">0.336625</span>
+U16<span class="p">:</span><span class="w"> </span><span class="mf">0.399953</span>
+</pre></div>
+</div>
+<p>Multiplying the input and output data by these coefficients we find
+that the virtual unit has the following virtual data (in parentheses
+the corresponding data for unit U11):</p>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>Patients<span class="w"> </span><span class="mi">1053</span><span class="w">     </span><span class="p">(</span><span class="mi">1053</span><span class="p">)</span>
+HomeAss<span class="w">  </span><span class="mi">1222</span><span class="w">     </span><span class="p">(</span><span class="mi">1222</span><span class="p">)</span>
+recipes<span class="w">    </span><span class="mf">43.24</span><span class="w">  </span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+
+Doctors<span class="w">    </span><span class="mf">59.69</span><span class="w">  </span><span class="p">(</span><span class="mi">83</span><span class="p">)</span>
+beds<span class="w">       </span><span class="mf">340.87</span><span class="w"> </span><span class="p">(</span><span class="mi">474</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>from which it can be seen that the virtual unit produces at least as
+much as unit 11, but with less than  71.9% resources.
+Thus, this can be considered as a proof of inefficiency.</p>
+<p>We can also observe that, thanks to complementarity, the units which
+will enter this virtual unit are units with efficiency score equal
+to 1. And, following the same line of reasoning, the outputs for which
+the virtual unit produces strictly more than the currently evaluated
+one, are weighted as zero in the primal efficiency optimization
+model. And, similarly, the inputs which are required in a fraction
+which is strictly smaller than <span class="math notranslate nohighlight">\(\mathvar{\theta}\)</span> have a zero
+weight in the primal problem.
+In the example, the weights for unit U11 are:</p>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>weights<span class="p">:</span>
+
+Patients<span class="p">:</span><span class="w"> </span><span class="mf">0.000582</span>
+HomeAss<span class="p">:</span><span class="w"> </span><span class="mf">0.000087</span>
+recipes<span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+
+Doctors<span class="p">:</span><span class="w"> </span><span class="mf">0.009073</span>
+beds<span class="p">:</span><span class="w"> </span><span class="mf">0.000521</span>
+</pre></div>
+</div>
+<p>and of course a similar reasoning can be extended to all other units.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Dynamic.html" title="Previous document"><span class="section-number">11. </span>Dynamic flows</a>
+        </li>
+        <li>
+          <a href="Constraints.html" title="Next document"><span class="section-number">14. </span>Constraints in linear optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">12. Objectives in optimization models</a><ul>
+<li><a class="reference internal" href="#feasibility-problems-no-objective-function">12.1. Feasibility problems (no objective function)</a></li>
+<li><a class="reference internal" href="#multiple-objectives">12.2. Multiple Objectives</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#some-nonlinear-problems-that-can-be-transformed-into-linear-ones">13. Some nonlinear problems that can be transformed into linear ones</a><ul>
+<li><a class="reference internal" href="#minimax-problems">13.1. Minimax problems</a></li>
+<li><a class="reference internal" href="#absolute-values-in-the-objective">13.2. Absolute values in the objective</a></li>
+<li><a class="reference internal" href="#regression-or-best-approximation-models">13.3. Regression (or best approximation) models</a><ul>
+<li><a class="reference internal" href="#minimax-regression">13.3.1. Minimax regression</a></li>
+<li><a class="reference internal" href="#absolute-regression">13.3.2. Absolute regression</a></li>
+<li><a class="reference internal" href="#quadratic-least-squares-regression">13.3.3. Quadratic (least squares) regression</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rational-objectives">13.4. Rational Objectives</a><ul>
+<li><a class="reference internal" href="#comparative-efficiency-evaluation">13.4.1. Comparative efficiency evaluation</a><ul>
+<li><a class="reference internal" href="#dual-of-the-efficiency-evaluation-model">13.4.1.1. Dual of the efficiency evaluation model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="Dynamic.html" title="previous chapter"><span class="section-number">11. </span>Dynamic flows</a></li>
+      <li>Next: <a href="Constraints.html" title="next chapter"><span class="section-number">14. </span>Constraints in linear optimization models</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/Objectives.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>1. Preface &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="2. Structured linear optimization models" href="LinearModels.html" />
+    <link rel="prev" title="Optimization Models" href="contents.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="contents.html" title="Previous document">Optimization Models</a>
+        </li>
+        <li>
+          <a href="LinearModels.html" title="Next document"><span class="section-number">2. </span>Structured linear optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="preface">
+<h1><span class="section-number">1. </span>Preface<a class="headerlink" href="#preface" title="Link to this heading">¶</a></h1>
+<p>A first version of this volume was born several years ago, in Italian, as the main
+reference material for an advanced course on optimization modeling for students
+in Management Engineering at my  <a class="reference external" href="https://www.unifi.it/">Università degli Studi di Firenze</a>. That
+course is no more active and the  material remained unused for quite  a few
+years. I have decided now to reconsider it as I think that, in these days,
+modeling skills are  fundamental, possibly even more than before. Differently
+from when I wrote my Italian book, nowadays data, data science, analytics
+are terms we can find everywhere.  Every company is moving towards
+data-driven approaches, mainly following the giant waves of machine
+learning and artificial intelligence.  However, some companies are
+experiencing difficulties, as the return on investment seems to be
+below expectations. I have neither an explanation nor a recipe for
+this. I suspect there might be many reasons: from one side the too
+high expectation, but, from another side, the fact that managers
+forgot that most of modern data science and machine learning is devoted
+to <em>predictive</em> analytics. Having the
+possibility of learning from data so that future trends (demand, production,
+yield, interest rates, …) can be reliably and robustly estimated is
+absolutely wonderful. However, after a reliable forecast becomes available, managers
+still need to <em>take decisions</em>. And this is where optimization
+(operations research) comes into play.</p>
+<p>Optimization is <em>the</em> tool for good decision making or, better,
+for good decision support. In order to be able to suggest rational and
+effective decisions the Operations Research scientific community has
+offered courses,  developed  methods, analyzed theoretical aspects of <em>optimization</em>. However I
+feel there is still a wide gap which separates academic research from
+day to day adoption. And, in my opinion, part of this
+is due to the lack of sufficient modeling skills. If we cannot model
+a problem, no matter how sophisticated our optimization algorithms are,
+we will not be able to solve it nor suggest any decision. We need to communicate our
+problem to a solver. And to do this we need a deep knowledge of
+models.</p>
+<p>Modeling is  a creative skill, which is best learned by doing;
+however, especially for more advanced models involving integer
+variables or graph theory, modeling practice should be paired with a deep theoretical
+knowledge, if we wish to be able to solve large scale problems.</p>
+<p>My interest in modeling arose by chance, thanks to a
+very stimulating activity as a book reviewer that I performed in my early years in the
+academia. Among the many books I received, I got to review, at some time, the
+fundamental volume of Hans Paul Williams <span id="id1">[<a class="reference internal" href="Bibliography.html#id28" title="H. Paul Williams. Model Building in Mathematical Programming. J. Wiley &amp; Sons, 5th edition, 2013.">Williams, 2013</a>]</span> (indeed it
+was a much earlier edition than the one cited here). That book opened
+a new world to me: up to that time I had been thinking to the
+algorithmic aspects of optimization as the most relevant ones.
+That book made me understand that without suitable formulation no
+problem can ever be solved, whichever the refined algorithms we have
+available. This seemingly trivial observation has indeed many
+consequences. One of these is the fact that we need to be organized
+and disciplined in formulating an optimization model;
+formulating a linear optimization model is not something which can be
+done simply after having learned the details of the simplex algorithm:
+practice and modeling theory is needed before a robust, reliable,
+useful model can be produced. Williams’ book opened my eyes on this
+fascinating subject; more or less at the same time I also had the
+opportunity of learning and using <a class="reference external" href="https://www.gams.com/">GAMS</a> - Generalized Algebraic
+Modeling System. This modeling tool let
+me understand that even to formulate a “simple” linear optimization
+problem it is not enough to be able to write the cost vector, the
+constraint matrix, the right hand side. Or, to be more precise: it
+would be enough. But the effort in preparing these data can be
+enormously reduced if a modeling language is used; moreover the
+readability and the possibility of maintaining large models is
+enormously enhanced when using a modeling language. This is even more
+true when dealing with non linear models. GAMS is nowadays
+not the unique modeling system  available. I have been using
+<a class="reference external" href="https://www.ampl.com">AMPL</a> - A Mathematical Programming Language,
+<a class="reference external" href="https://www.aimms.com/">AIMMS</a>,
+which are commercial products, or <a class="reference external" href="https://jump.dev/">JuMP</a> (Julia Mathematical
+Programming)  and <a class="reference external" href="http://www.pyomo.org/">Pyomo</a> (Python Optimization
+Modeling) which are open source.  There
+exist many others, most of which however are limited to specific classes
+of problems like, e.g., linear models only.</p>
+<p>Given the availability of Williams’ book and of several software
+modeling languages, one may ask why I felt the need to write a book on optimization
+modeling.  First of all, of course, I confess I like writing and
+teaching and this is something I would do even if proven to be useless…
+But I also think that it is quite unusual that for such an important
+topic the most authoritative textbook (if not the only one) is still the excellent book by
+Williams which although re-published several times, is more or less
+unchanged since the 80’s, when the first edition appeared. I think
+there is a space nowadays for a more modern view of that classical
+textbook, which is and remains a fundamental reference for me as well
+as for many in the optimization community. But in these years many things
+happened: advances in software, in modeling environments, in
+programming languages, in application domains. And, among the many
+novelties, also the way in which we publish radically changed.
+I took the decision to publish my book mainly as a web site, with a companion
+GitHub repo for models and data and, only recently, as a traditional
+printed book. The idea is that of a dynamic book,
+which can easily change thanks to the addition of models, data,
+modeling languages. For many different reasons, I became more familiar
+with the AMPL language than any other. But I would like to ask my readers
+to contribute with translations of AMPL models in other modeling
+environments (and, of course, to suggest modification and corrections
+to those I wrote). The printed edition of this book is
+for those who prefer having a book on paper but the on line web
+edition will in any case be the most up-to-date one.</p>
+<p>Most of the applications in this book are quite classical, from
+blending to production to routing on road networks. They mostly come
+from many years of teaching to Management Science Engineers. Very
+recently, however, I have been involved in the world of non-profit
+organizations and discovered the enormous possibilities that may exist
+to apply optimization models for improving the quality of life of many
+people. Thanks to the collaboration with the Analytics for a Better World
+<a class="reference external" href="https://analyticsbetterworld.org/">ABW</a>  group I discovered
+that, as an example, the elementary diet problem which, for many
+years, I refused to teach as I considered it to be too silly an
+example, indeed has been enriched and used and contributed to fight
+hunger for millions of people. And similarly, many other models:
+locating health care facilities, locating ambulances, planning routes
+for emergency, organizing the logistics after a disaster, even
+cleaning the ocean from plastic are relevant social problem which can
+enormously benefit from optimization. I plan, in the future, to expand
+this volume with specific chapters on humanitarian logistics.</p>
+<p>In writing this book I also decided, for the first time in my long academic
+life, not to write a book
+(or a paper) in <a class="reference external" href="https://www.latex-project.org/">LaTeX</a> from beginning to end. It was a difficult
+choice, as I cannot think of any other way to write  math. But modern
+markup languages and systems, like <a class="reference external" href="https://www.sphinx-doc.org/en/master/">Sphinx</a>, make the effort in writing a web book
+so light that eventually I decided to use this system. Of course,
+however, all of the mathematical formulae and the figures have been
+composed in LaTeX, with the help of the <a class="reference external" href="https://www.ctan.org/pkg/pgf">tikz</a> package and the printed book was
+composed with the help of many packages, one of the most important of
+which is the memoir LaTeX class.</p>
+<p>Finally: in a modern book on modeling, it is impossible to avoid
+sharing the developed models. Most of modeling, in fact, can be learned not
+only by studying existing modeling techniques, but also by
+experimenting with models and real data. Thus I created a
+<a class="reference external" href="https://github.com/fabioschoen/OptimizationModels">github repository</a>  devoted
+to the
+material presented in this book. I invite
+readers not only to browse these models and use  them, but also to
+suggest modifications, improvements and, in particular, to add models
+in all possible modeling languages. At the moment of writing this
+preface,  only  <a class="reference external" href="https://www.ampl.com">AMPL</a>  models are fully available, as described in the
+book. Volunteers are more than welcome to contribute new or existing
+models implemented in
+<a class="reference external" href="https://jump.dev/JuMP.jl/stable">Julia/Jump</a>, <a class="reference external" href="http://www.pyomo.org/">Pyomo</a>,
+<a class="reference external" href="https://www.gams.com/">GAMS</a>, <a class="reference external" href="https://www.aimms.com/">Aimms</a>,
+<a class="reference external" href="https://www.scipopt.org/">SCIP</a> or any other high level modeling language.
+This can be easily done through the <a class="reference external" href="https://github.com/fabioschoen/OptimizationModels">github repository</a>.
+I thank in advance any reader who will help to improve and extend this material.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="contents.html" title="Previous document">Optimization Models</a>
+        </li>
+        <li>
+          <a href="LinearModels.html" title="Next document"><span class="section-number">2. </span>Structured linear optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="contents.html" title="previous chapter">Optimization Models</a></li>
+      <li>Next: <a href="LinearModels.html" title="next chapter"><span class="section-number">2. </span>Structured linear optimization models</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/OptimizationModels.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

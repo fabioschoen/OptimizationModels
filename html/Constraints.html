@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>14. Constraints in linear optimization models &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="15. Uncertainty modeling: Stochastic optimization models" href="StochasticOptimization.html" />
+    <link rel="prev" title="12. Objectives in optimization models" href="Objectives.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Objectives.html" title="Previous document"><span class="section-number">12. </span>Objectives in optimization models</a>
+        </li>
+        <li>
+          <a href="StochasticOptimization.html" title="Next document"><span class="section-number">15. </span>Uncertainty modeling: Stochastic optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="constraints-in-linear-optimization-models">
+<span id="section-constraints"></span><h1><span class="section-number">14. </span>Constraints in linear optimization models<a class="headerlink" href="#constraints-in-linear-optimization-models" title="Link to this heading">¶</a></h1>
+<p>In this section we are dealing with a few special cases for
+constraints in optimization models. Of course many classes of
+constraints have already  been introduced and more will come in the
+next chapters: indeed, constraints are the real essence of
+optimization models. Here we would like to describe and give some
+emphasis to a few classes of constraints which might find their use
+in many situations.</p>
+<section id="soft-constraints">
+<span id="section-soft-constrains"></span><h2><span class="section-number">14.1. </span>Soft constraints<a class="headerlink" href="#soft-constraints" title="Link to this heading">¶</a></h2>
+<p>A generic linear constraint has the form</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_j \alpha_j \var{x}_j \leq \beta
+\]</div><p>(or a similar one, but with  <span class="math notranslate nohighlight">\(=\)</span> or <span class="math notranslate nohighlight">\(\geq\)</span>). Imposing
+such a constraint means that any vector
+<span class="math notranslate nohighlight">\(\bar{\var{x}}\)</span> for which</p>
+<div class="math notranslate nohighlight">
+\[
+\sum_j \alpha_j \bar{\var{x}}_j&gt; \beta
+\]</div><p>will be considered infeasible. We can say, in this case, that the
+constraint is <em>hard</em>, as it cannot be violated.</p>
+<p>Sometimes, however, it might be useful to insert  a constraint that
+represents,
+in a
+<em>soft</em> way, the desire to keep the constraint satisfied. At the same time,
+we would like  to allow for a moderate constraint violation.
+This is not the same as relaxing the constraint, e.g., by substituting
+the right hand side <span class="math notranslate nohighlight">\(\beta\)</span> with another, larger, one. A soft
+constraint should be something which, if possible and convenient, will
+provide feasible solutions and only in exceptional cases will generate
+a solution which is slightly infeasible.</p>
+<p>More formally, we would like to consider
+a vector <span class="math notranslate nohighlight">\(\bar{\var{x}}\)</span> feasible
+if</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_j \alpha_j \bar{\var{x}}_j &amp;&gt; \beta \\
+\sum_j \alpha_j \bar{\var{x}}_j &amp; \not \gg \beta.
+\end{align*}</div><p>In other words, the constraint can be violated, but
+excessive violations are not allowed. In order to formulate such kind
+of constraints,  we can  assign a price to
+constraint violations. If the original problem  is a
+(linear) minimization one <span class="math notranslate nohighlight">\(\min \sum_j c_j \var{x}_j\)</span>,
+then the introduction of the <em>soft</em>  constraint can be done as
+follows:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j c_j \var{x}_j + K \var{y} &amp;  \\
+\sum_j \alpha_j \var{x}_j &amp; \leq \var{y} + \beta  \\
+\var{y} &amp; \geq0
+\end{align*}</div><p>This way the constraint can be violated, thanks
+to the introduction of a non negative surplus variable <span class="math notranslate nohighlight">\(\var{y}\)</span>, but the
+violation  causes a  cost increase equal to <span class="math notranslate nohighlight">\(K \var{y}\)</span>; thus
+a violation will occur only if the additional cost to be paid is
+balanced by a stronger overall cost decrease.</p>
+<p>For equality constraints, the  soft version should  allow for
+violations in both directions. Possibly, violation in the two opposite
+directions have a
+different penalty:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_j c_j \var{x}_j + K \var{s} + H \var{u} &amp; \\
+\sum_j \alpha_j \var{x}_j + \var{s} - \var{u} &amp; = \beta \\
+\var{s}, \var{u} &amp; \geq0.
+\end{align*}</div><p>A practical case in which it is often  useful to insert soft constraints
+is in  production, where some resources are available in a
+limited quantity, but, paying a penalty, the limits can
+be overcome (e.g., by buying additional resources from an external
+provider).
+A very frequent case is that of overtime: a
+resource might be available, for example, 40 hours per week; however
+it is possible, if necessary and up to a given maximum amount, to
+resort to overtime.
+Overtime  is paid more, usually 50% more, than normal. An
+example of a soft constraint for this case could be the
+following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{p \in \set{Products}} \param{Consumption}_{rp} \var{x}_p &amp; \leq \param{Avail}_r
++ \var{Overtime}_r &amp; \forall \, r \in \set{Resources}
+\end{align*}</div><p>(taken from  section
+<a class="reference internal" href="ProductMixProblems.html#product-mix-models"><span class="std std-ref">Product Mix Models</span></a>). Here we see that the use of a resource
+<span class="math notranslate nohighlight">\(r \in \set{Resources}\)</span>  can exceed the available hours thanks
+the introduction of  the soft constraint.</p>
+<p>In the objective  function we will assign a cost to variable <span class="math notranslate nohighlight">\(\var{Overtime}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_{p \in \set{Products}} \param{Gain}_p \var{x}_p - \sum_{r
+\in \set{Resources}} \param{Ovcost}_r \var{Overtime}_r
+\end{align*}</div><p>while, in the constraints, some upper bounds will  be
+introduced in order not to exaggerate in overtime:</p>
+<div class="math notranslate nohighlight">
+\[
+0 \leq \var{Overtime}_r \leq \param{MaxOvertime}_r
+\]</div><p>The overtime cost must necessarily be higher than the cost which is
+normally attributed to the same resource, otherwise there would be an incentive
+not to use the resource during normal hours and
+instead, use it only during overtime.</p>
+</section>
+<section id="piece-wise-linear-convex-cost-functions">
+<h2><span class="section-number">14.2. </span>Piece-wise linear convex cost functions<a class="headerlink" href="#piece-wise-linear-convex-cost-functions" title="Link to this heading">¶</a></h2>
+<p>The idea we used for the
+formulation of soft constraints might prove useful in a quite
+different scenario. In network flow problems, we might wish to
+formulate a piece-wise linear cost function.
+Assume that the unit cost of the flow along an arc has a certain
+value, but only up to
+a threshold. If the flow exceeds this threshold,  the unit cost per
+each additional unit becomes higher. We can represent this situation with
+a graph with parallel arcs:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-694d4c96c915e02e850c216ffa7c46a62e83f495.png" alt="Figure made with TikZ" /></p>
+</div><p>In the example, the flow arriving at node <span class="math notranslate nohighlight">\(A\)</span>  will fill the arc with
+lower unit cost (20)  up to  the maximum capacity, which is
+10 units; any additional unit of flow  will go through the second arc,
+with a unit cost 30. Of course, this modeling trick will work only if
+unit costs are increasing (and, thus, the overall objective function
+is piece-wise linear and <em>convex</em>). A model for this situation might be
+as follows:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{f}} \dots + 20\, \var{f}_{AB} + 30\, \var{f^\prime}_{AB}  \\
+\var{f}_{AB} &amp; \leq 10 + \var{f^\prime}_{AB} \\
+\var{f}_{AB}  &amp; \leq 10 \\
+\var{f^\prime}_{AB}  &amp; \leq 5
+\end{align*}</div><p>This formulation can be further generalized
+when dealing with piece-wise <em>affine</em> objective functions.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Objectives.html" title="Previous document"><span class="section-number">12. </span>Objectives in optimization models</a>
+        </li>
+        <li>
+          <a href="StochasticOptimization.html" title="Next document"><span class="section-number">15. </span>Uncertainty modeling: Stochastic optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">14. Constraints in linear optimization models</a><ul>
+<li><a class="reference internal" href="#soft-constraints">14.1. Soft constraints</a></li>
+<li><a class="reference internal" href="#piece-wise-linear-convex-cost-functions">14.2. Piece-wise linear convex cost functions</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="Objectives.html" title="previous chapter"><span class="section-number">12. </span>Objectives in optimization models</a></li>
+      <li>Next: <a href="StochasticOptimization.html" title="next chapter"><span class="section-number">15. </span>Uncertainty modeling: Stochastic optimization models</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/Constraints.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

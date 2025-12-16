@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>11. Dynamic flows &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="12. Objectives in optimization models" href="Objectives.html" />
+    <link rel="prev" title="10. Assignment or bi-partite matching" href="Assignment.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Assignment.html" title="Previous document"><span class="section-number">10. </span>Assignment or bi-partite matching</a>
+        </li>
+        <li>
+          <a href="Objectives.html" title="Next document"><span class="section-number">12. </span>Objectives in optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="dynamic-flows">
+<span id="section-dynamic-networks"></span><h1><span class="section-number">11. </span>Dynamic flows<a class="headerlink" href="#dynamic-flows" title="Link to this heading">¶</a></h1>
+<p>The applications of the generic minimum cost flow model considered up
+to now correspond to <em>static</em> flows, i.e. to flows that do not vary in time.
+It is sometimes interesting to consider a generalization
+which allows for <em>dynamic</em> flows. This generalization will be
+presented here for the discrete time case.
+A simple technique for modeling
+dynamic flows consists in replicating the nodes of the graph over time, a copy for
+each time instant. Each node of
+the replicated graph will contain a label with the time instant
+associated to the original one.
+Arcs connecting nodes with different time labels can be thought of as
+flows out from a node at a time instant which will enter another node
+at a future time instant.
+If it is assumed that the travel time between nodes <span class="math notranslate nohighlight">\(i\)</span> and
+<span class="math notranslate nohighlight">\(j\)</span>  is  <span class="math notranslate nohighlight">\(\Delta_{ij}\)</span> time units,
+then in the dynamic graph there will be arcs between nodes labeled
+<span class="math notranslate nohighlight">\(i,t\)</span>  and nodes  <span class="math notranslate nohighlight">\(j,t+\Delta_{ij}\)</span>.
+The interpretation of a flow along one of these arcs will be  that of
+a flow unit that was in  <span class="math notranslate nohighlight">\(i\)</span>
+at time  <span class="math notranslate nohighlight">\(t\)</span>  and will arrive in  <span class="math notranslate nohighlight">\(j\)</span> at time  <span class="math notranslate nohighlight">\(t + \Delta_{ij}\)</span>.</p>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-0"></span>Safe evacuation from a building</p>
+</dd>
+</dl>
+<p>In this application we consider a simplified problem connected with
+emergency planning in buildings.
+Given a graph representing possible paths in a building, with nodes
+associated to rooms, intersections and exits, we would like to
+evaluate the maximum number of persons in source nodes who can safely
+proceed towards an exit in a given amount of time, given travel times
+along arcs as well as capacity.
+Consider, as a very simplified example, the following situation:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-36052e4e4bbe12e9128ea990a136c45a41313c53.png" alt="Figure made with TikZ" /></p>
+</div><p>This network can be “unfolded” in time. Assume we would like to
+check how many units of flow, as a maximum, can be safely taken to
+the terminal node in, say, 4 time units. Then, a 4 “frames” network
+can be defined as follows:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-a6f0603114033ac68c07eaea1b36b9ac152003c1.png" alt="Figure made with TikZ" /></p>
+</div><p>In order to determine the  maximum amount of people located at node <span class="math notranslate nohighlight">\(s\)</span>
+who might be able  to exit the building in a specific amount of time, we
+can  solve the maximum flow problem  in the expanded  graph
+shown above, using  node
+<span class="math notranslate nohighlight">\(S = s1\)</span> as source and a fictitious node <span class="math notranslate nohighlight">\(T\)</span> as
+destination. This node is connected to each replica of the original
+terminal node in different time instants.
+In the graph, the
+labels on each  arc represents the maximum capacity.</p>
+<p>There are
+two types of arc:</p>
+<ul class="simple">
+<li><p>arcs  between nodes with different names
+which  represent flows both in space and in time</p></li>
+<li><p>arcs   connecting two nodes with the same name in consecutive
+time instants which represent flow units which do not leave the
+node during a specific time instant.</p></li>
+</ul>
+<p>As an example, the arc between node <span class="math notranslate nohighlight">\((s, 1)\)</span> and <span class="math notranslate nohighlight">\((B, 2)\)</span> with
+capacity 2 represents a maximum flow of 2 units which,
+starting from the source at time 1, reaches  node <span class="math notranslate nohighlight">\(B\)</span>
+in time instant 2. The arc
+connecting <span class="math notranslate nohighlight">\((s, 1)\)</span> with <span class="math notranslate nohighlight">\((s, 2)\)</span> instead represents a part of the flow
+which, after time instant 1, remains in node <span class="math notranslate nohighlight">\(s\)</span>.</p>
+<p>Any implementation of the maximum flow model for this special case
+needs some non standard definitions in order to allow for an easy
+definition of the network. In practice it is reasonable to assume
+that the data contains the description of the graph and the time
+horizon, and building the expanded network is left to the modeling
+language itself.  As an example, consider the following data
+describing a more elaborated situation. Here a time horizon of 5 is
+chosen and a network with 6 arcs is defined:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">evacuation.dat</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">DynNODES</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>s<span class="w"> </span>A<span class="w"> </span>B<span class="w"> </span>t<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">MaxT</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">DynS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>s<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">DynT</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>t<span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">DynARCS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">(</span>s<span class="p">,</span>A<span class="p">)</span><span class="w"> </span><span class="p">(</span>s<span class="p">,</span>B<span class="p">)</span><span class="w"> </span><span class="p">(</span>B<span class="p">,</span>A<span class="p">)</span><span class="w"> </span><span class="p">(</span>A<span class="p">,</span>B<span class="p">)</span><span class="w"> </span><span class="p">(</span>A<span class="p">,</span>t<span class="p">)</span><span class="w"> </span><span class="p">(</span>B<span class="p">,</span>t<span class="p">);</span>
+
+param<span class="p">:</span><span class="w"> </span>DynFmax<span class="w"> </span>DynTime<span class="p">:</span><span class="o">=</span>
+s<span class="w"> </span>A<span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="mi">1</span>
+s<span class="w"> </span>B<span class="w"> </span><span class="mi">8</span><span class="w"> </span><span class="mi">3</span>
+A<span class="w"> </span>B<span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="mi">1</span>
+B<span class="w"> </span>A<span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="mi">1</span>
+A<span class="w"> </span>t<span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span>
+B<span class="w"> </span>t<span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="mi">1</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>A possibility for the model is the following, where we can observe
+the definition of the expanded network as well as the
+re-implementation of the maximum flow problem:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">evacuation.mod</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">DynNODES</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">MaxT</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">DynARCS</span><span class="w"> </span><span class="kr">within</span><span class="w">  </span>DynNODES<span class="w"> </span><span class="kr">cross</span><span class="w"> </span>DynNODES<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">DynS</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>DynNODES<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">DynT</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>DynNODES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">DynFmax</span><span class="p">{</span>DynARCS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">DynTime</span><span class="p">{</span>DynARCS<span class="p">};</span>
+
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">S</span><span class="w"> </span><span class="kt">symbolic</span><span class="w">  </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;S&#39;</span><span class="w"> </span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;T&#39;</span><span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="p">(</span>DynNODES<span class="w"> </span><span class="kr">union</span><span class="w"> </span><span class="p">{</span>S<span class="p">}),</span><span class="w"> </span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>MaxT<span class="p">}</span>
+<span class="kr">union</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="p">{</span>T<span class="p">},</span><span class="w"> </span>t<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="p">{</span>MaxT<span class="p">}};</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>t<span class="p">,</span>j<span class="p">,</span>u<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="p">(</span>DynNODES<span class="w"> </span><span class="kr">union</span><span class="w"> </span><span class="p">{</span>S<span class="p">,</span>T<span class="p">})</span>
+<span class="kr">cross</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>MaxT<span class="w"> </span><span class="kr">cross</span><span class="w"> </span><span class="p">(</span>DynNODES<span class="w"> </span><span class="kr">union</span><span class="w"> </span><span class="p">{</span>S<span class="p">,</span>T<span class="p">})</span><span class="w"> </span><span class="kr">cross</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>MaxT<span class="p">:</span>
+<span class="w">	</span><span class="p">(</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>DynARCS<span class="w"> </span><span class="kr">and</span><span class="w"> </span>u<span class="w"> </span><span class="o">==</span><span class="w"> </span>t<span class="w"> </span><span class="o">+</span><span class="w"> </span>DynTime<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="p">)</span>
+<span class="w">        </span><span class="kr">or</span>
+<span class="w">        </span><span class="p">(</span><span class="w"> </span>i<span class="w"> </span><span class="o">==</span><span class="w"> </span>j<span class="w"> </span><span class="kr">and</span><span class="w"> </span>u<span class="w"> </span><span class="o">=</span><span class="w"> </span>t<span class="o">+</span><span class="mi">1</span><span class="w"> </span><span class="p">)}</span>
+<span class="kr">union</span><span class="w"> </span><span class="p">{(</span>S<span class="p">,</span><span class="mi">1</span><span class="p">,</span>DynS<span class="p">,</span><span class="mi">1</span><span class="p">)}</span>
+<span class="kr">union</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>t<span class="p">,</span>j<span class="p">,</span>u<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w">  </span>DynNODES<span class="w"> </span><span class="kr">cross</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>MaxT<span class="w"> </span><span class="kr">cross</span><span class="w"> </span><span class="p">{</span>T<span class="p">}</span>
+<span class="kr">cross</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>MaxT<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">==</span><span class="w"> </span>DynT<span class="w"> </span><span class="kr">and</span><span class="w"> </span>u<span class="w"> </span><span class="o">==</span><span class="w"> </span>MaxT<span class="p">};</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Fmax</span><span class="p">{(</span>i<span class="p">,</span>t<span class="p">,</span>j<span class="p">,</span>u<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>j<span class="w"> </span><span class="kr">and</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>S<span class="w"> </span><span class="kr">and</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>T
+<span class="kr">then</span><span class="w"> </span>DynFmax<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="kr">else</span><span class="w"> </span><span class="mi">Infinity</span><span class="p">;</span>
+
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">Flow</span><span class="p">{(</span>i<span class="p">,</span>t<span class="p">,</span>j<span class="p">,</span>u<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>Fmax<span class="p">[</span>i<span class="p">,</span>t<span class="p">,</span>j<span class="p">,</span>u<span class="p">];</span>
+<span class="kd">var</span><span class="w"> </span><span class="nv">v</span><span class="p">;</span>
+
+<span class="kd">maximize</span><span class="w"> </span><span class="nv">TotalFLow</span><span class="p">:</span><span class="w"> </span>v<span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">balance</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>t<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">}:</span>
+<span class="w">	</span><span class="kr">sum</span><span class="w"> </span><span class="p">{(</span>j<span class="p">,</span>u<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>t<span class="p">,</span>j<span class="p">,</span>u<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>Flow<span class="p">[</span>i<span class="p">,</span>t<span class="p">,</span>j<span class="p">,</span>u<span class="p">]</span><span class="w"> </span><span class="o">-</span>
+<span class="w">        </span><span class="kr">sum</span><span class="w"> </span><span class="p">{(</span>j<span class="p">,</span>u<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span><span class="p">(</span>j<span class="p">,</span>u<span class="p">,</span>i<span class="p">,</span>t<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>Flow<span class="p">[</span>j<span class="p">,</span>u<span class="p">,</span>i<span class="p">,</span>t<span class="p">]</span><span class="w"> </span><span class="o">=</span>
+<span class="w">	</span><span class="kr">if</span><span class="w"> </span>i<span class="w"> </span><span class="o">==</span><span class="w"> </span>S<span class="w"> </span><span class="kr">and</span><span class="w"> </span>t<span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span>v
+<span class="w">        </span><span class="kr">else</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span>i<span class="w"> </span><span class="o">==</span><span class="w"> </span>T<span class="w"> </span><span class="kr">and</span><span class="w"> </span>t<span class="w"> </span><span class="o">==</span><span class="w"> </span>MaxT<span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="o">-</span>v
+<span class="w">        </span><span class="kr">else</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Running  a linear solver on this example generates an optimal
+solution of value 10 with the following flows:</p>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>S<span class="w"> </span><span class="mi">1</span><span class="w"> </span>s<span class="w"> </span><span class="mi">1</span><span class="w">   </span><span class="mi">10</span>
+s<span class="w"> </span><span class="mi">1</span><span class="w"> </span>A<span class="w"> </span><span class="mi">2</span><span class="w">    </span><span class="mi">3</span>
+s<span class="w"> </span><span class="mi">1</span><span class="w"> </span>B<span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="mi">3</span>
+s<span class="w"> </span><span class="mi">1</span><span class="w"> </span>s<span class="w"> </span><span class="mi">2</span><span class="w">    </span><span class="mi">4</span>
+A<span class="w"> </span><span class="mi">2</span><span class="w"> </span>B<span class="w"> </span><span class="mi">3</span><span class="w">    </span><span class="mi">2</span>
+A<span class="w"> </span><span class="mi">2</span><span class="w"> </span>t<span class="w"> </span><span class="mi">3</span><span class="w">    </span><span class="mi">1</span>
+A<span class="w"> </span><span class="mi">3</span><span class="w"> </span>A<span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="mi">1</span>
+A<span class="w"> </span><span class="mi">3</span><span class="w"> </span>B<span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="mi">2</span>
+A<span class="w"> </span><span class="mi">3</span><span class="w"> </span>t<span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="mi">1</span>
+A<span class="w"> </span><span class="mi">4</span><span class="w"> </span>t<span class="w"> </span><span class="mi">5</span><span class="w">    </span><span class="mi">1</span>
+B<span class="w"> </span><span class="mi">3</span><span class="w"> </span>t<span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="mi">2</span>
+B<span class="w"> </span><span class="mi">4</span><span class="w"> </span>t<span class="w"> </span><span class="mi">5</span><span class="w">    </span><span class="mi">5</span>
+s<span class="w"> </span><span class="mi">2</span><span class="w"> </span>A<span class="w"> </span><span class="mi">3</span><span class="w">    </span><span class="mi">4</span>
+t<span class="w"> </span><span class="mi">3</span><span class="w"> </span>t<span class="w"> </span><span class="mi">4</span><span class="w">    </span><span class="mi">1</span>
+t<span class="w"> </span><span class="mi">4</span><span class="w"> </span>T<span class="w"> </span><span class="mi">5</span><span class="w">    </span><span class="mi">4</span>
+t<span class="w"> </span><span class="mi">5</span><span class="w"> </span>T<span class="w"> </span><span class="mi">5</span><span class="w">    </span><span class="mi">6</span>
+</pre></div>
+</div>
+<p>The example shown here is extremely simplified; in a realistic application
+other fundamental aspects should be included. In particular  it
+would be advisable that out of each node the
+whole flow is
+routed along a single path and not split into different flows.
+This is needed in order to be able to put clear and not ambiguous
+directions to follow when leaving a node.</p>
+</div></blockquote>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Assignment.html" title="Previous document"><span class="section-number">10. </span>Assignment or bi-partite matching</a>
+        </li>
+        <li>
+          <a href="Objectives.html" title="Next document"><span class="section-number">12. </span>Objectives in optimization models</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="Assignment.html" title="previous chapter"><span class="section-number">10. </span>Assignment or bi-partite matching</a></li>
+      <li>Next: <a href="Objectives.html" title="next chapter"><span class="section-number">12. </span>Objectives in optimization models</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/Dynamic.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

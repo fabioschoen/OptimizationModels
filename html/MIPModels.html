@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>16. Mixed Integer Linear Models &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="17. The fixed charge problem" href="StructuredMIPmodels.html" />
+    <link rel="prev" title="15. Uncertainty modeling: Stochastic optimization models" href="StochasticOptimization.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="StochasticOptimization.html" title="Previous document"><span class="section-number">15. </span>Uncertainty modeling: Stochastic optimization models</a>
+        </li>
+        <li>
+          <a href="StructuredMIPmodels.html" title="Next document"><span class="section-number">17. </span>The fixed charge problem</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="mixed-integer-linear-models">
+<h1><span class="section-number">16. </span>Mixed Integer Linear Models<a class="headerlink" href="#mixed-integer-linear-models" title="Link to this heading">¶</a></h1>
+<section id="introduction">
+<h2><span class="section-number">16.1. </span>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>A <span class="target" id="index-0"></span>Mixed Integer Linear Optimization model   (<span class="target" id="index-1"></span>MILO or
+<span class="target" id="index-2"></span>MILP)
+is an optimization
+problem with some variables constrained to be
+integer. Apart from this, the model is linear, with a linear objective
+function and linear equalities or inequalities. Quite often all
+variables are constrained to be integer, in which case the problem is
+called an <span class="target" id="index-3"></span>Integer Linear Optimization  problem, (<span class="target" id="index-4"></span>ILO or
+<span class="target" id="index-5"></span>ILP). The standard form of an ILO problem is</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}} c^T \var{x} &amp; \\
+A \var{x} &amp; = b \\
+\var{x} &amp; \geq 0 \\
+\var{x} &amp; \in \Z^n
+\end{align*}</div><p>Differently from Linear Optimization models, the feasible set
+is now a discrete set, composed of a finite or an infinite but countable
+set of feasible solutions.</p>
+<p>Apparently the problem, when compared to the pure linear case, might seem
+simpler to solve; in the finite case, an  explicit enumeration of all
+feasible solutions might be possible and, thus,  in  finite time the
+optimal feasible solution, whichever the objective, can be found.
+Unfortunately the exact opposite is true: problems involving discrete
+variables are, in most cases, much more difficult to solve than pure
+linear optimization ones. The discrete and possibly finite
+nature of the feasible set, although
+a desirable property for what concerns finite convergence of an
+algorithm, does not guarantee that an efficient algorithm can be
+built. Indeed, frequently, an explicit  enumeration of all feasible
+solutions requires a computational time which increases exponentially
+with the dimension of the problem. Even when restricting to the most
+basic and also most useful ILO problem where all variables are
+constrained to be <em>binary</em>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x}} c^T \var{x} &amp; \\
+A \var{x} &amp; = b \\
+\var{x} &amp; \geq 0 \\
+\var{x} &amp; \in \{0,1\}^n
+\end{align*}</div><p>an explicit enumeration would require checking
+<span class="math notranslate nohighlight">\(2^n\)</span> solutions, a task which becomes impossible for modern
+computational hardware already for modest values of <span class="math notranslate nohighlight">\(n\)</span>, say
+100 or more. There are many difficulties in solving this kind of
+problems, and it is not the aim of this notes to present algorithmic
+approaches. However, for integer optimization models, the formulation,
+i.e., the model, and the possibility of
+solving a specific instance to optimality are quite strongly related. The
+same problem, or the same constraints, might be formulated in different
+possible ways, only some of which will lead to a solution requiring a
+reasonable computational effort. Thus we need to scratch at least the
+surface of the computational aspects involved in the solution of
+integer optimization problems.</p>
+<p>Most commercial as well as open source software for the solution
+of integer linear optimization problems are based on an algorithmic scheme
+called <span class="target" id="index-6"></span>Branch &amp; Bound, or on some variations like, e.g.,
+<span class="target" id="index-7"></span>Branch &amp; Cut. A fundamental requirement for these algorithms
+is the availability of good lower bounds for the objective function.</p>
+<p>Given any optimization problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}\min_{\var{x} \in S} f(\var{x})\end{align*}</div><p>a <span class="target" id="index-8"></span>relaxation is another
+optimization problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}\min_{\var{x} \in Q} g(\var{x})\end{align*}</div><p>which satisfies the following requirements:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(Q \supseteq S\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\forall\,\var{x} \in S \implies g(\var{x}) \leq f(\var{x})\)</span></p></li>
+</ul>
+<p>These two requirements have been given in order to guarantee that the
+optimal value of the relaxation, if an optimum exists, is always a
+lower bound of the optimal value of the original problem. Without
+providing a formal proof, we can see that the first requirement asks
+for a feasible set of the relaxation which contains all of the
+original feasible solutions. This is one possible technique for
+obtaining a lower bound, namely expanding the set of feasible
+solutions. The second requirement states that for all feasible
+solutions, the relaxation produces a lower bound of the original objective
+function. And this is clearly a second possibility for obtaining a
+lower bound.</p>
+<p>In mixed integer linear optimization, the easiest bound is found through
+the <span class="target" id="index-9"></span>continuous relaxation, which simply corresponds to
+dropping the integrality constraint. Finding a good lower bound, which
+in  a minimization context will mean finding one with the highest
+possible optimal objective value, is a fundamental step in building
+good exact optimization algorithms. By “exact” we mean algorithms
+which either will stop with a certifiably optimal solution to the
+problem, or they will stop with a proof of infeasibility of the
+problem,
+or, when stopped before natural termination, will return a
+feasible solution along with an upper bound on the error with respect to
+the optimum value. An exact algorithm, if stopped before termination,
+might however return no feasible solution, and, in such a case, we are
+left with the doubt whether the problem is infeasible or a feasible
+solution might exist but was not found yet. The current “optimality gap” estimate,
+which is the difference between the objective value of the best
+feasible solution found so far and the current lower bound on the
+optimum, depends both on the quality of feasible solutions observed as
+well as on the quality of the lower bound. Thus, in order to reduce
+this gap as much as possible, two strategies are needed:</p>
+<ol class="arabic simple">
+<li><p>finding good feasible solutions fast. This can be done within
+Branch &amp; Bound methods, but also outside them, by calling special
+purpose heuristic methods</p></li>
+<li><p>finding good lower bounds. This is mainly obtained through “good” relaxations</p></li>
+</ol>
+<p>In a Branch &amp; Bound scheme, the algorithm proceeds by subdividing the
+feasible set into subsets, and trying to solve subproblems within
+these subsets in a recursive way. Splitting the feasible region into
+subsets might have beneficial effects: sometimes the sub-problem
+associated to a subset is easy to solve to optimality; sometimes it is
+empty and, thus, no more subdivisions are required; sometimes
+computing the lower bound in a smaller region yields an higher lower
+bound and, in some cases, this  lower bound is greater then the current
+upper bound (best observed feasible solution). If this is the case,
+the region can be discarded from the solution process (“fathomed”) as
+it cannot contain an optimal solution. This procedure is called
+<span class="target" id="index-10"></span>bounding and gives the name “bound” to the algorithm</p>
+<p>Having good relaxations is fundamental in bounding and in stopping. It
+is important to consider that the <em>same</em> optimization problem can be
+formulated in many different ways, and that the way in which a problem
+is formulated might have a strong impact on the possibility to solve
+it to optimality in “reasonable” computational time. To illustrate
+the concept of relaxation, let us take a look to a toy problem in two variables.</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-2245fb9aca75d89004b1ff0715c95c1bd5989a08.png" alt="Figure made with TikZ" /></p>
+</div><p>The feasible set is a discrete, finite, set of points denoted in the
+picture by red dots. The formulation of this feasible set might
+be obtained through a set of linear inequalities, corresponding to the
+blue polyhedron, with the restriction of all variables to assume
+integer values only.  It is easy to see, however, that the polyhedron
+indicated in this picture is not the unique possible formulation for
+the same feasible set. There exist in fact different sets of
+inequalities which generate a polyhedron whose integer elements are
+exactly the same as those in the picture. As an example, consider the
+following:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-a067282b3f00a717b2ed56d70180606afacbabbc.png" alt="Figure made with TikZ" /></p>
+</div><p>The polyhedron represented  with dotted orange lines in the above
+picture is indeed a correct formulation of the same problem. In fact
+the set of feasible points with all integer coordinates is exactly the
+same as before. Let us formalize this concept.</p>
+<p>Given an Integer Linear Optimization problem, <span class="math notranslate nohighlight">\(P_1\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min c^Tx &amp;  \\
+Ax &amp; = b \\
+x &amp; \geq 0 \\
+x &amp; \in \Z^n
+\end{align*}</div><p>let <span class="math notranslate nohighlight">\(S \subseteq \Z^n\)</span> be the feasible set. Consider another ILO
+problem, <span class="math notranslate nohighlight">\(P_2\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min c^Tx &amp;\\
+Cx &amp; = d \\
+x &amp; \geq 0 \\
+x &amp; \in \Z^n
+\end{align*}</div><p>We say that the formulations <span class="math notranslate nohighlight">\(P_1\)</span> and <span class="math notranslate nohighlight">\(P_2\)</span> are
+<em>equivalent</em> if and only if they represent the same set of feasible
+solutions:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+S &amp; = \{x \in \Z^n: Ax=b, x \geq 0\} \\
+ &amp; = \{x \in \Z^n: Cx=d, x \geq 0\} \\
+\end{align*}</div><p>Why we might be interested in finding more than one <em>correct</em>
+formulation of the same problem? The reason is in the computational
+aspects. Consider, for the problem in the above figures, an
+optimization problem consisting in the minimization of, say,
+<span class="math notranslate nohighlight">\(-x_2\)</span>. In other words, we are looking to the feasible
+solution with maximum value of the second variable, i.e., the feasible
+point which lies as far as possible towards north. It is quite evident
+that the optimal solution to this problem is point <span class="math notranslate nohighlight">\((3,5)\)</span>
+with an objective function value equal to <span class="math notranslate nohighlight">\(-5\)</span>.  If we relax
+the first formulation, the optimal solution will be the top vertex in
+the blue figure, with an objective value <span class="math notranslate nohighlight">\(-6\)</span>. If we perform
+the same operation in the second formulation, the optimal solution of
+the relaxed problem would be <span class="math notranslate nohighlight">\((3.2, 5.5)\)</span>, with an objective
+function value <span class="math notranslate nohighlight">\(-5.5\)</span>, which is significantly closer to the
+optimum value. We can say, in this example, that the second
+formulation, although perfectly equivalent to the first one from the point
+of view of the set of feasible solutions, is preferable from the point
+of view of the quality of the relaxation. A formalization of this concept is the following:</p>
+<p>Given  two correct formulation of the same mixed integer linear
+optimization problem, we say that formulation  <span class="math notranslate nohighlight">\(P_2\)</span>  is a
+<span class="target" id="index-11"></span>stronger formulation with respect to  <span class="math notranslate nohighlight">\(P_1\)</span> if</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\{x \in \R^n: Cx=d, x \geq 0\} \subset
+\{x \in \R^n: Ax=b, x \geq 0\}
+\end{align*}</div><p>In other words, the second formulation is stronger (and thus better)
+than the first one if its continuous relaxation generates a polyhedron
+which is strictly included in the continuous relaxation of the first
+one.</p>
+<p>Given two formulations, it is not granted than one of the two is
+stronger than the other one, as neither of the two relaxed polyhedra might be
+contained in the other one. However, if this were the case, a third,
+stronger, formulation can always be found by taking all of the
+constraints of both the first and the second formulation. This gives
+rise to a formulation whose relaxation is the intersection between the
+two original ones and, thus, it is contained in both.</p>
+<p>Given the above definition, we might ask ourselves whether, in the
+hierarchy of possible formulations, there exist a “best” one, that is,
+a formulation whose relaxation is contained in every correct
+formulations of the problem. The answer is positive, at least under
+quite mild assumptions like, e.g., the existence of a formulation of
+the problem in which all of the coefficients are rational
+numbers. This strongest formulation is called the <span class="target" id="index-12"></span>ideal
+formulation. The following figure reports an example:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-49c50e0b43a6e550f2bbbee9a1892d1e385eacdb.png" alt="Figure made with TikZ" /></p>
+</div><p>As it can be seen in the figure, but also proven in general, the ideal
+formulation is characterized by the fact that its relaxation is the
+<span class="target" id="index-13"></span>convex hull of the feasible set, that is, the smallest convex
+set which contains all feasible solutions. The important theoretical
+result is that this smallest convex set is a polyhedron, so it might
+be represented as the set of solutions to a <em>finite</em> set of linear
+inequalities. Another fundamental property of the ideal formulation is
+the fact that every vertex, or, in the linear optimization context,
+every basic feasible solution of the ideal relaxation is feasible (i.e., is integer).</p>
+<p>From the point of view of our capability of solving a complex mixed
+integer optimization problem it might seem that knowing the ideal
+formulation would allow us to solve the problem with great efficiency,
+as the simplex algorithm, or any algorithm which returns an optimal
+basic solution, will  find the optimal <em>integer</em> solution,
+without any necessity to resort to branching or bounding. We say, in
+this case, that the branch and bound algorithm stops at its
+root. Although knowing a good formulation and, possibly, one which is
+as close as possible to the ideal one, might be very important in
+practice, some important issues have to be taken into account:</p>
+<ul class="simple">
+<li><p>in most real-life problems it is impossible to obtain the ideal
+formulation</p></li>
+<li><p>in some classes of widely studied problems the ideal formulation is
+known, or at least a very good formulation is available. However,
+very frequently, these good formulations have a huge number of
+constraints, typically exponentially growing in cardinality with
+the dimension of the original problem. Thus even if it remains true
+that a single run of a linear optimization algorithm would return
+the optimal integer solution, the huge dimension of the linear
+problem makes it impossible to solve it in reasonable time. And, in
+most cases, it is even impossible for lack both of space and of
+time,
+to list all of the constraints.</p></li>
+</ul>
+<p>However, it should be observed that it is not necessary
+to know a very good formulation of the whole problem. It seems more
+important to know a formulation which is good enough <em>in the
+neighborhood of the optimal solution</em></p>
+<p>The last observation tells us that a good strategy to solve a complex
+optimization problem might be that of starting with a good enough
+formulation, solving its relaxation and, if the solution is not
+feasible (integer) than a procedure might be called which generates
+one, or a few, constraints to be added to the current formulation in
+order to exclude the relaxed solution, without excluding any feasible
+one. These constraints are called <span class="target" id="index-14"></span>cuts and they might be
+obtained from an implicit representation of the ideal formulation, or,
+at least, from a large set of possible inequalities.</p>
+<p>These considerations might be investigated in a deeper way, but this
+would lead us outside the scope of this volume. What is very relevant
+and important here is to stress the fact that modeling, in the integer
+optimization context, is strongly linked to the computational aspects
+of the available solution algorithms. This was not the case in pure
+linear optimization problems, as seen up to now. In the purely linear
+case, all of the effort in modeling is in finding a correct
+representation of the problem. In integer optimization, unfortunately,
+this is not enough, in most cases, and a formulation needs to be found
+which is not only correct, but also “strong enough”.</p>
+<p>For the interested reader, some references to the polyhedral aspects
+of mixed integer linear optimization can be found in
+<span id="id1">[<a class="reference internal" href="Bibliography.html#id17" title="George Nemhauser and Laurence Wolsey. Integer and Combinatorial Optimization. John Wiley &amp; Sons, Inc., 1999.">Nemhauser and Wolsey, 1999</a>]</span>, <span id="id2">[<a class="reference internal" href="Bibliography.html#id18" title="Christos H. Papadimitriou and Kenneth Steiglitz. Combinatorial Optimization: Algorithms and Complexity. Dover Publications Inc., 1998.">Papadimitriou and Steiglitz, 1998</a>]</span>, <span id="id3">[<a class="reference internal" href="Bibliography.html#id19" title="Alexander Schrijver. Combinatorial Optimization: Polyhedra and Efficiency. Springer Verlag, 2003.">Schrijver, 2003</a>]</span>,
+among many others.</p>
+</section>
+<section id="modeling-with-integer-variables">
+<h2><span class="section-number">16.2. </span>Modeling with integer variables<a class="headerlink" href="#modeling-with-integer-variables" title="Link to this heading">¶</a></h2>
+<p>There exists a large class of problems in which
+variables need to be integer: in a
+production problem, the size of the batch to be produced is usually an
+integer quantity; in
+any diet problem, many of the variables associated to
+the quantity of food to be  bought should  be integer, as
+it is not allowed to purchase a part of a box or of a can. Even in usual
+cost minimization problems, the objective function can be thought of
+as integer valued,  as it is unreasonable  to consider monetary values
+which are not integer multiples of a given unit of
+reference (for example, one Euro cent).</p>
+<p>Although problems of this kind are everywhere, actually
+they are not usually considered as the main body in integer optimization
+and, indeed, often their resolution does not
+require any special integer optimization technique. The main reason
+lies in the fact that, quite often,
+problems of this kind have solutions whose numerical value is,
+in a certain sense, “large”: in a cost minimization problem, often the
+objective is on the order of thousands or millions
+of Euro. In these cases,  rounding the
+solution to the nearest integer does not change much the solution and
+can cause at most a tiny, negligible, violation of some constraint.
+So, these problems are indeed integer optimization ones, but it is
+possible to disregard integrality, solve them as continuous
+optimization models, and force the obtained solution to be integer
+through a simple rounding to the closest integer.
+Quite different is the case
+in which the components of the solution that must take on
+integer values have a magnitude which is comparable with those of the variations
+introduced by  rounding: in a
+diet problem, as an example, we might need to decide, for each food,
+whether to buy a single portion of it or not to buy that food at all: in this case
+it is impossible to establish a correct way to round
+a fractional solution to either 1 or 0, unless both possibilities are
+separately checked. Indeed, the decision problem itself is
+equivalent to that  of choosing  whether it is more convenient to round
+the solution either to 0 or to 1. So there is a large class of
+difficult integer linear optimization problems characterized
+by a rather limited number of alternatives for
+each decision variable - at an extreme, the case of binary variables,
+in which the choice is limited to two possible values only. The
+apparent simplicity of this case  is contradicted by the inherent
+difficulty of exploring an exponential number of possibilities: we
+have in fact two possible values for a variable, 4 for two variables,
+8 for three variables, …, <span class="math notranslate nohighlight">\(2^n\)</span> for <span class="math notranslate nohighlight">\(n\)</span> binary
+variables.</p>
+<p>Very often the decisions to be taken are not integer valued. But
+some decisions might be of a discrete nature: “either  this action or
+that one has to be chosen”. Sometimes variable ranges are
+discontinuous. In some other cases, logical constraints are to be
+imposed: “if this happens than that should be imposed”. In these cases it is possible
+to introduce additional variables into the problem that allow the
+correct formulation of these decisions. Usually, these additional
+variables are binary, as those variables might be associated to true/false
+statements and used to formulate logical constraints, as we will see next.</p>
+<section id="using-binary-variables-in-logical-constraints">
+<h3><span class="section-number">16.2.1. </span>Using binary variables in logical constraints<a class="headerlink" href="#using-binary-variables-in-logical-constraints" title="Link to this heading">¶</a></h3>
+<p>In this chapter we will see how
+binary variables can be used as indicator functions, i.e. functions
+which have value one if and only if a variable in the problem belongs
+to a specific set.
+These indicator variables  can be used to detect if a specific condition
+occurs and then used to impose another condition to the same or to
+another variable. This short presentation cannot convey the correct
+information on the real opportunities available when using binary
+variables, so we prefer to introduce the argument with an example.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-15"></span>Deciding road direction in urban  networks</p>
+</dd>
+</dl>
+<p>Consider a graph in which some arcs are not  oriented.
+On each arc a maximum capacity is assigned. The
+problem we would like to model in this example is the
+decision on the orientation of these arcs. As an example,
+in a road network we would like to choose the directions for a few
+one-way arcs,  in such a way that a measure of the maximum flow is
+optimized. In particular, consider the case of a maximum flow
+network problem between a source and a destination node in which we
+need to choose the orientation of a few arcs so as to
+maximize the flow. A more realistic application might consider two
+different flows, corresponding to morning and afternoon peak
+hours. During morning peak a source node generates flow towards the
+destination, while during the afternoon peak all the flow at the
+destination node has to be routed back to the origin.  The decision
+problem on how to make the network directed is a relevant network
+design problem.</p>
+<p>Here we will see how it is possible to use binary variables to model
+the binary decision on the allowed direction of flow for a specific
+edge  <span class="math notranslate nohighlight">\(\{i,j\}\)</span> which we would like to transform into an
+oriented arc, either   <span class="math notranslate nohighlight">\((i,j)\)</span> or   <span class="math notranslate nohighlight">\((j,i)\)</span>.
+We introduce two binary variables associated to each of the two
+possible arcs: <span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij}\)</span>
+and <span class="math notranslate nohighlight">\(\mathvar{\delta}_{ji}\)</span>;
+to each of these variables we would like to associate  the allowed
+direction of travel:
+if <span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij} = 1\)</span>
+the arc is oriented so that the flow is allowed  in the direction
+<span class="math notranslate nohighlight">\(i \rightarrow j\)</span>.
+When formulating the model we should take into account that we need to
+link variables by means of equations or inequalities, while “propositional
+connectives”, like NOT (negation), IF, AND, OR, NAND, NOR, XOR,  are
+not allowed.</p>
+<p>Saying that an arc has a specific orientation, means that along that
+arc a flow is allowed, whose value is between zero and the capacity of
+the arc.
+On the contrary, if the flow is not possible along that arc, both the
+lower as well as the upper bound on the flow will be zero.
+Denoting by
+<span class="math notranslate nohighlight">\(\param{CapMax}_{ij}\)</span> the maximum arc capacity, the following
+set of feasible solutions needs to be considered:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ij} = 1,&amp;\quad  0 \leq \var{f}_{ij} \leq \param{CapMax}_{ij} \\
+\mathvar{\delta}_{ij} = 0,&amp;\quad  0 \leq \var{f}_{ij} \leq 0
+\end{align*}</div><p>The last double inequality simply states that the
+flow must be zero.
+Thanks to the fact that the logical variable is binary, we can use
+it to “switch” the capacity on or off: this is easily obtained
+multiplying the arc capacity by the binary variable.
+Thus the set of feasible solutions given above, which is indeed
+associated to  a logical constraint, can
+be formulated  through a pair of linear inequalities:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+0 \leq \var{f}_{ij} \leq \mathvar{\delta}_{ij} \param{CapMax}_{ij}
+\end{align*}</div><p>This is a fundamental constraint in which a  link is defined
+between a binary decision  variable and a continuous flow
+variable.
+A similar model should be imposed to the flow on the opposite direction:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+0 \leq \var{f}_{ji} \leq \mathvar{\delta}_{ji} \param{CapMax}_{ij}
+\end{align*}</div><p>In the problem analyzed here a constraint should also be imposed to force
+one and only one direction to be chosen.
+In practice it is sufficient to impose that the decision
+on one of the two directions is opposite to the decision on  the
+other one. That is, if we decide to allow a flow along one of the
+two directions, flow must be prohibited along the other one. In formula:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ji} = 1 - \mathvar{\delta}_{ij}
+\end{align*}</div><p>or, equivalently,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ij} + \mathvar{\delta}_{ji} = 1
+\end{align*}</div><p>The first equality reminds us that the  value of one of the
+two logical variables is the logical negation of the other one (one
+is true, i.e., equal to 1, if and only if the other one is false,
+or 0). That equation shows how to define a logical variable as the
+negation of another one. The second, equivalent, equation can also
+be interpreted as an exclusive or (XOR) statement: it forces exactly
+one out of the two variables to be true (one), while the other one
+is forced to zero. This might be extended to a generalized XOR
+statement involving several variables.</p>
+<p>The complete  model is thus:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+0 \leq \var{f}_{ij} &amp; \leq \mathvar{\delta}_{ij} \param{CapMax}_{ij} \\
+0 \leq \var{f}_{ji} &amp; \leq \mathvar{\delta}_{ji} \param{CapMax}_{ij} \\
+\mathvar{\delta}_{ij} + \mathvar{\delta}_{ji} &amp; = 1
+\end{align*}</div><p>Of course in this problem it is also possible to eliminate one of
+the two binary variables, solving the corresponding XOR equation:</p>
+<div class="math notranslate nohighlight">
+   \begin{align*}
+   0 \leq \var{f}_{ij} &amp; \leq \mathvar{\delta}_{ij} \param{CapMax}_{ij} \\
+   0 \leq \var{f}_{ji} &amp; \leq (1- \mathvar{\delta}_{ij})
+   \param{CapMax}_{ij}.
+   \end{align*}</div></div></blockquote>
+<p>This application has been presented in order to show
+an elementary link between an indicator variable and a continuous
+one.
+In the example above, it was shown that, through a
+binary  variable, two different situations can be modeled (flow
+allowed / no
+flow).</p>
+<p>A very useful tool to link
+binary decision variables  to other variables is the following
+constraint:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} \leq \param{A} \mathvar{\delta} + \param{B} (1- \mathvar{\delta})
+\end{align*}</div><p>or the analogue one in the opposite direction:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} \geq \param{A} \mathvar{\delta} + \param{B} (1- \mathvar{\delta})
+\end{align*}</div><p>Here  <span class="math notranslate nohighlight">\(\var{x}\)</span> represents a
+variable or an expression, <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span> is a
+binary indicator variable (when possible, we will  use
+<span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span> to denote binary variables in such a way
+that they can be immediately recognized), <span class="math notranslate nohighlight">\(\param{A}\)</span>
+and  <span class="math notranslate nohighlight">\(\param{B}\)</span>  are suitable constant.
+Let us consider the first inequality in more detail.
+Considering the  two possible values for the binary variable,
+the set of feasible solutions turns
+out to be:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\{\mathvar{\delta} = 1,  \var{x} \leq \param{A} \} &amp; \bigcup
+\{\mathvar{\delta} = 0,  \var{x} \leq \param{B}   \}
+\end{align*}</div><p>If we   assume, e.g.,
+that <span class="math notranslate nohighlight">\(\param{A} &lt;\param{B}\)</span>,   then in both cases <span class="math notranslate nohighlight">\(\var{x} \leq \param{B}\)</span>
+will be true.   However, in one case a more stringent upper bound will
+be obtained:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq \param{B} \\
+\mathvar{\delta} = 1 &amp; \implies \var{x} \leq \param{A}
+\end{align*}</div><p>The first is a “trivial” constraint, which is always satisfied whichever the
+value of the logical variable <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span>; the second
+one is a logical constraint, in the form of an implication.</p>
+<p>If, on the opposite,  <span class="math notranslate nohighlight">\(\param{B} &lt;\param{A}\)</span>, the
+same constraint would represent:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq \param{A} \\
+\mathvar{\delta} = 0 &amp; \implies \var{x} \leq \param{B}
+\end{align*}</div><p>In the example of the one-way arc problem,
+this constraint was used with the choice <span class="math notranslate nohighlight">\(\param{A} =
+\param{CapMax}_{ij}\)</span> and <span class="math notranslate nohighlight">\(\param{B} = 0\)</span>.
+In fact, this corresponds  to imposing the logical constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{f}_{ij} &amp; \leq \param{CapMax}_{ij} \\
+\mathvar{\delta}_{ij} &amp;= 0 \implies \var{f}_{ij} \leq 0
+\end{align*}</div><p>It might be worth to observe that the above implication
+only requires that the flow is zero in the event that the
+binary variable is zero. In the opposite case, it is not necessarily
+true that the flow is non zero.</p>
+<p>In general, the constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} \leq \param{A} \mathvar{\delta} + \param{B} (1- \mathvar{\delta})
+\end{align*}</div><p>can be interpreted as follows: if <span class="math notranslate nohighlight">\(\param{A} &lt; \param{B}\)</span> the constraint
+represents the logical implication</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq \param{B}\\
+\mathvar{\delta} = 1 &amp;\implies \var{x} \leq \param{A}
+\end{align*}</div><p>or, equivalently from a logical point of view,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq \param{B} \\
+\var{x}&gt; \param{A} &amp;\implies \mathvar{\delta} = 0
+\end{align*}</div><p>If  <span class="math notranslate nohighlight">\(\param{A}&gt; \param{B}\)</span>
+then the logical  constraint  would correspond to:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq \param{A} \\
+\mathvar{\delta} &amp; = 0 \implies \var{x} \leq \param{B}
+\end{align*}</div><p>or, equivalently,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq \param{A} \\
+\var{x} &amp; &gt; \param{B} \implies \mathvar{\delta} = 1
+\end{align*}</div><p>It seems to be a good idea, at this point, to recall some basic facts
+of first order propositional logic. The <span class="math notranslate nohighlight">\(\implies\)</span>
+connective can be
+written in an equivalent way
+using the “OR” (<span class="math notranslate nohighlight">\(\lor\)</span>)  and the “NOT” (<span class="math notranslate nohighlight">\(\lnot\)</span> )
+connectives.</p>
+<p>In particular, <span class="math notranslate nohighlight">\(A \implies B\)</span> is logically equivalent
+to <span class="math notranslate nohighlight">\(\lnot A \lor B\)</span>. Writing the truth table of the implication
+we get:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\begin{array} [c] {|c|c|c|}
+A &amp; B &amp; A \implies B \\ \hline
+T &amp; T &amp; T \\
+T &amp; F &amp; F \\
+F &amp; T &amp; T \\
+F &amp; F &amp; T \\ \hline
+\end{array}
+\end{align*}</div><p>We can therefore see that <span class="math notranslate nohighlight">\(A \implies B\)</span> corresponds to the following
+events: if <span class="math notranslate nohighlight">\(A\)</span> is true then <span class="math notranslate nohighlight">\(B\)</span> must be true,
+while if <span class="math notranslate nohighlight">\(A\)</span> is
+false, <span class="math notranslate nohighlight">\(B\)</span> can be either true or false. Or, put in a
+different but equivalent way, the implication only excludes the
+possibility that <span class="math notranslate nohighlight">\(A\)</span> is true while <span class="math notranslate nohighlight">\(B\)</span> is false, all
+other possible combinations being acceptable.</p>
+<p>It is also easy to
+see that the statement</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+A \implies B
+\end{align*}</div><p>is logically equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\lnot B \implies \lnot A;
+\end{align*}</div><p>as both are equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\lnot A \lor B
+\end{align*}</div><p>To prove
+this statement it is sufficient to build the truth tables of
+both logical expressions.</p>
+<p>Binary indicator variables are often used in a model
+to add logical constraints  linking continuous variables together.
+As an example, in a diet problem, consider the case in which
+the following constraint is required: “if food A is in the diet,
+then food B should be absent”. As an example, A might be fish while B
+is red wine. Denoting by
+<span class="math notranslate nohighlight">\(\var{x}_{A}\)</span> and <span class="math notranslate nohighlight">\(\var{x}_{B}\)</span> the variables
+corresponding to the quantities of the two food types,
+we would like to add the constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_{A}&gt; 0 \implies \var{x}_{B} = 0
+\end{align*}</div><p>One possibility to formulate this logical constraint consists in
+inserting, within the implication, a binary variable to indicate
+whether the event occurs:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_{A}&gt; 0 \implies \mathvar{\delta} = 1 \implies \var{x}_{B} = 0
+\end{align*}</div><p>In this case we can split the problem and formulate the two
+implications:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_{A}&gt; 0 &amp; \implies  \mathvar{\delta} = 1 \\
+\mathvar{\delta} = 1 &amp; \implies  \var{x}_{B} = 0
+\end{align*}</div><p>Let us start with the first one, which can be written in an equivalent
+way with the logical variable on the left hand side of the implication:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 0 \implies \var{x}_{A} \leq 0
+\end{align*}</div><p>Recall that logical constraints are used to impose inequalities; but
+<span class="math notranslate nohighlight">\(\var{x}_A \leq 0\)</span> is equivalent to <span class="math notranslate nohighlight">\(\var{x}_A = 0\)</span>, as
+non negativity constraints are imposed on all variables in a
+diet problem.</p>
+<p>The logical constraint as it has just been formulated associates a
+specific upper bound to the continuous variable. In order to
+be able to correctly formulate a constraint representing this logic, a
+“trivial” upper bound, which is always valid, should be considered.
+Assume that an upper limit is known for the quantity of food A in the
+diet (e.g., one portion at most); we denote by  <span class="math notranslate nohighlight">\(\param{Qmax}_A\)</span>
+this bound. Now the formulation can be obtained from:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A &amp; \leq \param{Qmax}_A\\
+\mathvar{\delta} = 0 &amp; \implies \var{x}_A \leq 0
+\end{align*}</div><p>and  the following constraint is then obtained:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A &amp; \leq \param{Qmax}_A \mathvar{\delta} + 0 (1-
+\mathvar{\delta}) &amp; \textrm{or, equivalently,} \\
+\var{x}_A &amp; \leq \param{Qmax}_A \mathvar{\delta}
+\end{align*}</div><p>It is immediate to verify that if  variable
+<span class="math notranslate nohighlight">\(\var{x}_A\)</span> takes a (strictly positive value, then
+the  logical variable <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span> will be forced to take the value 1.
+In a similar way we can proceed for the second part
+of the implication. As in the case
+just analyzed, we need to formulate an implication that matches the desired constraint
+in case <span class="math notranslate nohighlight">\(\mathvar{\delta} = 1\)</span> and a trivial, always true,
+constraint to apply in  the
+default case. The logical constraint we would like to formulate is</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 1 \implies \var{x}_B = 0
+\end{align*}</div><p>Assuming again that   in a diet problems all variables are constrained to be
+non-negative variables, the constraint
+<span class="math notranslate nohighlight">\(\var{x}_B = 0\)</span>  can be equivalently expressed
+as <span class="math notranslate nohighlight">\(\var{x}_B \leq 0\)</span>. Notice that this transformation of an
+equation into an inequality is necessary when, as here, the equation
+appears on the right hand side of the implication connective.</p>
+<p>The logical constraint to be formulated is  therefore:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 1 \implies \var{x}_B \leq 0
+\end{align*}</div><p>In the alternative case <span class="math notranslate nohighlight">\(\mathvar{\delta} = 0\)</span>, the
+constraint must turn out to be a  trivial one. If, as
+in the  case of food type A, also for food type B, an
+upper limit <span class="math notranslate nohighlight">\(\param{Qmax}_B\)</span> is given, then the formulation becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_B \leq \param{Qmax}_B (1- \mathvar{\delta})
+\end{align*}</div><p>and therefore  the whole model sought has the form</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_{A} &amp; \leq \param{Qmax}_A \mathvar{\delta} \\
+\var{x}_{B} &amp; \leq \param{Qmax}_B (1- \mathvar{\delta})
+\end{align*}</div><p>The transformation just introduced is just one of the many
+possibilities to transform a logical statement into a set of linear
+equations and inequalities. Many other models of the same constraint
+are indeed possible.
+A different possibility for the example analyzed here
+consists in re-writing the original logical constraint in a
+<span class="target" id="index-16"></span>disjunctive form, i.e., as a set of statements connected one
+to the other through an “OR” logical connective.
+Recalling the definition of the logical implication,
+the constraint analyzed in this part might also  be expressed as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A \leq 0 \lor \var{x}_B \leq 0
+\end{align*}</div><p>To translate this constraint into linear inequalities an idea might be
+that of associating a
+binary variable  to each one of  the two events
+<span class="math notranslate nohighlight">\(\var{x}_A \leq 0\)</span> and <span class="math notranslate nohighlight">\(\var{x}_B \leq 0\)</span>. Let
+<span class="math notranslate nohighlight">\(\mathvar{\delta}_A\)</span> and <span class="math notranslate nohighlight">\(\mathvar{\delta}_B\)</span>
+denote these logical variables. Assume we have already introduced
+suitable constraints so that if any of these binary variables has vale
+1 (true)  then the event we would like to model is true.
+Once this has been done (and we will see how to formulate this link),
+the constraint to be imposed to model the “OR” connective  is
+rather simple; in fact the logical  “OR” only excludes the case
+in which  both variables are zero. Thus the logical
+constraint <span class="math notranslate nohighlight">\(\mathvar{\delta}_A = 1 \lor \mathvar{\delta}_B = 1\)</span>
+can be translated into the linear constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A + \mathvar{\delta}_B &amp; \geq 1
+\end{align*}</div><p>This constraint allows any combination of the values of the two
+binary variables except
+the case <span class="math notranslate nohighlight">\(\mathvar{\delta}_A=\mathvar{\delta}_B=0\)</span>.
+This constraint, therefore, correctly represents the logical “OR”
+constraint. It is now  necessary to link the logical variables to the
+events we wish to keep under control. The above logical constraint
+forces at least one of the two binary variables to be equal to 1.
+We would like now to add a constraint which, when a binary variable is
+1 (“true”), forces the event we are interested in (<span class="math notranslate nohighlight">\(\var{x}_A
+\leq 0\)</span>) to be true.</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A = 1 &amp; \implies \var{x}_A \leq 0 \\
+\mathvar{\delta}_B = 1 &amp; \implies \var{x}_B \leq 0
+\end{align*}</div><p>The two constraints are formally identical, so we concentrate on the
+first one. Recall that, besides what is written above, we should take
+into account that, when <span class="math notranslate nohighlight">\(\mathvar{\delta}_A = 0\)</span>, the
+constraint should become a  trivial one. We obtain thus the following
+formulation:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A \leq 0 \mathvar{\delta}_A + \param{Qmax}_A (1- \mathvar{\delta}_A)
+\end{align*}</div><p>and, similarly, for the second linking constraint:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_B \leq 0 \mathvar{\delta}_B + \param{Qmax}_B (1- \mathvar{\delta}_B)
+\end{align*}</div><p>In summary, the complete model can be formulated as follows:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A &amp; \leq \param{Qmax}_A (1- \mathvar{\delta}_A) \\
+\var{x}_B &amp; \leq \param{Qmax}_B (1- \mathvar{\delta}_B) \\
+\mathvar{\delta}_A + \mathvar{\delta}_B &amp; \geq 1
+\end{align*}</div><p>It is important to observe that
+we decided  not to formulate a
+double logical implication:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A &gt;0 &amp;\iff \var{x}_B = 0
+\end{align*}</div><p>(we choose fish if and only if there is no red wine in the diet).
+In order to formulate this double implication,  we would need to add the
+following constraint to the model:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_B = 0 \implies \var{x}_A&gt; 0
+\end{align*}</div><p>Following the first  modeling example we obtain:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_B = 0 &amp; \implies \mathvar{\delta} = 0 \\
+\mathvar{\delta} = 0 &amp; \implies \var{x}_A&gt; 0
+\end{align*}</div><p>while, with   the second  logical constraint formulation, we have:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A&gt; 0 \lor \var{x}_B&gt; 0
+\end{align*}</div><p>and the constraints to be formulates are:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A = 0 &amp; \implies \var{x}_A&gt; 0 \\
+\mathvar{\delta}_B = 0 &amp; \implies \var{x}_B&gt; 0
+\end{align*}</div><p>In addition to these constraints, we should require that one of the
+two variables <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span> to be zero:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(1- \mathvar{\delta}_A) + (1- \mathvar{\delta}_B) &amp; \geq 1
+\end{align*}</div><p>or</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A + \mathvar{\delta}_B &amp; \leq 1
+\end{align*}</div><p>but, taking into account also the previously imposed “OR” constraint,
+it is easy to see that we are indeed interested in an “XOR” (exclusive
+OR) connective:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A + \mathvar{\delta}_B &amp; = 1
+\end{align*}</div><p>Whichever the way the connection between logical variables and
+continuous one is formulated,
+we are eventually required to formulate an implication of the
+following type:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 1 &amp; \implies \var{x}&gt; 0.
+\end{align*}</div><p>(or an analogous one with <span class="math notranslate nohighlight">\(\mathvar{\delta} = 0\)</span> on the left
+hand side).
+A constraint of this type <em>cannot</em> be represented
+by means of linear constraints with continuous and binary variables.
+Indeed, it can actually be proven
+<span id="id4">[<a class="reference internal" href="Bibliography.html#id20" title="Roberth G. Jeroslow. Logic-Based Decision Support: Mixed Integer Model Formulation. North Holland, 1989.">Jeroslow, 1989</a>]</span> that a transformation of this logical implication
+to linear constraints is indeed impossible.</p>
+<p>A possible partial solution would be
+to strengthen  the constraint <span class="math notranslate nohighlight">\(\var{x}&gt; 0\)</span> in <span class="math notranslate nohighlight">\(\var{x}
+\geq \varepsilon&gt; 0\)</span>; this choice would exclude some
+solutions from the feasible set. In many cases, even if not always,
+this is acceptable. For example, in the case of a diet, we
+might require that if we decide to buy a specific food type,
+we must purchase at least a certain minimum quantity, for example
+a single portion. In this case, setting <span class="math notranslate nohighlight">\(\varepsilon = 1.0\)</span>, we
+would get</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_{A} &amp; \geq \mathvar{\delta} \\
+\var{x}_{B} &amp; \geq (1- \mathvar{\delta})
+\end{align*}</div><p>We can see that, by combining these constraints with the previous ones, if
+<span class="math notranslate nohighlight">\(\mathvar{\delta} = 1\)</span> we would be forced to buy at least
+one portion  of food A and no food B, while in the opposite case
+food B would be present with at least 1 units while food A would be absent.</p>
+<p>It can also be noticed that, in this case, it is also possible
+obtain the same effect of these last constraints without resorting to
+logical variables:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A + \var{x}_B &amp; \geq \varepsilon
+\end{align*}</div><p>In fact, the first group of  constraints  introduced guarantee that,
+if  food A is in the diet, then food B would not be included. In this
+case, food A would be in the diet with at least <span class="math notranslate nohighlight">\(\varepsilon\)</span>
+portions.  Otherwise, if food A is not in the diet, then this constraint
+would require the presence of at least <span class="math notranslate nohighlight">\(\varepsilon\)</span>  portions
+of food B, as requested.</p>
+<p>Another simple example might arise in production planning
+models. Assume we would like to add a constraint which imposes that,
+once the inventory reaches a level zero, it will remain zero until the
+end of the planning period. This might be a decision to close an
+inventory:  we keep the inventory until it is needed, but from a
+period on it will remain closed. The closing period is not fixed a
+priori, but it is left to the optimization model to decide when it
+will be  convenient to switch it off. If, as we have seen in the
+chapter <a class="reference internal" href="MultiPeriodModels.html#multi-period-models"><span class="std std-ref">Multi Period Models</span></a>, a variable <span class="math notranslate nohighlight">\(\var{s}_t\)</span>
+represents the inventory level at the end of period <span class="math notranslate nohighlight">\(t\)</span>,
+the logical constraint to be included is</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s}_t = 0 \implies \var{s}_{t+1} = 0 \quad \forall\,t \in
+\{1,2,\ldots, T-1\}
+\end{align*}</div><p>We may add a binary variable <span class="math notranslate nohighlight">\(\mathvar{\delta}_t\)</span> and
+reformulate the constraints as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s}_t = 0 &amp; \implies \mathvar{\delta}_t = 1 \\
+ \mathvar{\delta}_t = 1  &amp; \implies \var{s}_{t+1} = 0
+\end{align*}</div><p>and these  can be put in a linear form as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s}_t  &amp; \geq \varepsilon (1-\mathvar{\delta}_t) \\
+\var{s}_{t+1} &amp; \leq M_t (1-\mathvar{\delta}_t)
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\varepsilon\)</span> is a small threshold corresponding to a
+minimum non zero inventory level and <span class="math notranslate nohighlight">\(M_t\)</span> is an upper bound
+on the inventory level at each time period.</p>
+</section>
+<section id="using-binary-variables-to-impose-constraints">
+<h3><span class="section-number">16.2.2. </span>Using binary variables to impose constraints<a class="headerlink" href="#using-binary-variables-to-impose-constraints" title="Link to this heading">¶</a></h3>
+<p>It is possible, in quite a simple way, to use binary variables
+to impose  a generic linear constraint.
+Actually, for inequality constraints, it is sufficient to
+use the techniques just presented and applying it to the slack or surplus variable of
+the constraint. For example, in order to formulate the following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 1 \implies \sum_j a_j \var{x}_j \leq b
+\end{align*}</div><p>we can simply  introduce the slack variable</p>
+<div class="math notranslate nohighlight">
+ \begin{align*}
+ \var{s} = b- \sum_j a_j \var{x}_j
+ \end{align*}</div><p>and formulate the constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 1 \implies \var{s} \geq0
+\end{align*}</div><p>and get to:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{s} \geq 0 \mathvar{\delta} + L (1- \mathvar{\delta})
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(L &lt;0\)</span> is a trivial lower bound
+for <span class="math notranslate nohighlight">\(\var{s}\)</span>, or, equivalently, for <span class="math notranslate nohighlight">\(b- \sum_j a_j
+\var{x}_j\)</span>. Re-writing the constraint without introducing the slack
+variable, we get:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_j a_j \var{x}_j \leq b - L (1- \mathvar{\delta})
+\end{align*}</div><p>To obtain a good  estimate of the lower bound <span class="math notranslate nohighlight">\(L\)</span> in cases
+in which it  is not evident from the
+context, a linear optimization  problem could be solved with the objective of
+minimizing <span class="math notranslate nohighlight">\(b - \sum_j a_j \var{x}_j\)</span> within the constraints
+of the model.</p>
+<p>Similarly, we might also proceed by considering the left hand side
+of the inequality as a variable, and deduce
+the model</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+a^T\var{x} \leq b \mathvar{\delta} + M (1- \mathvar{\delta})
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(M\)</span> is an  upper bound of the left hand side <span class="math notranslate nohighlight">\(\sum_j a_j
+\var{x}_j\)</span> in the feasible set.</p>
+<p>As an example, in a diet problem assume that  we wish to impose
+that, if the total fat exceeds 2 (mg) then the saturated fat contents
+should not be more than one  half of the total fat. Let
+<span class="math notranslate nohighlight">\(\param{Fat}_j\)</span> and <span class="math notranslate nohighlight">\(\param{SatFat}_j\)</span> the amount
+of total fat and of
+saturated fat  in one portion of  food <span class="math notranslate nohighlight">\(j\)</span> .
+We need to require:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_j \param{Fat}_j \var{x}_j&gt; 2 &amp;\implies \mathvar{\delta} = 1 \\
+\mathvar{\delta} = 1 &amp; \implies \sum_j \param{SatFat}_j \var{x}_j
+\leq 0.5 \sum_j \param{Fat}_j \var{x}_j
+\end{align*}</div><p>Assuming that saturated fat is a part of the total fat contents and
+that for both a maximum limit of 5 (in some unit of measurement) is
+given, we obtain:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 0 &amp; \implies \sum_j \param{Fat}_j \var{x}_j \leq2 \\
+&amp; \sum_j \param{Fat}_j \var{x}_j \leq5 \\
+&amp; \\
+\mathvar{\delta} = 1 &amp; \implies (\sum_j \param{SatFat}_j
+\var{x}_j -0.5 \sum_j \param{Fat}_j \var{x}_j) \leq0 \\
+&amp; (\sum_j \param{SatFat}_j \var{x}_j
+-0.5 \sum_j \param{Fat}_j \var{x}_j) \leq5
+\end{align*}</div><p>The last right hand side, 5, was obtained by choosing the upper bound
+on the total saturated fat (5) and subtracting a lower bound on the
+total fat (0). Taking into account, however, that for each food the
+saturated fat content is always lower than the total fat, it can be
+seen that the right hand side of this last constraint might have been
+set to 2.5 instead.</p>
+<p>It is easy to obtain, at this point,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_j \param{Fat}_j \var{x}_j  \leq5 \mathvar{\delta} +2
+(1- \mathvar{\delta}) &amp; = 2 + 3 \mathvar{\delta} \\
+\sum_j (\param{SatFat}_j -0.5 \param{Fat}_j) \var{x}_j &amp;
+\leq5 (1- \mathvar{\delta})
+\end{align*}</div><p>It can be checked, by direct substitution, that this model indeed
+captures the required logical constraint.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-17"></span>Project Planning with incompatible resources</p>
+</dd>
+</dl>
+<p>Consider a <a class="reference internal" href="ShortestPath.html#cpm"><span class="std std-ref">Project Planning</span></a> problem with
+some  precedence constraints, similar to the model discussed
+previously, as an application of the dual of the longest path
+problem.</p>
+<p>In this kind of models there are pairs of activities for which
+a temporal precedence constraint needs to be imposed
+(for example, the roof cannot be built
+before finishing the main pillars).</p>
+<p>In some situations, however, there exist pairs of <em>incompatible</em> activities,
+that is, activities whose scheduling should be done in such a way
+that they do not overlap in time.
+This may happen when both activities require the exclusive use of
+the same resource. In a recipe planning example,  there exists
+no logical precedence between the operation of  boiling
+water and the activity of sauce preparation; they might be planned
+in quite an independent way, starting any of them without too much
+consideration of the starting time of the other one. However, when both
+require a scarce resources, a precedence might be needed. Think, as
+an example, to the situation in which a single fire is available.
+In this case a precedence should be imposed
+between  these two activities, as either boiling is started and
+finished before the beginning of sauce preparation, or on the
+opposite, sauce preparation should be scheduled to finish before
+starting boiling the water.
+So, there must be a sequence between the two operations, but this
+sequence in not imposed “from the outside”, but is part of the
+decision process: which precedence is more convenient, from the
+objective function point of view?</p>
+<p>In a case like this one, in which  the incompatibility is limited to
+a few pairs of activities, it  would be trivial to solve a
+number of planning problems, trying all
+possible precedences. In this case we might solve a CPM problem
+with activity sauce preparation after activity boil water, and
+another one with activity boil water after activity prepare the
+sauce. At the end we compare the total project durations in
+the two cases and choose the shortest one.</p>
+<p>However it is easily understood that, as the number of incompatible pairs
+grows, the number of cases to check grows exponentially
+and, therefore, an explicit enumeration is out of question.</p>
+<p>We can however use logical variables to formulate these
+incompatibility constraints.</p>
+<p>Let <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(j\)</span> be the indices of two
+incompatible activities whose start times are represented by
+variables <span class="math notranslate nohighlight">\(\var{t}_i\)</span> and <span class="math notranslate nohighlight">\(\var{t}_j\)</span>
+respectively.
+Let <span class="math notranslate nohighlight">\(\param{d}_i\)</span> and <span class="math notranslate nohighlight">\(\param{d}_j\)</span> the
+durations of these activities. To formulate the incompatibility
+we need  to impose the logical constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{t}_i &amp; \geq \var{t}_j + \param{d}_j \qquad  \lor \\
+\var{t}_j &amp; \geq \var{t}_i + \param{d}_i
+\end{align*}</div><p>In order to formulate  these constraint we might, as usual,
+follow different paths. For example,  associating a binary variable
+<span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij}\)</span> to the event <span class="math notranslate nohighlight">\(i\)</span> precedes
+<span class="math notranslate nohighlight">\(j\)</span>,  we would get</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ij} = 1
+&amp; \implies \var{t}_j - \var{t}_i \geq
+\param{d}_i \\
+\mathvar{\delta}_{ji} = 1 &amp; \implies \var{t}_i - \var{t}_j \geq
+\param{d}_j \\
+\mathvar{\delta}_{ij} + \mathvar{\delta}_{ji} &amp; = 1
+\end{align*}</div><p>Let  <span class="math notranslate nohighlight">\(\param{T}_{\min}\)</span> and <span class="math notranslate nohighlight">\(\param{T}_{\max}\)</span> denote
+the earliest starting time of the project and an
+upper limit on its completion.  We obtain:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{t}_j - \var{t}_i &amp; \geq \param{d}_i
+\mathvar{\delta}_{ij} + (\param{T}_{\min} - \param{T}_{\max})
+(1- \mathvar{\delta}_{ij}) \\
+\var{t}_i - \var{t}_j &amp; \geq \param{d}_j
+\mathvar{\delta}_{ji} + (\param{T}_{\min} - \param{T}_{\max})
+(1- \mathvar{\delta}_{ji}) \\
+\mathvar{\delta}_{ij} + \mathvar{\delta}_{ji} &amp; = 1
+\end{align*}</div><p>Of course one of the two logical variables can be
+easily eliminated:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{t}_j - \var{t}_i &amp; \geq \param{d}_i
+\mathvar{\delta}_{ij} + (\param{T}_{\min} - \param{T}_{\max})
+(1- \mathvar{\delta}_{ij}) \\
+\var{t}_i - \var{t}_j &amp; \geq \param{d}_j
+(1-\mathvar{\delta}_{ij}) + (\param{T}_{\min} - \param{T}_{\max})
+\mathvar{\delta}_{ij}
+\end{align*}</div><p>The same situation can also be modeled by observing that the
+incompatibility constraints can also be written as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{t}_i  &lt; \var{t}_j + \param{d}_j  \implies
+\var{t}_j  \geq \var{t}_i + \param{d}_i
+\end{align*}</div><p>which corresponds to requiring that if an activity starts before
+the other one is finished, it should start “early enough”.
+In this case, introducing a binary  variable, we might split the
+implication into:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{t}_i  &lt; \var{t}_j + \param{d}_j &amp; \implies
+\mathvar{\delta}_{ij} = 1\\
+\mathvar{\delta}_{ij} = 1 &amp; \implies
+\var{t}_j  \geq \var{t}_i + \param{d}_i
+\end{align*}</div><p>and proceed in the usual way.</p>
+</div></blockquote>
+</section>
+<section id="propositional-logic-and-binary-variables">
+<h3><span class="section-number">16.2.3. </span>Propositional logic and binary variables<a class="headerlink" href="#propositional-logic-and-binary-variables" title="Link to this heading">¶</a></h3>
+<p>Although we do not wish to go too deeply in  mathematical logic,
+it seems worthwhile to add some considerations on the
+relationship between logical propositions and linear constraints with
+binary variables.</p>
+<p>We have just seen how a binary variable can be used to impose logical
+constraints:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq B \\
+\mathvar{\delta} = 1 &amp; \implies  \var{x} \leq A
+\end{align*}</div><p>which translates as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} \leq A \mathvar{\delta} + B (1- \mathvar{\delta}).
+\end{align*}</div><p>if <span class="math notranslate nohighlight">\(A &lt;B\)</span>.</p>
+<p>Most of the modeling techniques seen so far were related to logical
+implications (“if … then”). We have shown how to transform a constraint like,
+e.g.,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}&gt; A \implies \var{y} \leq B
+\end{align*}</div><p>through the introduction of a logical variable and logical constraints</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}&gt; A &amp; \implies  \mathvar{\delta} = 1 \\
+\mathvar{\delta} = 1 &amp; \implies  \var{y} \leq B
+\end{align*}</div><p>These are  equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 0 &amp; \implies  \var{x} \leq \param{A} \\
+\mathvar{\delta} = 1 &amp; \implies  \var{y} \leq \param{B}
+\end{align*}</div><p>from which the following  formulation is obtained:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x} &amp; \leq  \param{M}_1 \mathvar{\delta} + \param{A} (1- \mathvar{\delta}) \\
+\var{y} &amp; \leq  \param{B} \mathvar{\delta} + \param{M}_2 (1- \mathvar{\delta})
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\param{M}_1\)</span> and <span class="math notranslate nohighlight">\(\param{M}_2\)</span> are suitable constants.
+It was also seen that
+it is possible to obtain an alternative formulation
+by associating a binary variable with each event in the implication.</p>
+<p>In this paragraph we will see  in more details how it might be
+possible to derive some general rules for the formulation of
+logical links.</p>
+<p>Propositional logic allows the formulation  of logical expressions
+containing several connectives like:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\lor\)</span>: logical OR, or union</p></li>
+<li><p><span class="math notranslate nohighlight">\(\land\)</span>: logical AND, or intersection</p></li>
+<li><p><span class="math notranslate nohighlight">\(\lnot\)</span>: logical NOT, or negation</p></li>
+<li><p><span class="math notranslate nohighlight">\(\implies\)</span>: logical implication</p></li>
+<li><p><span class="math notranslate nohighlight">\(\iff\)</span>: double implication</p></li>
+</ul>
+<p>In order to correctly formulate logical constraints between
+variables or constraints of a generic
+optimization model,
+binary indicator variables are usually associated to “events”.
+For example, consider a blending problem in which we would like to add
+the following constraint: “if in the
+blend  material A is present (non zero), then either material  B  or
+material C must not be included”.
+A first step in
+modeling such a rule might be to connect the
+events (is A non zero in the blend? is B non zero?) to logical,
+binary, variables.
+Then, we can impose the logical condition by adding constraints
+involving just the logical variables.
+As an example, assume  we associated three binary variables to the
+three events
+in such a way that</p>
+<div class="math notranslate nohighlight">
+\begin{align*} \mathvar{\delta}_j = 1 \iff \var{x}_j &gt; 0 \end{align*}</div><p>(where <span class="math notranslate nohighlight">\(\var{x}_j\)</span> represents the quantity of material
+<span class="math notranslate nohighlight">\(j\)</span> in the blend) and similarly for the other two materials. Then  the logical constraint
+becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A = 1 \implies \mathvar{\delta}_B = 0 \lor \mathvar{\delta}_C = 0
+\end{align*}</div><p>Actually, there is no need to link  the events to binary variables
+through a double implication. In this example it is quite easy to see that it would be enough
+to impose</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A&gt; 0 &amp; \implies \mathvar{\delta}_A = 1 \\
+\mathvar{\delta}_A = 1 &amp; \implies \mathvar{\delta}_B = 0 \lor \mathvar{\delta}_C = 0 \\
+\mathvar{\delta}_B = 0 &amp; \implies \var{x}_B = 0 \\
+\mathvar{\delta}_C = 0 &amp; \implies \var{x}_C = 0
+\end{align*}</div><p>We have already seen how to connect a logical variable to a continuous
+one. Let us now consider the logical constraint itself, i.e., the
+constraint involving only logic variables:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A
+\implies (\lnot \mathvar{\delta}_B \lor \lnot \mathvar{\delta}_C)
+\end{align*}</div><p>In general, in order to formulate a “disjunction” (i.e. the union or logical “OR”) between
+two  events <span class="math notranslate nohighlight">\(X,Y\)</span>  to which two binary variables are
+associated, it will be sufficient to impose that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{X} + \mathvar{\delta}_{Y} \geq1
+\end{align*}</div><p>along with the linking constraints</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{X} = 1 &amp; \implies \var{x} \in X \\
+\mathvar{\delta}_{Y} = 1 &amp; \implies \var{x} \in Y
+\end{align*}</div><p>Let us analyze more closely how to model some of the most common
+logical connectives through linear constraints in binary (logical)
+variables.</p>
+<p>The negation of a logical variable is simply given by the complement
+of that variable: variable <span class="math notranslate nohighlight">\(1 - \mathvar{\delta}_X\)</span> assumes
+value  1  (true) if and only if  variable <span class="math notranslate nohighlight">\(\mathvar{\delta}_X\)</span>
+takes value 0 (false).</p>
+<p>For what concerns the logical implication, recalling its formulation
+in terms of disjunction and negation,  we  derive:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_X = 1 &amp; \implies \mathvar{\delta}_Y = 1 \\
+\lnot \{\mathvar{\delta}_X = 1 \} &amp; \lor \mathvar{\delta}_Y = 1 \\
+\mathvar{\delta}_X = 0 &amp; \lor \mathvar{\delta}_Y = 1 \\
+(1- \mathvar{\delta}_X) + \mathvar{\delta}_Y &amp; \geq 1 \\
+\mathvar{\delta}_X &amp; \leq \mathvar{\delta}_Y
+\end{align*}</div><p>The logical “AND” connective, in some cases,  does not create
+modeling problems, as any system (of equations or
+inequalities) already represents a set of  constraints which are  linked to each other
+with an “AND”  connective. Within
+a logical constraint, inserting a term  representing a logical “AND”
+apparently can be done in an easy way writing the expression</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_X \mathvar{\delta}_Y
+\end{align*}</div><p>which is equal to 1 if  and only if both variables
+are equal to 1. However this expression is not a linear one, and, from
+an integer optimization point of view, non linarities are to be
+avoided, if at all possible. Indeed,
+all logical constraints of propositional logic, built with the
+connectives listed before, can be
+represented by means of linear constraints. If we wish to define a
+logical variable whose value is equivalent to that
+of the “AND”, then a new binary variable
+<span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span>  might  be introduced along with the
+constraints:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_X = 1, \mathvar{\delta}_Y = 1 &amp; \implies
+\mathvar{\delta} = 1 \\
+\mathvar{\delta} = 1 &amp; \implies \mathvar{\delta}_X = 1, \mathvar{\delta}_Y = 1
+\end{align*}</div><p>The first constraint is equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_X = 0 \lor \mathvar{\delta}_Y = 0 \lor
+\mathvar{\delta} = 1
+\end{align*}</div><p>and translates to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(1- \mathvar{\delta}_X) + (1- \mathvar{\delta}_Y) +
+\mathvar{\delta} &amp; \geq 1
+\end{align*}</div><p>or, equivalently,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_X + \mathvar{\delta}_Y -
+\mathvar{\delta} &amp; \leq 1;
+\end{align*}</div><p>The second part of the double implication is equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} = 1 &amp; \implies \mathvar{\delta}_X = 1 \\
+\mathvar{\delta} = 1 &amp; \implies \mathvar{\delta}_Y = 1
+\end{align*}</div><p>which can be represented as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_X &amp; \geq \mathvar{\delta} \\
+\mathvar{\delta}_Y &amp; \geq \mathvar{\delta}
+\end{align*}</div><p>Going back to the example on blending, if we would like to formulate,
+in a linear optimization model, the constraint</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A
+\implies (\lnot \mathvar{\delta}_B \lor \lnot \mathvar{\delta}_C)
+\end{align*}</div><p>a possible solution would be to rewrite the logical implication</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\lnot \mathvar{\delta}_A \lor
+(\lnot \mathvar{\delta}_B \lor \lnot \mathvar{\delta}_C)
+\end{align*}</div><p>and this translates into</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(1-\mathvar{\delta}_A)
++  (1-\mathvar{\delta}_B) +  (1-\mathvar{\delta}_C) \geq 1
+\end{align*}</div><p>or</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A
++ \mathvar{\delta}_B +  \mathvar{\delta}_C \leq 2
+\end{align*}</div><section id="normal-forms">
+<h4><span class="section-number">16.2.3.1. </span>Normal forms<a class="headerlink" href="#normal-forms" title="Link to this heading">¶</a></h4>
+<p>The transformation we have seen so far seems to be quite ad-hoc,
+as there is no general strategy nor a clear way to automate the
+translation process from a logical formula to a set of linear
+inequalities. It must be recalled that, as it was already pointed out,
+in integer optimization a correct formulation is usually not
+enough: what we need is  a correct and strong formulation. So,
+until a general theory of strong formulations for logical constraints
+will be developed, it is necessary to try different formulation and to
+compare them.</p>
+<p>However there are a few standard ways to generate
+constraints which represent any given propositional formula.</p>
+<p>A logical expression is called a  <span class="target" id="index-18"></span>clause if it can be
+expressed in the form</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+E_1 \lor E_2 \lor \ldots E_k \lor \lnot E_{k + 1} \lor \lnot E_{k + 2} \lor
+\ldots \lor \lnot E_{h}
+\end{align*}</div><p>where each expression <span class="math notranslate nohighlight">\(E_i\)</span>, called <span class="target" id="index-19"></span>literal, can  either be true or false.
+The above clause  contains <span class="math notranslate nohighlight">\(h\)</span>
+literals,  <span class="math notranslate nohighlight">\(h-k\)</span>   of which in a negated form. In order to
+transform this clause into a set of linear constraints,
+first a logical variable <span class="math notranslate nohighlight">\(\mathvar{\delta}_i\)</span> is associated
+to each literal and then a single linear constraint can be easily formed:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{i = 1}^k \mathvar{\delta}_i + \sum_{i=k + 1}^h (1 - \mathvar{\delta}_i) \geq   1
+\end{align*}</div><p>In order to link variables to literals in the above constraint,
+observe that the inequality is verified if at least one of the
+variables <span class="math notranslate nohighlight">\(\mathvar{\delta}_i\)</span> associated with affirmed literals is
+equal to  1  or if at least one of the variables associated with
+negated literals is 0. Thus it is enough to  to impose the following
+logical constraints:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_i = 1  &amp; \implies E_i
+&amp; \forall \, i = 1, \ldots, k \\
+\mathvar{\delta}_i = 0 &amp; \implies \lnot E_i
+&amp; \forall \, i = k + 1, \ldots h
+\end{align*}</div><p>The last set of implications is  equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+E_i \implies \mathvar{\delta}_i = 1
+\end{align*}</div><p>For example, if we would like  to model the constraint  “A  is included
+in a blend or  B  is absent or  C  is absent”, we might write
+a logical constraint of the type</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A + (1- \mathvar{\delta}_B) + (1- \mathvar{\delta}_C) \geq 1
+\end{align*}</div><p>or</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_B + \mathvar{\delta}_C \leq \mathvar{\delta}_A + 1
+\end{align*}</div><p>and the links between binary and continuous variables will be of the
+type</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_A = 1 &amp; \implies \var{x}_A \geq \epsilon \\
+\mathvar{\delta}_B = 0 &amp; \implies \var{x}_B \leq 0 \\
+\mathvar{\delta}_C = 0 &amp; \implies \var{x}_C \leq 0
+\end{align*}</div><p>and if all variables are non negative and upper bounded by a constant <span class="math notranslate nohighlight">\(M\)</span>
+this translates into</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A &amp; \geq  \epsilon \mathvar{\delta}_A \\
+\var{x}_B &amp; \leq  M \mathvar{\delta}_B \\
+\var{x}_C &amp; \leq  M \mathvar{\delta}_C
+\end{align*}</div><p>It can be shown that every logic formula built with a finite number of
+symbols and the connectives listed before, i.e.
+<span class="math notranslate nohighlight">\(\land, \lor, \lnot, \implies, \iff\)</span>, can always be written in an
+equivalent form, called <span class="target" id="index-20"></span>normal conjunctive form  which is the
+conjunction (i.e., the intersection) of a finite number of
+clauses. It is also always  possible to write  a
+logical formula in a <span class="target" id="index-21"></span>disjunctive normal form, that is, as a union
+of statements,  each of which is the intersection
+(AND) of literals. A  possible way  to obtain these normal forms is to
+apply some logical transformation rules recursively:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\neg (A \lor B) &amp; \equiv  \neg A \land \neg B \\
+\neg (A \land B) &amp; \equiv  \neg A \lor \neg B \\
+A \lor (B \land C) &amp; \equiv  (A \lor B) \land (A \lor C) \\
+A \land (B \lor C) &amp; \equiv  (A \land B) \lor (A \land C).
+\end{align*}</div><p>Through the application of the above  rules it is always possible to switch from any
+proposition to any of the two normal forms. However,  it can be also shown that,
+in the worst case, a transformation algorithm based on these
+rules requires both an exponential time as well as an exponential
+memory  as a function of the number  of literals. It is outside the
+scope of this volume, however, it is worth recalling that
+an efficient algorithm exists  for the  translation  of any logical
+formula in normal form
+(see <span id="id5">[<a class="reference internal" href="Bibliography.html#id21" title="C. E. Blair, R. G. Jeroslow, and J. K. Lowe. Some results and experiments in programming techniques for propositional logic. Computers &amp; Operations Research, 13(5):633–645, 1986.">Blair <em>et al.</em>, 1986</a>]</span>); this algorithm requires the  addition of  new literals, but
+it requires a time and a memory occupation which grows only
+linearly with the dimension of the proposition.</p>
+<p>While, from a logical point of view, many equivalent formulations of the same
+proposition can be  found, like, e.g., the two normal forms, from the
+numerical point of view there might be important differences, in terms
+of the strength of the resulting linear optimization models.
+To introduce these ideas an  example may be useful.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-22"></span>Logical constraints in a blend</p>
+</dd>
+</dl>
+<p>Let us assume, in a blending problem, that we would like  to impose a
+logical constraint  of the following type: if  material A
+or material B are in the blend  then either  material C should also
+be in the blend or  material D should not be present.</p>
+<p>Constraints of this kind often arise
+by contractual  rules, or by marketing considerations.
+Using the  formalism of propositional logic, this can  be written as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(A \lor B) \implies (C \lor \lnot D)
+\end{align*}</div><p>Using binary variables we can formulate the logical constraint as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(\mathvar{\delta}_{A} + \mathvar{\delta}_{B} \geq1) \implies
+(\mathvar{\delta}_{C} + (1- \mathvar{\delta}_{ D}) \geq1)
+\end{align*}</div><p>along with</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{x}_A&gt; 0 &amp; \implies \mathvar{\delta}_{A} = 1 \\
+\var{x}_B&gt; 0 &amp; \implies \mathvar{\delta}_{B} = 1 \\
+\mathvar{\delta}_{C} = 1 &amp; \implies \var{x}_C&gt; 0 \\
+\mathvar{\delta}_{D} = 0 &amp;\implies \var{x}_D = 0
+\end{align*}</div><p>These latter constraints can be modeled as it was already shown in
+previous paragraphs. Let’s focus on the logical constraint.</p>
+<p>We might  formulate  the implication in a direct way, introducing a new
+indicator variable:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(\mathvar{\delta}_{A} + \mathvar{\delta}_{B} \geq1) &amp; \implies
+\mathvar{\delta} = 1 \\
+\mathvar{\delta} = 1 &amp; \implies
+(\mathvar{\delta}_{C} - \mathvar{\delta}_{D} \geq0)
+\end{align*}</div><p>which becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{A} + \mathvar{\delta}_{B} \leq2 \mathvar{\delta} \\
+\mathvar{\delta}_{C} - \mathvar{\delta}_{D} \geq \mathvar{\delta} -1
+\end{align*}</div><p>Alternatively the initial implication could be transformed
+in the  following:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\lnot (A \lor B) \lor C \lor \lnot D
+\end{align*}</div><p>which,  exploiting the distributive property, is transformed
+as:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(\lnot A \land \lnot B) \lor (C \lor \lnot D) \equiv \\
+(\lnot A \lor C \lor \lnot D) \land (\lnot B \lor C \lor \lnot D)
+\end{align*}</div><p>This one is  a <em>normal conjunctiv form</em>, which
+can immediately be written as a  linear set of constraints:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+1- \mathvar{\delta}_{A} + \mathvar{\delta}_{C} + 1-
+\mathvar{\delta}_{D} &amp; \geq1 \\
+1- \mathvar{\delta}_{B} + \mathvar{\delta}_{C} + 1-
+\mathvar{\delta}_{D} &amp; \geq1
+\end{align*}</div><p>or</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{A} - \mathvar{\delta}_{C} +
+\mathvar{\delta}_{D} &amp; \leq 1 \\
+\mathvar{\delta}_{B} - \mathvar{\delta}_{C} +
+\mathvar{\delta}_{D}  &amp; \leq 1
+\end{align*}</div><p>To compare these two formulations, recall that the comparison needs
+to be based on the linear relaxation of the integer constraints.
+In this example it seems not easy
+to compare the two formulations, as  the first one has a variable
+which is not included in the second one.
+However, it can be seen that
+the dependency on <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span> in the first model can be
+eliminated.
+Rewriting the first formulation as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+0.5(\mathvar{\delta}_{A} + \mathvar{\delta}_{B} ) &amp;\leq \mathvar{\delta} \\
+\mathvar{\delta}&amp; \leq 1     +  \mathvar{\delta}_{C} - \mathvar{\delta}_{D}
+\end{align*}</div><p>the variable <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span> can be eliminated and the
+formulation becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{A} + \mathvar{\delta}_{B} &amp; \leq 2(\mathvar{\delta}_{C} - \mathvar{\delta}_{D} +1)
+\end{align*}</div><p>Let us denote by <span class="math notranslate nohighlight">\(P_1\)</span> the polyhedron obtained relaxing all
+variables in the above formulation to belong to the interval
+<span class="math notranslate nohighlight">\([0,1]\)</span>. Let us also denote by <span class="math notranslate nohighlight">\(P_2\)</span> the relaxed
+polyhedron associated to the  normal conjunctive form seen before.</p>
+<p>It is easy to see that <span class="math notranslate nohighlight">\(P_2 \subset P_1\)</span>. In fact, from one
+side, adding the constraints</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{A} - \mathvar{\delta}_{C} +
+\mathvar{\delta}_{D} &amp; \leq 1 \\
+\mathvar{\delta}_{B} - \mathvar{\delta}_{C} +
+\mathvar{\delta}_{D}  &amp; \leq 1
+\end{align*}</div><p>we obtain</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{A} +
+\mathvar{\delta}_{B} - 2\mathvar{\delta}_{C} +
+2 \mathvar{\delta}_{D}  &amp; \leq 2
+\end{align*}</div><p>which is exactly the formulation of <span class="math notranslate nohighlight">\(P_1\)</span>. Moreover,
+assigning to the indicator variables (in the relaxed polyhedra)
+the values  <span class="math notranslate nohighlight">\(1,0,0,1/2\)</span> respectively, the resulting solution
+satisfies all of the constraint in <span class="math notranslate nohighlight">\(P_1\)</span> but not the
+corresponding ones in <span class="math notranslate nohighlight">\(P_2\)</span>
+Thus, in this example, the conjunctive is stronger than the direct one.</p>
+<p>The same problem can also be brought into a disjunctive normal form:
+using again the distributive properties of AND and OR, we get</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+(\lnot A \land \lnot B) \lor C \lor \lnot D
+\end{align*}</div><p>which is a union (or disjunction) of literals connected to each other by
+AND (conjunction). This statement can also be translated into
+linear constraints:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} + \mathvar{\delta}_C + (1- \mathvar{\delta}_D) &amp; \geq  1 \\
+\mathvar{\delta} = 1 &amp; \implies  \mathvar{\delta}_A = 0 \\
+\mathvar{\delta} = 1 &amp; \implies  \mathvar{\delta}_B = 0
+\end{align*}</div><p>which becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta} + \mathvar{\delta}_C &amp; \geq  \mathvar{\delta}_D \\
+\mathvar{\delta}_A &amp; \leq  1 - \mathvar{\delta} \\
+\mathvar{\delta}_B &amp; \leq  1 - \mathvar{\delta}
+\end{align*}</div><p>In order to compare this formulation with the
+normal conjunctive one,  observe that the
+disjunctive formulation is equivalent to</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_D - \mathvar{\delta}_C \leq &amp; \mathvar{\delta}  \leq 1 - \mathvar{\delta}_A \\
+\mathvar{\delta}_D - \mathvar{\delta}_C \leq &amp; \mathvar{\delta}  \leq 1 - \mathvar{\delta}_B
+\end{align*}</div><p>and that, therefore, in the  original variable space,
+the two formulations are equivalent.</p>
+</div></blockquote>
+<p>This example should not be generalized: often the
+disjunctive formulation leads to stronger formulations  than the
+conjunctive one. Interesting research on the strength of these
+formulation was performed in <span id="id6">[<a class="reference internal" href="Bibliography.html#id20" title="Roberth G. Jeroslow. Logic-Based Decision Support: Mixed Integer Model Formulation. North Holland, 1989.">Jeroslow, 1989</a>]</span>.</p>
+<p>As a final remark, we would like to add that the automatic
+reformulation of logical constraints in strong linear formulation is a
+field of active research, and these notes were just meant to give an
+introduction to the subject. It might be interesting to observe also
+that there are classes of logical constraints which generate ideal
+polyhedra. The best known of these is the set of <span class="target" id="index-23"></span>Horn
+clauses. A Horn clause is a logical statement of the form:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+E_1 \land E_2 \land \ldots \land E_k  \implies E_0
+\end{align*}</div><p>It might be  shown that a set of Horn clauses, in conjunction, gives
+rise to a polyhedron which, when relaxed, has all of its vertices binary.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="StochasticOptimization.html" title="Previous document"><span class="section-number">15. </span>Uncertainty modeling: Stochastic optimization models</a>
+        </li>
+        <li>
+          <a href="StructuredMIPmodels.html" title="Next document"><span class="section-number">17. </span>The fixed charge problem</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">16. Mixed Integer Linear Models</a><ul>
+<li><a class="reference internal" href="#introduction">16.1. Introduction</a></li>
+<li><a class="reference internal" href="#modeling-with-integer-variables">16.2. Modeling with integer variables</a><ul>
+<li><a class="reference internal" href="#using-binary-variables-in-logical-constraints">16.2.1. Using binary variables in logical constraints</a></li>
+<li><a class="reference internal" href="#using-binary-variables-to-impose-constraints">16.2.2. Using binary variables to impose constraints</a></li>
+<li><a class="reference internal" href="#propositional-logic-and-binary-variables">16.2.3. Propositional logic and binary variables</a><ul>
+<li><a class="reference internal" href="#normal-forms">16.2.3.1. Normal forms</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="StochasticOptimization.html" title="previous chapter"><span class="section-number">15. </span>Uncertainty modeling: Stochastic optimization models</a></li>
+      <li>Next: <a href="StructuredMIPmodels.html" title="next chapter"><span class="section-number">17. </span>The fixed charge problem</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/MIPModels.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

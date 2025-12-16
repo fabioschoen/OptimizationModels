@@ -1,0 +1,7 @@
+.. only:: html
+	  
+   |CreativeCommonsLicence| 
+
+   .. |CreativeCommonsLicence| image:: Cc-by-nc-nd_icon.svg.png
+			       :target: https://creativecommons.org/licenses/by-nc-nd/3.0/ 
+   © Fabio Schoen 2024

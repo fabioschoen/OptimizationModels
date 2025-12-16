@@ -1,0 +1,20 @@
+.. comment BEGIN_LATEX_MACROS
+        These latex macros must also be defined in latex_elements in conf.py
+.. only:: html
+
+   .. rst-class:: hidden
+     
+      :math:`\newcommand{\R}{{\mathbb{R}}}`
+      :math:`\newcommand{\Z}{{\mathbb{Z}}}`
+      :math:`\newcommand{\N}{{\mathbb{N}}}`
+      :math:`\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}`	
+      :math:`\newcommand{\param}[1]{{\color{blue}{#1}}}`
+      :math:`\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}`
+      :math:`\def\sc#1{\dosc#1\csod}`
+      :math:`\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}`
+      :math:`\newcommand{\set}[1]{{\sc#1}}`
+      :math:`\newcommand{\mathvar}[1]{\var{#1}}`
+      :math:`\newcommand{\mathpar}[1]{\param{#1}}`
+      :math:`\newcommand{\half}{{\small{\frac{1}{2}}}}`
+     
+.. comment END_LATEX_MACROS

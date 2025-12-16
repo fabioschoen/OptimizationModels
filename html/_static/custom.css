@@ -1,0 +1,32 @@
+@import url("default.css");
+
+.red {
+  color: red;
+}
+
+.blue {
+  color: blue;
+}
+
+.gray {
+  color: gray;
+}
+
+.orange {
+  color: orange;
+}
+
+.green {
+  color: green;
+}
+
+.yellow {
+  color: yellow;
+}
+
+.smallcaps {
+    color: red;
+    font-weight: bold;
+    font-variant: small-caps;
+}
+

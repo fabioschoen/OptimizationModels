@@ -1,0 +1,365 @@
+.. include:: preamble.rst
+
+========
+Appendix
+========
+
+In this appendix we wish to briefly summarize a few essential
+definitions and facts which might prove useful when reading this
+book. We would like, however, to warn the reader that the theory
+behind many of the models and all of the algorithms needed to solve
+them requires advanced mathematical skills and cannot be summarized in
+an appendix like this one. We refer the interested reader to the huge
+literature available on all of the topics we covered in this volume,
+from optimization theory, to the simplex method to duality theory or
+network flows, and so on...
+
+Here we simply would like to summarize a few basic definitions and
+concepts which are found somewhere in the volume and maybe more
+efficiently found in a single place like this appendix. We list them
+here, without any specific logic.
+
+--------------------------
+Basic optimization notions
+--------------------------
+
+Let :math:`n` be an integer and :math:`S \subseteq \R^n` be a subset
+of the Euclidean :math:`n`-dimensional space. Let
+:math:`f: S \rightarrow \R` be a real-valued function. A generic
+:index:`optimization problem`  is defined as
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min_{\var{x} \in S} f(\var{x})
+   \end{align*}
+
+where :math:`\var{x}` is the array of unknown variables,
+:math:`\set{S}` the :index:`feasible set`, :math:`f` the
+:index:`objective function`. A similar definition can also be given
+for a maximization problem. Any vector :math:`\bar{x}` such that
+:math:`\bar{x} \in S` is called a :index:`feasible solution`. Any
+feasible solution :math:`x^\star` such that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f(x^\star) & \leq f(x) & \forall\, x &\in  S
+   \end{align*}
+
+is called an :index:`optimal solution` or a :index:`global optimum`
+solution.
+The value of the objective
+function at an optimal solution :math:`f^\star = f(x^\star)` is called
+the :index:`optimal value`, or :math:`optimum` of the
+problem. Sometimes, when it is felt that no confusion should arise, we
+use the term optimum also to denote the optimal solution, not just its
+value.
+
+An optimization problem need not possess optimal solutions. In
+particular, if :math:`\set{S} = \emptyset` then the problem is called
+:index:`infeasible`. 
+
+If on the contrary :math:`\set{S} \ne \emptyset` it might happen that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \forall\,x \in S & \exists\, y \in S: \\
+   f(y) & < f(x)
+   \end{align*}
+
+In this case the optimization problem is :index:`unbounded` and no
+optimal solution can exist.
+
+Let :math:`\bar{x} \in S` be a feasible solution.
+Let
+:math:`B(x,\varepsilon) := \{y \in \R^n: \|x-y\| \leq \varepsilon\}`
+be an :index:`euclidean ball` centered at :math:`x` with radius :math:`\varepsilon`,
+If
+:math:`\exists\,\varepsilon > 0`  such that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f(\bar{x}) & \leq f(y) & \forall\, y \in \set{S} \bigcap B(\bar{x},\varepsilon)
+   \end{align*}
+
+then :math:`\bar{x}` is called a :index:`local optimum` or
+:index:`local minimum`. Of course an optimum is always a local
+optimum, but, in general, the opposite is not true.
+
+An extremely important class of optimization problems
+is that of :index:`convex optimization` problems.
+
+A set :math:`S  \subseteq \R^n` is called a :index:`convex set` if
+       
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \lambda x + (1-\lambda) y & \in S & \forall\, x,y \in S, \lambda
+   \in [0,1]
+   \end{align*}
+
+Geometrically this means that a convex set is characterized by the
+fact that for any pair of points in the set, also the segment with
+those points as extremes entirely belongs to the set.
+
+A function :math:`f` defined on a convex set :math:`S` is called a
+:index:`convex function` if
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f(\lambda x + (1-\lambda)y) & \leq \lambda f(x) + (1-\lambda) f(y) & \forall\, x,y \in S, \lambda
+   \in [0,1] 
+   \end{align*}
+
+Also in this case a geometrical interpretation is possible: a convex
+function is such that for any pair of points a linear interpolation of
+the function through the two points overestimates the function along
+the segment with those points as extremes.
+
+A :index:`convex optimization`  problem is defined as a problem in
+which the feasible set is convex and the objective function is convex
+over a set that contains the feasible set. A :index:`concave function`
+is a function :math:`f` whose opposite :math:`-f` is convex. By
+extension, the problem of *maximizing* a *concave function*, always on
+a convex feasible set, is called a convex optimization problem.
+
+Convex optimization problems enjoy many interesting properties, one of
+the most notable of which is that if a feasible point is a local
+optimum, than it is also global.
+
+A :index:`linear function` is an additive and homogeneous function,
+i.e.,
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f(x+y) & = f(x)  + f(y) & \forall\, x,y \\
+   f(\alpha x) & = \alpha f(x) & \forall\, \alpha \in \R, \forall\,x
+   \end{align*}
+
+It can be shown that in Euclidean spaces a function is linear if and
+only if there exists a vector :math:`v \in \R^n, v = [v_1, \ldots, v_n]^T` such that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   f(x) & = \sum_{j=1}^n v_j x_j \\
+   & = v^T x
+   \end{align*}
+
+An :index:`affine function`   is defined as a linear function plus a
+constant: :math:`v^Tx + u`.
+
+A fundamental convex optimization problem is the :index:`linear
+optimization` one:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min_\var{x} \param{c}^T \var{x} & \\
+   \param{A}_1 \var{x} & = \param{b}_1 \\
+   \param{A}_2 \var{x} & \leq \param{b}_2 \\
+   \param{A}_3  \var{x} & \geq \param{b}_3
+   \end{align*}
+
+where vectors and matrix have dimensions which are compatible with the
+matrix products as required. In the above problem a linear objective
+function is to be minimized subject to a set of linear equations and
+inequalities. Quite often, inequalities include sign constraints (all
+variables non negative) or box constraints (all variables constrained
+to be in a specific interval).  It can be easily shown that this
+problem is indeed a convex optimization problem, called generic linear
+optimization problem.
+
+A special case, to which any generic linear optimization problem can
+be reduced, is the so-called :index:`standard linear
+optimization` problem:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min_\var{x} \param{c}^T \var{x} & \\
+   \param{A} \var{x} & = \param{b} \\
+   \var{x} & \geq 0
+   \end{align*}
+
+If the feasible set is non empty and the set of linear equations is
+reduced by eliminating redundant equations, then matrix :math:`\param{A}` is reduced to its 
+rank and it can be shown that we can always assume that the number
+:math:`m` of its rows can always be assumed to be equal to the rank and is
+never larger than the number of variables.  In this situation, a
+square sub-matrix  composed of all of the rows and an equal number of
+columns can always be chosen so that the resulting square matrix
+:math:`\param{A}_B` is non singular.  Any such matrix is called a
+:index:`basis` for the problem and by solving the sub-problem
+:math:`\param{A}_B \var{x}_B = \param{b}` a solution is always found. Here by
+:math:`\var{x}_B` we denote the subset of variables whose indices are
+the same as those of the columns  of the basis matrix. The
+:math:`n`-dimensional array obtained completing this unique solution
+with zeros is called a :index:`basic solution`. If it is composed of
+non negative elements, it is called a :index:`basic feasible
+solution`.  A fundamental property in linear optimization says that if
+a standard linear optimization problem is reduced to its row rank than
+the problem admits a feasible solution if and only if it admits a
+*basic* feasible solution. Moreover, it admits an optimal solution if
+and only if it admits an optimal solution which is also *basic*. The
+:index:`simplex method`, one of the most popular algorithms to solve
+linear optimization problems, is strongly associated to this property
+and, in fact, limits the search for optimal solutions to basic ones.
+
+A fundamental property of linear optimization, as well as of more
+general optimization problems, is that of :index:`duality`; a general
+introduction to the topic is far beyond our aims in this appendix: the
+interested reader might consult any optimization book, where the topic
+of Lagrange duality is usually dealt with. Limiting ourselves to the
+easy case of linear optimization, let us associate
+to a linear optimization problem  (which for the sake of simplicity
+we assume to be in standard form) another optimization problem, called
+the :index:`dual`:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \max_{\mathvar{\lambda}} \mathvar{\lambda}^T \param{b} & \\
+   \mathvar{\lambda}^T \param{A} & \leq \param{c}^T
+   \end{align*}
+
+It can be proven that:
+
+* given a pair of feasible solutions, :math:`\bar{x}` for the original
+  problem and :math:`\bar{\lambda}` for the dual, it holds that
+  :math:`\bar{\lambda}^T \param{b} \leq \param{c}^T \bar{x}`. This is called the
+  :index:`weak duality theorem` and states that in the two problems
+  the objective function of one of the two always limits the other one
+
+* if, as before, two feasible solutions exist and, furthermore, the
+  above inequality holds as an equality (i.e., the objective functions
+  in the two problems are equal) than each of the two solutions is
+  optimal for the respective optimization problem  
+  
+* if one of the two problems admits an optimal solution, the other
+  admits an optimal solution too and the objective functions of the two
+  optimal solutions are identical (:index:`strong duality theorem`)
+
+* if one of the two problems in unbounded, the other one is infeasible
+
+* there exists a one-to-one correspondence between variables in the
+  standard problem and inequalities in the dual. Given two feasible
+  solutions, one for each problem, they are both optimal if and only
+  if for any variable in the problem either the variable is null or
+  the dual constraint associated to this variable holds as an
+  equality. In formulae:
+
+  .. math::
+     :nowrap:
+     
+     \begin{align*}
+     \bar{x}_j (\bar{\lambda}^T \param{A}_j - \param{c}_j) & = 0 & \forall\, j
+     \end{align*}
+
+  This property is known as :index:`complementarity`.
+
+-------------------------
+Graphs: basic definitions
+-------------------------
+
+A :index:`graph` is a pair :math:`\langle V, E \rangle`, where
+:math:`V` is a finite set called set of :index:`nodes` or
+:index:`vertices`. :math:`E \subseteq V \times V` is a set of pair of
+nodes. Each element of :math:`E` is called an :index:`edge` of the
+graph and is an (unordered) subset of the set of nodes with
+cardinality 2.
+
+An edge in a graph is said to be :index:`incident` to the two  vertices
+which define it; these vertices are called :index:`extremes` of the
+edge. A  sequence of edges :math:`e_1, e_2, \ldots, e_k` is
+called a :index:`walk` if there exists a sequence of nodes in the
+graph :math:`v_1, v_2, \ldots, v_k, v_{k+1}` such that
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   e_1 & = \{v_1,v_2\} \\
+   e_2 & = \{v_2, v_3\}\\
+   \dots \\
+   e_k & = \{v_k,v_{k+1}\}
+   \end{align*}
+
+If the last node :math:`v_{k+1}` coincides with the first one
+:math:`v_1` then the walk is called a
+:index:`chain`.
+
+A graph is :index:`connected` if there exists at least a walk
+connecting every pair of nodes. A graph is called :index:`acyclic` if
+it is not possible to find, in the graph, chains in which no edge is
+repeated.
+
+A connected and acyclic graph is called a :index:`tree`. A tree enjoys
+several important properties. A graph is a tree if and
+only if any one of the following holds:
+
+* it is connected and acyclic (this is the definition)
+
+* in the finite case, it is connected and :math:`|E| = |V|-1`
+
+* in the finite case, it is acyclic and :math:`|E| = |V|-1`
+
+* the graph is connected, but if any edge is removed it gets
+  disconnected
+
+* the graph is acyclic, but if we add any edge one and only one chain
+  is generated
+
+* every pair of vertices is connected by a unique path (with no
+  repeated edges)
+
+In most application we are more interested in :index:`directed graphs`
+or :index:`di-graphs`.  These are graphs for which edges, which now
+are called :index:`arcs`, are an ordered subset of cardinality two of
+the set of nodes. This means, e.g., that in a di-graph arc
+:math:`(i,j)` is different from arc :math:`(j,i)`.
+
+All the definitions above, including that of  a tree, can be given for
+directed arcs too, by simply neglecting the orientation of
+arcs. However in di-graphs we often consider paths  as
+:index:`oriented paths`.
+
+It is possible to associate several matrices to graphs and
+di-graphs. One of the most useful is the :index:`incidence
+matrix`. Given a di-graph, its incidence matrix is a
+:math:`|V| \times |E|` matrix whose elements are defined as
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   a_{ij} & = \left\{
+   \begin{array}{rl}
+   +1 & \textrm{ if } \exists\, v_k \in V: e_j = (v_i,v_k) \\ 
+   -1 & \textrm{ if } \exists\, v_k \in V: e_j = (v_k,v_i) \\
+   0 & \textrm{ otherwise}
+   \end{array}
+   \right.
+   \end{align*}
+
+In order to be able to define such a matrix the graph needs to be
+finite and loop-free. A :index:`loop` is defined as an arc
+:math:`(v,v)` from a node to itself.
+
+.. include:: closing.rst

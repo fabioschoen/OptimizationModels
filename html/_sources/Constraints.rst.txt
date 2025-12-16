@@ -1,0 +1,214 @@
+.. include:: preamble.rst
+
+.. _section:constraints:
+
+=========================================
+Constraints in linear optimization models
+=========================================
+
+In this section we are dealing with a few special cases for
+constraints in optimization models. Of course many classes of
+constraints have already  been introduced and more will come in the
+next chapters: indeed, constraints are the real essence of
+optimization models. Here we would like to describe and give some
+emphasis to a few classes of constraints which might find their use
+in many situations.
+
+.. _section:soft-constrains:
+
+^^^^^^^^^^^^^^^^
+Soft constraints
+^^^^^^^^^^^^^^^^
+
+A generic linear constraint has the form
+
+.. math::
+   :nowrap:
+
+   \[
+   \sum_j \alpha_j \var{x}_j \leq \beta
+   \]
+   
+(or a similar one, but with  :math:`=` or :math:`\geq`). Imposing
+such a constraint means that any vector
+:math:`\bar{\var{x}}` for which
+
+.. math::
+   :nowrap:
+      
+   \[
+   \sum_j \alpha_j \bar{\var{x}}_j> \beta
+   \]
+
+will be considered infeasible. We can say, in this case, that the
+constraint is *hard*, as it cannot be violated.
+
+Sometimes, however, it might be useful to insert  a constraint that
+represents,
+in a
+*soft* way, the desire to keep the constraint satisfied. At the same time,
+we would like  to allow for a moderate constraint violation.
+This is not the same as relaxing the constraint, e.g., by substituting
+the right hand side :math:`\beta` with another, larger, one. A soft
+constraint should be something which, if possible and convenient, will
+provide feasible solutions and only in exceptional cases will generate
+a solution which is slightly infeasible.
+
+More formally, we would like to consider
+a vector :math:`\bar{\var{x}}` feasible
+if
+
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_j \alpha_j \bar{\var{x}}_j &> \beta \\
+   \sum_j \alpha_j \bar{\var{x}}_j & \not \gg \beta.
+   \end{align*}
+ 
+
+In other words, the constraint can be violated, but 
+excessive violations are not allowed. In order to formulate such kind
+of constraints,  we can  assign a price to 
+constraint violations. If the original problem  is a 
+(linear) minimization one :math:`\min \sum_j c_j \var{x}_j`,
+then the introduction of the *soft*  constraint can be done as
+follows:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_j c_j \var{x}_j + K \var{y} &  \\
+   \sum_j \alpha_j \var{x}_j & \leq \var{y} + \beta  \\
+   \var{y} & \geq0
+   \end{align*}
+ 
+
+This way the constraint can be violated, thanks
+to the introduction of a non negative surplus variable :math:`\var{y}`, but the
+violation  causes a  cost increase equal to :math:`K \var{y}`; thus
+a violation will occur only if the additional cost to be paid is
+balanced by a stronger overall cost decrease.  
+ 
+For equality constraints, the  soft version should  allow for
+violations in both directions. Possibly, violation in the two opposite
+directions have a
+different penalty:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min \sum_j c_j \var{x}_j + K \var{s} + H \var{u} & \\
+   \sum_j \alpha_j \var{x}_j + \var{s} - \var{u} & = \beta \\
+   \var{s}, \var{u} & \geq0.
+   \end{align*}
+
+
+A practical case in which it is often  useful to insert soft constraints
+is in  production, where some resources are available in a
+limited quantity, but, paying a penalty, the limits can
+be overcome (e.g., by buying additional resources from an external
+provider).
+A very frequent case is that of overtime: a 
+resource might be available, for example, 40 hours per week; however
+it is possible, if necessary and up to a given maximum amount, to
+resort to overtime.
+Overtime  is paid more, usually 50\% more, than normal. An
+example of a soft constraint for this case could be the
+following:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \sum_{p \in \set{Products}} \param{Consumption}_{rp} \var{x}_p & \leq \param{Avail}_r
+   + \var{Overtime}_r & \forall \, r \in \set{Resources}
+   \end{align*}
+
+(taken from  section
+:ref:`Product Mix Models`). Here we see that the use of a resource
+:math:`r \in \set{Resources}`  can exceed the available hours thanks
+the introduction of  the soft constraint.
+
+In the objective  function we will assign a cost to variable :math:`\var{Overtime}`:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_{p \in \set{Products}} \param{Gain}_p \var{x}_p - \sum_{r
+   \in \set{Resources}} \param{Ovcost}_r \var{Overtime}_r
+   \end{align*}
+
+while, in the constraints, some upper bounds will  be
+introduced in order not to exaggerate in overtime:
+
+.. math::
+   :nowrap:
+
+   \[
+   0 \leq \var{Overtime}_r \leq \param{MaxOvertime}_r
+   \]
+   
+
+The overtime cost must necessarily be higher than the cost which is 
+normally attributed to the same resource, otherwise there would be an incentive
+not to use the resource during normal hours and
+instead, use it only during overtime.
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Piece-wise linear convex cost functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The idea we used for the
+formulation of soft constraints might prove useful in a quite
+different scenario. In network flow problems, we might wish to
+formulate a piece-wise linear cost function.  
+Assume that the unit cost of the flow along an arc has a certain
+value, but only up to 
+a threshold. If the flow exceeds this threshold,  the unit cost per
+each additional unit becomes higher. We can represent this situation with
+a graph with parallel arcs:
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=1.5]
+   %\draw[help lines,white] (0,0) grid (5,5);
+    \node[draw,circle,blue] (A) at (0,2) {A};
+    \node[draw,circle,blue] (B) at (3,2) {B};
+    %\path [draw,->] (i) - node [above] {$CapMax_{ij}; Cost_{ij} $} (j);
+    %    \path[draw,->] (A) -- (B);
+    \path[draw,->,out = 30, in = -210,thick] (A)  edge node[above] {10;20} (B);
+    \path[draw,->, out = -30, in = 210,thick] (A) edge node[below] {5;30}
+    (B);
+    \node[draw,circle] (i)  at (0,3) {$i$};
+    \node[draw,circle] (j)  at (3,3) {$i$};
+    \path[draw,->] (i) edge node[above]{$CapMax_{ij};Cost_{ij}$} (j);
+  \end{tikzpicture} 
+ 
+In the example, the flow arriving at node :math:`A`  will fill the arc with
+lower unit cost (20)  up to  the maximum capacity, which is 
+10 units; any additional unit of flow  will go through the second arc,
+with a unit cost 30. Of course, this modeling trick will work only if
+unit costs are increasing (and, thus, the overall objective function
+is piece-wise linear and *convex*). A model for this situation might be
+as follows:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min_{\var{f}} \dots + 20\, \var{f}_{AB} + 30\, \var{f^\prime}_{AB}  \\
+   \var{f}_{AB} & \leq 10 + \var{f^\prime}_{AB} \\
+   \var{f}_{AB}  & \leq 10 \\
+   \var{f^\prime}_{AB}  & \leq 5
+   \end{align*}
+
+This formulation can be further generalized
+when dealing with piece-wise *affine* objective functions.
+
+.. include:: closing.rst
+

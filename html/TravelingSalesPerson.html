@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>21. Sequencing problems: the Traveling Salesperson Problem &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="23. Arc routing" href="Arcrouting.html" />
+    <link rel="prev" title="20. Set covering, packing, partition" href="SetCovering.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="SetCovering.html" title="Previous document"><span class="section-number">20. </span>Set covering, packing, partition</a>
+        </li>
+        <li>
+          <a href="Arcrouting.html" title="Next document"><span class="section-number">23. </span>Arc routing</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="sequencing-problems-the-traveling-salesperson-problem">
+<h1><span class="section-number">21. </span>Sequencing problems: the Traveling Salesperson Problem<a class="headerlink" href="#sequencing-problems-the-traveling-salesperson-problem" title="Link to this heading">¶</a></h1>
+<p>A <span class="target" id="index-0"></span>sequencing problem arises
+when the decision maker needs to choose
+the best ordering for a set of objects or in which sequence
+to perform a set of operations. The problem consists in determining a
+permutation among all feasible ones; to each  permutation
+a cost is associated, and the problem, in its basic formulation,
+consists in  the search for the least cost feasible permutation.</p>
+<p>There exist various  formulations for sequencing  problems,
+the most common of which corresponds to the case where the
+cost  of a permutations is given by the sum of
+costs associated to contiguous pairs in the sequence.
+To be more concrete, a typical sequencing problem is often encountered in
+transport logistics from where the model got the name of <span class="target" id="index-1"></span>traveling
+salesperson, or <span class="target" id="index-2"></span>TSP:  a driver needs to visit a set of
+destinations. This situation arises, e.g.,  in  parcel  delivery or
+collection, or when some service tasks, like maintenance or gas meter
+reading, are to be performed in various locations.
+There are in general no
+capacity constraints; the only requirement is that every destination is visited
+once and, at the end of the tour, the driver returns to the starting
+base station. Thus the problem can be seen as that of sequencing the
+visits, in order to spend as little as possible in the overall travel.
+The total cost in this case is the sum of the cost
+incurred in moving from one destination node (or from the base
+station) to the following one in the sequence, or back to the base station
+when the tour is terminated.</p>
+<p>This is perhaps one of the best known and most studied research
+problem in Operations Research.
+The interest in this problem arises both from the fact that it
+is  a problem which is very simple to describe, but
+considerably complex to solve, and from the fact that the applications of the
+traveling salesperson problem are many and not limited to delivery  or
+collection of goods.</p>
+<p>A possible formalization of the problem can be obtained in the
+following way. Consider a directed graph whose nodes are
+cities (or customers) to be visited. We assume that the graph is
+<em>complete</em>, which means that there exists an arc connecting each pair
+of nodes.
+Sometimes this is not the case: in a road network, as an example, only
+some pairs of cities are connected directly by a road. In graphs which
+are not complete, a path which goes through each node once and only
+once might not exist:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-d65691e36cf992ca5f76595761272b2a8bc6347b.png" alt="Figure made with TikZ" /></p>
+</div><p>It is evident that, in this figure, no path exists which, starting
+from node 0, goes through nodes 1-5 and back to 0 without passing more
+than once over a node. A path which satisfies this
+requirement would be  called an <span class="target" id="index-3"></span>Hamiltonian path.
+In some applications the constraint of not
+passing more than once through a node might be relaxed. In the
+traveling example, it is important to visit each location to deliver
+or collect parcels; however, it is not forbidden to pass again through an
+already visited node, on the way to a different destination. We may
+thus create a  complete graph in which the arc between two nodes
+represents a shortest path between the nodes itself. In other
+words, a minimum cost path problem (see
+chapter <a class="reference internal" href="ShortestPath.html#shortest-minimum-cost-path-problems"><span class="std std-ref">Shortest (Minimum Cost) Path Problems</span></a>) is repeatedly solved to find the
+least cost route from each node to each other node in the
+graph. Then, if the graph is connected, a complete graph can be
+defined in which arcs, representing optimal paths, connect each
+pair of nodes. In this graph it is always possible to find hamiltonian paths.</p>
+<p>From now on, let us assume that the graph is complete, and that costs
+associated to each arc are non negative. In order to formulate the optimization problem
+we associate an indicator variable to each arc:
+<span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij}\)</span>. Constraints need to be defined in
+such a way that this variable is equal to 1 if and
+only if the route prescribes to visit node <span class="math notranslate nohighlight">\(j\)</span> <em>immediately</em> after
+having visited node <span class="math notranslate nohighlight">\(i\)</span>. Assuming the constraints have been
+formulated,  the objective function is simply written, exactly in the
+same way as in the minimum cost path problem:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_{(i,j) \in E} \param{c}_{ij} \mathvar{\delta}_{ij}
+\end{align*}</div><p>In the above objective, <span class="math notranslate nohighlight">\(E\)</span> is the set of arcs in the
+graph. If nodes are denoted by <span class="math notranslate nohighlight">\(V = \{0,1, \ldots, n\}\)</span>, then
+<span class="math notranslate nohighlight">\(E = \{(i,j) \in V \times V : i \ne j\}\)</span>.</p>
+<p>For what concerns the
+constraints, first observe that the tour must touch each node once;
+thus, referring to a network flow problem, the total flow in and out
+of each node should be equal to 1. That is, one and only one arc of
+a feasible tour
+will  enter each node and one and only one arc will exit from it. In
+formulae:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{i \in V, i \ne j } \mathvar{\delta}_{ij} &amp; = 1 &amp; \forall \, j \in V\\
+\sum_{j \in V, j \ne i} \mathvar{\delta}_{ij} &amp; = 1 &amp; \forall \, i
+\in V
+\end{align*}</div><p>It is easily recognized that the structure of these two groups of
+constraints is that of matching constraints (on a graph which,
+however, is not
+bipartite like in chapter <a class="reference internal" href="Assignment.html#assignment-or-bi-partite-matching"><span class="std std-ref">Assignment or bi-partite matching</span></a>).
+Generic (non bipartite) weighted matching problems are easily solvable, and
+efficient algorithms do exist (see, e.g., <span id="id1">[<a class="reference internal" href="Bibliography.html#id14" title="Jack Edmonds. Paths, trees, and flowers. Canadian Journal of Mathematics, 17:449–467, 1965.">Edmonds, 1965</a>]</span>).
+Unfortunately these constraints, although necessary for
+a feasible solution, are not  sufficient
+to force the indicator variables to identify a single
+closed tour. The following example shows the situation:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-b4e23f36dd7f318188f8d5130888c1daec1e90d6.png" alt="Figure made with TikZ" /></p>
+</div><p>In the figure, red arcs corresponds to arcs for which the indicator
+variable is 1.
+All matching constraints are
+satisfied by this solution, but it does not represent a feasible
+solution, as the proposed path is not a unique cycle. We thus need to
+introduce special purpose constraints to
+eliminate <span class="target" id="index-4"></span>sub-tours from feasible solutions. A sub-tour is
+a closed circuit which  does not contain the
+origin node.</p>
+<section id="sub-tour-elimination-constraints">
+<h2><span class="section-number">21.1. </span>Sub-tour elimination constraints<a class="headerlink" href="#sub-tour-elimination-constraints" title="Link to this heading">¶</a></h2>
+<p>The first technique consists of  <em>labeling</em>  the nodes, i.e.,
+assigning a new variable to each node. The idea is to
+assigns a variable to each node and, by means of suitable logical constraints,
+force the label assigned to a node to be strictly greater than that
+assigned to its direct predecessor along the path. Let us denote by <span class="math notranslate nohighlight">\(\var{y}_i\)</span>
+the variable associated to node <span class="math notranslate nohighlight">\(i\)</span>. Then we would like to
+impose logical constraints:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ij} = 1 &amp; \implies \var{y}_j  &gt; \var{y}_i
+\end{align*}</div><p>Assume that a sub-tour <span class="math notranslate nohighlight">\(v_1, v_2, \ldots, v_k, v_{k+1}=v_1\)</span> exists
+in a solution. The logical constraints above would then imply:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{v_1v_2} = 1 &amp; \implies \var{y}_{v_2}  &gt;
+\var{y}_{v_1} \\
+\mathvar{\delta}_{v_2v_3} = 1 &amp; \implies \var{y}_{v_3}  &gt;
+\var{y}_{v_2} &gt;  \var{y}_{v_1} \\
+\dots \\
+\mathvar{\delta}_{v_{k}v_1} = 1 &amp; \implies \var{y}_{v_1}  &gt;
+\var{y}_{v_k} &gt;  \var{y}_{v_1}
+\end{align*}</div><p>which is impossible. Thus it has been proven that these logical
+constraints make any tour infeasible. However it should be recalled
+that a tour should be allowed, namely one which returns to the base
+station. So it is necessary to impose the logical constraints for
+each pair of nodes, provided that the second one is not the origin:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathvar{\delta}_{ij} = 1 &amp; \implies \var{y}_j  &gt; \var{y}_i &amp;
+\forall\,i, \forall\,j \ne 0
+\end{align*}</div><p>In practice, replacing the “strictly greater” constraint with
+<span class="math notranslate nohighlight">\(\geq \var{y}_{i}+1\)</span>, the constraint becomes</p>
+<div class="math notranslate nohighlight">
+\[
+\mathvar{\delta}_{ij} = 1 \implies \var{y}_{j} \geq \var{y}_{i}
++1, \quad j \ne 0
+\]</div><p>To correctly formulate this constraint, we can proceed in the
+following way:
+if  <span class="math notranslate nohighlight">\(\mathvar{\delta}_{ij} = 1\)</span> then  the difference
+<span class="math notranslate nohighlight">\(\var{y}_{j} - \var{y}_{i}\)</span> must be greater than or equal to
+one (or to any other positive quantity). Otherwise,
+it is necessary to find a lower bound on the same difference in such a way that the
+generated constraint is redundant. If we fix, arbitrarily,
+<span class="math notranslate nohighlight">\(\var{y}_0=0\)</span>, it can be observed that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{y}_j  &amp; \leq n &amp; \forall\, j \\
+\var{y}_j &amp; \geq 1 &amp; \forall\, j \ne 0
+\end{align*}</div><p>Thus the logical constraint can be formulated as:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{y}_j  - \var{y}_i &amp; \geq  \mathvar{\delta}_{ij} + (1-n)
+(1-\mathvar{\delta_{ij}}) &amp; \forall\,i \in 0,n, \forall\, j \in
+1,n  \\
+\var{y}_0  &amp; = 0
+\end{align*}</div><p>The addition of these constraints excludes the possibility of
+cycles not including node 0. We may also notice that it is not
+required to impose integrality constraints on the variables
+<span class="math notranslate nohighlight">\(\var{y}\)</span>; in fact they might also be non integer, if
+necessary. In the above model, as the source is assigned label 0,
+the highest possible label is <span class="math notranslate nohighlight">\(n\)</span> and the increment is one,
+it turns out that in any feasible solution the values of variables
+<span class="math notranslate nohighlight">\(\var{y}\)</span> will be consecutive integers, i.e., a sequential
+numbering of the visited nodes.</p>
+<p>In the following we give a formulation of the model, using the
+formulation just introduced:</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">tsp.mod</span><a class="headerlink" href="#id5" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="w"> </span><span class="kr">cross</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>j<span class="p">};</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">n</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="nb">card</span><span class="p">(</span>NODES<span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Source</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Cost</span><span class="p">{</span>ARCS<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">Infinity</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span>ARCS<span class="p">},</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">y</span><span class="p">{</span>NODES<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">Total_cost</span><span class="p">:</span>
+<span class="w">  </span><span class="kr">sum</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>Cost<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+<span class="w">   </span>
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">input</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">}:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">   </span>
+<span class="w">   </span>
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">output</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">}:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">labeling</span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">:</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Source<span class="p">}:</span>
+<span class="w">   </span>y<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span>y<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>n<span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span>n<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>An example of the execution of this model can be obtained, with the
+already used dataset Pistoia.dat, using the following script:</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">tsp.run</span><a class="headerlink" href="#id6" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kr">model</span><span class="w"> </span>tsp.<span class="kr">mod</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">time</span><span class="p">{</span>ARCS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">distance</span><span class="p">{</span>ARCS<span class="p">};</span>
+
+<span class="kr">data</span><span class="w"> </span>Pistoia.dat<span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="nv">Cost</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nv">Source</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Pistoia&#39;</span><span class="p">;</span>
+
+<span class="kr">option</span><span class="w"> </span>solver<span class="w"> </span>gurobi<span class="p">;</span>
+<span class="kr">option</span><span class="w"> </span>omit_zero_rows<span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="kr">option</span><span class="w"> </span>omit_zero_cols<span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="kr">option</span><span class="w"> </span>gurobi_options<span class="w"> </span><span class="s1">&#39;cuts=3 presolve=2 logfreq=5 outlev=1&#39;</span><span class="p">;</span>
+
+<span class="kr">solve</span><span class="p">;</span>
+
+<span class="kr">display</span><span class="w"> </span>y<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>which gives the following results:</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">tsp.out</span><a class="headerlink" href="#id7" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Gurobi</span> <span class="mf">9.1.1</span><span class="p">:</span> <span class="n">cuts</span><span class="o">=</span><span class="mi">3</span>
+<span class="n">presolve</span><span class="o">=</span><span class="mi">2</span>
+<span class="n">logfreq</span><span class="o">=</span><span class="mi">5</span>
+<span class="n">outlev</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">Gurobi</span> <span class="n">Optimizer</span> <span class="n">version</span> <span class="mf">9.1.1</span> <span class="n">build</span> <span class="n">v9</span><span class="mf">.1.1</span><span class="n">rc0</span> <span class="p">(</span><span class="n">linux64</span><span class="p">)</span>
+<span class="mi">2</span> <span class="n">physical</span> <span class="n">cores</span><span class="p">,</span> <span class="mi">4</span> <span class="n">logical</span> <span class="n">processors</span><span class="p">,</span> <span class="n">using</span> <span class="n">up</span> <span class="n">to</span> <span class="mi">4</span> <span class="n">threads</span>
+<span class="n">Optimize</span> <span class="n">a</span> <span class="n">model</span> <span class="k">with</span> <span class="mi">485</span> <span class="n">rows</span><span class="p">,</span> <span class="mi">484</span> <span class="n">columns</span> <span class="ow">and</span> <span class="mi">2247</span> <span class="n">nonzeros</span>
+<span class="n">Model</span> <span class="n">fingerprint</span><span class="p">:</span> <span class="mh">0x7dea6626</span>
+<span class="n">Variable</span> <span class="n">types</span><span class="p">:</span> <span class="mi">22</span> <span class="n">continuous</span><span class="p">,</span> <span class="mi">462</span> <span class="n">integer</span> <span class="p">(</span><span class="mi">462</span> <span class="n">binary</span><span class="p">)</span>
+<span class="n">Coefficient</span> <span class="n">statistics</span><span class="p">:</span>
+  <span class="n">Matrix</span> <span class="nb">range</span>     <span class="p">[</span><span class="mf">1e+00</span><span class="p">,</span> <span class="mf">2e+01</span><span class="p">]</span>
+  <span class="n">Objective</span> <span class="nb">range</span>  <span class="p">[</span><span class="mf">4e+00</span><span class="p">,</span> <span class="mf">7e+01</span><span class="p">]</span>
+  <span class="n">Bounds</span> <span class="nb">range</span>     <span class="p">[</span><span class="mf">1e+00</span><span class="p">,</span> <span class="mf">1e+00</span><span class="p">]</span>
+  <span class="n">RHS</span> <span class="nb">range</span>        <span class="p">[</span><span class="mf">1e+00</span><span class="p">,</span> <span class="mf">2e+01</span><span class="p">]</span>
+<span class="n">Presolve</span> <span class="n">removed</span> <span class="mi">21</span> <span class="n">rows</span> <span class="ow">and</span> <span class="mi">1</span> <span class="n">columns</span>
+<span class="n">Presolve</span> <span class="n">time</span><span class="p">:</span> <span class="mf">0.03</span><span class="n">s</span>
+<span class="n">Presolved</span><span class="p">:</span> <span class="mi">464</span> <span class="n">rows</span><span class="p">,</span> <span class="mi">483</span> <span class="n">columns</span><span class="p">,</span> <span class="mi">2184</span> <span class="n">nonzeros</span>
+<span class="n">Variable</span> <span class="n">types</span><span class="p">:</span> <span class="mi">21</span> <span class="n">continuous</span><span class="p">,</span> <span class="mi">462</span> <span class="n">integer</span> <span class="p">(</span><span class="mi">462</span> <span class="n">binary</span><span class="p">)</span>
+<span class="n">Presolve</span> <span class="n">removed</span> <span class="mi">1</span> <span class="n">rows</span> <span class="ow">and</span> <span class="mi">0</span> <span class="n">columns</span>
+<span class="n">Presolved</span><span class="p">:</span> <span class="mi">463</span> <span class="n">rows</span><span class="p">,</span> <span class="mi">483</span> <span class="n">columns</span><span class="p">,</span> <span class="mi">2163</span> <span class="n">nonzeros</span>
+
+
+<span class="n">Root</span> <span class="n">relaxation</span><span class="p">:</span> <span class="n">objective</span> <span class="mf">1.947098e+02</span><span class="p">,</span> <span class="mi">53</span> <span class="n">iterations</span><span class="p">,</span> <span class="mf">0.00</span> <span class="n">seconds</span>
+
+    <span class="n">Nodes</span>    <span class="o">|</span>    <span class="n">Current</span> <span class="n">Node</span>    <span class="o">|</span>     <span class="n">Objective</span> <span class="n">Bounds</span>      <span class="o">|</span>     <span class="n">Work</span>
+ <span class="n">Expl</span> <span class="n">Unexpl</span> <span class="o">|</span>  <span class="n">Obj</span>  <span class="n">Depth</span> <span class="n">IntInf</span> <span class="o">|</span> <span class="n">Incumbent</span>    <span class="n">BestBd</span>   <span class="n">Gap</span> <span class="o">|</span> <span class="n">It</span><span class="o">/</span><span class="n">Node</span> <span class="n">Time</span>
+
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">194.70984</span>  <span class="mi">0</span>   <span class="mi">35</span>          <span class="o">-</span>  <span class="mf">194.70984</span>      <span class="o">-</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">221.88938</span>  <span class="mi">0</span>   <span class="mi">32</span>          <span class="o">-</span>  <span class="mf">221.88938</span>      <span class="o">-</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">221.96636</span>  <span class="mi">0</span>   <span class="mi">40</span>          <span class="o">-</span>  <span class="mf">221.96636</span>      <span class="o">-</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">221.96636</span>  <span class="mi">0</span>   <span class="mi">40</span>          <span class="o">-</span>  <span class="mf">221.96636</span>      <span class="o">-</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">222.93048</span>  <span class="mi">0</span>   <span class="mi">38</span>          <span class="o">-</span>  <span class="mf">222.93048</span>      <span class="o">-</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">222.93048</span>  <span class="mi">0</span>   <span class="mi">38</span>          <span class="o">-</span>  <span class="mf">222.93048</span>      <span class="o">-</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">225.78232</span>  <span class="mi">0</span>   <span class="mi">47</span>          <span class="o">-</span>  <span class="mf">225.78232</span>      <span class="o">-</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+<span class="n">H</span>    <span class="mi">0</span>     <span class="mi">0</span>                    <span class="mf">276.9700000</span>  <span class="mf">225.78232</span>  <span class="mf">18.5</span><span class="o">%</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">226.06000</span>  <span class="mi">0</span>   <span class="mi">42</span>  <span class="mf">276.97000</span>  <span class="mf">226.06000</span>  <span class="mf">18.4</span><span class="o">%</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">227.05429</span>  <span class="mi">0</span>   <span class="mi">14</span>  <span class="mf">276.97000</span>  <span class="mf">227.05429</span>  <span class="mf">18.0</span><span class="o">%</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">227.21500</span>  <span class="mi">0</span>   <span class="mi">16</span>  <span class="mf">276.97000</span>  <span class="mf">227.21500</span>  <span class="mf">18.0</span><span class="o">%</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">0</span>  <span class="mf">227.21500</span>  <span class="mi">0</span>   <span class="mi">16</span>  <span class="mf">276.97000</span>  <span class="mf">227.21500</span>  <span class="mf">18.0</span><span class="o">%</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+     <span class="mi">0</span>     <span class="mi">2</span>  <span class="mf">227.48333</span>  <span class="mi">0</span>   <span class="mi">16</span>  <span class="mf">276.97000</span>  <span class="mf">227.48333</span>  <span class="mf">17.9</span><span class="o">%</span>    <span class="o">-</span> <span class="mi">0</span><span class="n">s</span>
+<span class="n">H</span>   <span class="mi">29</span>    <span class="mi">32</span>                   <span class="mf">271.3800000</span>  <span class="mf">227.48903</span>  <span class="mf">16.2</span><span class="o">%</span> <span class="mf">11.8</span> <span class="mi">0</span><span class="n">s</span>
+<span class="n">H</span>   <span class="mi">57</span>    <span class="mi">60</span>                   <span class="mf">270.2100000</span>  <span class="mf">227.48903</span>  <span class="mf">15.8</span><span class="o">%</span>  <span class="mf">9.0</span> <span class="mi">0</span><span class="n">s</span>
+<span class="n">H</span>   <span class="mi">86</span>    <span class="mi">89</span>                   <span class="mf">260.9800000</span>  <span class="mf">227.48903</span>  <span class="mf">12.8</span><span class="o">%</span>  <span class="mf">7.3</span> <span class="mi">0</span><span class="n">s</span>
+<span class="n">H</span>  <span class="mi">121</span>   <span class="mi">119</span>                   <span class="mf">260.8100000</span>  <span class="mf">227.48903</span>  <span class="mf">12.8</span><span class="o">%</span>  <span class="mf">7.0</span> <span class="mi">0</span><span class="n">s</span>
+<span class="o">*</span>  <span class="mi">319</span>   <span class="mi">257</span>            <span class="mi">38</span>     <span class="mf">255.9900000</span>  <span class="mf">228.17841</span>  <span class="mf">10.9</span><span class="o">%</span>  <span class="mf">8.3</span> <span class="mi">0</span><span class="n">s</span>
+<span class="o">*</span>  <span class="mi">320</span>   <span class="mi">256</span>            <span class="mi">36</span>     <span class="mf">255.6400000</span>  <span class="mf">228.17841</span>  <span class="mf">10.7</span><span class="o">%</span>  <span class="mf">8.3</span> <span class="mi">0</span><span class="n">s</span>
+<span class="o">*</span>  <span class="mi">497</span>   <span class="mi">274</span>            <span class="mi">13</span>     <span class="mf">248.0900000</span>  <span class="mf">228.73683</span>  <span class="mf">7.80</span><span class="o">%</span>  <span class="mf">8.0</span> <span class="mi">0</span><span class="n">s</span>
+<span class="o">*</span>  <span class="mi">531</span>   <span class="mi">288</span>            <span class="mi">15</span>     <span class="mf">247.7700000</span>  <span class="mf">228.73683</span>  <span class="mf">7.68</span><span class="o">%</span>  <span class="mf">7.9</span> <span class="mi">0</span><span class="n">s</span>
+<span class="n">H</span>  <span class="mi">753</span>   <span class="mi">367</span>                   <span class="mf">245.8100000</span>  <span class="mf">229.38000</span>  <span class="mf">6.68</span><span class="o">%</span>  <span class="mf">8.6</span> <span class="mi">0</span><span class="n">s</span>
+<span class="n">H</span>  <span class="mi">762</span>   <span class="mi">354</span>                   <span class="mf">245.6500000</span>  <span class="mf">229.38000</span>  <span class="mf">6.62</span><span class="o">%</span>  <span class="mf">8.5</span> <span class="mi">1</span><span class="n">s</span>
+<span class="o">*</span> <span class="mi">1006</span>   <span class="mi">288</span>            <span class="mi">31</span>     <span class="mf">245.6400000</span>  <span class="mf">243.74131</span>  <span class="mf">0.77</span><span class="o">%</span>  <span class="mf">9.7</span> <span class="mi">1</span><span class="n">s</span>
+
+<span class="n">Cutting</span> <span class="n">planes</span><span class="p">:</span>
+  <span class="n">Learned</span><span class="p">:</span> <span class="mi">7</span>
+  <span class="n">Gomory</span><span class="p">:</span> <span class="mi">39</span>
+  <span class="n">MIR</span><span class="p">:</span> <span class="mi">6</span>
+  <span class="n">StrongCG</span><span class="p">:</span> <span class="mi">1</span>
+  <span class="n">Flow</span> <span class="n">cover</span><span class="p">:</span> <span class="mi">30</span>
+  <span class="n">Zero</span> <span class="n">half</span><span class="p">:</span> <span class="mi">24</span>
+
+<span class="n">Explored</span> <span class="mi">1136</span> <span class="n">nodes</span> <span class="p">(</span><span class="mi">11161</span> <span class="n">simplex</span> <span class="n">iterations</span><span class="p">)</span> <span class="ow">in</span> <span class="mf">1.51</span> <span class="n">seconds</span>
+<span class="n">Thread</span> <span class="n">count</span> <span class="n">was</span> <span class="mi">4</span> <span class="p">(</span><span class="n">of</span> <span class="mi">4</span> <span class="n">available</span> <span class="n">processors</span><span class="p">)</span>
+
+<span class="n">Solution</span> <span class="n">count</span> <span class="mi">10</span><span class="p">:</span> <span class="mf">245.64</span> <span class="mf">245.65</span> <span class="mf">245.81</span> <span class="o">...</span> <span class="mf">270.21</span>
+
+<span class="n">Optimal</span> <span class="n">solution</span> <span class="n">found</span> <span class="p">(</span><span class="n">tolerance</span> <span class="mf">1.00e-04</span><span class="p">)</span>
+<span class="n">Best</span> <span class="n">objective</span> <span class="mf">2.456400000000e+02</span><span class="p">,</span> <span class="n">best</span> <span class="n">bound</span> <span class="mf">2.456400000000e+02</span><span class="p">,</span> <span class="n">gap</span> <span class="mf">0.0000</span><span class="o">%</span>
+<span class="n">Gurobi</span> <span class="n">Optimizer</span> <span class="n">version</span> <span class="mf">9.1.1</span> <span class="n">build</span> <span class="n">v9</span><span class="mf">.1.1</span><span class="n">rc0</span> <span class="p">(</span><span class="n">linux64</span><span class="p">)</span>
+<span class="n">Thread</span> <span class="n">count</span><span class="p">:</span> <span class="mi">2</span> <span class="n">physical</span> <span class="n">cores</span><span class="p">,</span> <span class="mi">4</span> <span class="n">logical</span> <span class="n">processors</span><span class="p">,</span> <span class="n">using</span> <span class="n">up</span> <span class="n">to</span> <span class="mi">4</span> <span class="n">threads</span>
+<span class="n">Optimize</span> <span class="n">a</span> <span class="n">model</span> <span class="k">with</span> <span class="mi">485</span> <span class="n">rows</span><span class="p">,</span> <span class="mi">484</span> <span class="n">columns</span> <span class="ow">and</span> <span class="mi">2247</span> <span class="n">nonzeros</span>
+<span class="n">Model</span> <span class="n">fingerprint</span><span class="p">:</span> <span class="mh">0xa0547d93</span>
+<span class="n">Coefficient</span> <span class="n">statistics</span><span class="p">:</span>
+  <span class="n">Matrix</span> <span class="nb">range</span>     <span class="p">[</span><span class="mf">1e+00</span><span class="p">,</span> <span class="mf">2e+01</span><span class="p">]</span>
+  <span class="n">Objective</span> <span class="nb">range</span>  <span class="p">[</span><span class="mf">4e+00</span><span class="p">,</span> <span class="mf">7e+01</span><span class="p">]</span>
+  <span class="n">Bounds</span> <span class="nb">range</span>     <span class="p">[</span><span class="mf">1e+00</span><span class="p">,</span> <span class="mf">1e+00</span><span class="p">]</span>
+  <span class="n">RHS</span> <span class="nb">range</span>        <span class="p">[</span><span class="mf">1e+00</span><span class="p">,</span> <span class="mf">2e+01</span><span class="p">]</span>
+<span class="n">Iteration</span>    <span class="n">Objective</span>       <span class="n">Primal</span> <span class="n">Inf</span><span class="o">.</span>    <span class="n">Dual</span> <span class="n">Inf</span><span class="o">.</span>      <span class="n">Time</span>
+       <span class="mi">0</span>    <span class="mf">2.4564000e+02</span>   <span class="mf">2.625000e+00</span>   <span class="mf">0.000000e+00</span>      <span class="mi">0</span><span class="n">s</span>
+      <span class="mi">21</span>    <span class="mf">2.4564000e+02</span>   <span class="mf">0.000000e+00</span>   <span class="mf">0.000000e+00</span>      <span class="mi">0</span><span class="n">s</span>
+
+<span class="n">Solved</span> <span class="ow">in</span> <span class="mi">21</span> <span class="n">iterations</span> <span class="ow">and</span> <span class="mf">0.00</span> <span class="n">seconds</span>
+<span class="n">Optimal</span> <span class="n">objective</span>  <span class="mf">2.456400000e+02</span>
+<span class="n">Gurobi</span> <span class="mf">9.1.1</span><span class="p">:</span> <span class="n">optimal</span> <span class="n">solution</span><span class="p">;</span> <span class="n">objective</span> <span class="mf">245.64</span>
+<span class="mi">11161</span> <span class="n">simplex</span> <span class="n">iterations</span>
+<span class="mi">1136</span> <span class="n">branch</span><span class="o">-</span><span class="ow">and</span><span class="o">-</span><span class="n">cut</span> <span class="n">nodes</span>
+<span class="n">plus</span> <span class="mi">21</span> <span class="n">simplex</span> <span class="n">iterations</span> <span class="k">for</span> <span class="n">intbasis</span>
+<span class="n">y</span> <span class="p">[</span><span class="o">*</span><span class="p">]</span> <span class="o">:=</span>
+<span class="n">Abetone</span> <span class="mi">19</span>               <span class="n">Marliana</span> <span class="mi">16</span>               <span class="n">Piteglio</span> <span class="mi">17</span>
+<span class="n">Agliana</span>  <span class="mi">2</span>           <span class="n">MassaCozzile</span> <span class="mi">15</span>        <span class="n">PonteBuggianese</span> <span class="mi">10</span>
+<span class="n">Buggiano</span> <span class="mi">12</span>        <span class="n">MonsummanoTerme</span>  <span class="mi">6</span>               <span class="n">Quarrata</span>  <span class="mi">3</span>
+<span class="n">ChiesinaUzzanese</span> <span class="mi">11</span>        <span class="n">Montale</span>  <span class="mi">1</span>       <span class="n">SambucaPistoiese</span> <span class="mi">21</span>
+<span class="n">Cutigliano</span> <span class="mi">18</span>       <span class="n">MontecatiniTerme</span>  <span class="mi">9</span>   <span class="n">SanMarcelloPistoiese</span> <span class="mi">20</span>
+<span class="n">Lamporecchio</span>  <span class="mi">4</span>             <span class="n">Pescia</span> <span class="mi">13</span>    <span class="n">SerravallePistoiese</span>  <span class="mi">8</span>
+<span class="n">Larciano</span>  <span class="mi">5</span>          <span class="n">PieveANievole</span>  <span class="mi">7</span>                 <span class="n">Uzzano</span> <span class="mi">14</span>
+<span class="p">;</span>
+
+</pre></div>
+</div>
+</div>
+<p>The following figure reports the optimal tour (based on estimated
+travel times):</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-ec50ca3fda8418defeb7e941ac9068033a7ef67d.png" alt="Figure made with TikZ" /></p>
+</div><p>Some comments are in order. First we can notice from the graph
+above that the path “crosses itself”, which is something which
+might be considered as negative at first sight. But it should be
+reminded that the arrows represented in the figure are not
+the actual path followed by the driver, but just
+are meant to represent the correct visit sequence. As an example,
+the apparent crossing close to Cutigliano is not real, as the best
+path San Marcello Pistoiese to Abetone and then Piteglio, goes
+through Cutigliano, and similarly for other apparent crossings.</p>
+<p>Another observation is the speed by which this problem is
+solved. Indeed this is a small instance. However, the fact that,
+with this formulation, it was solved in a very short CPU time, is
+not due to the formulation, but to the advanced optimization
+software employed. The solver used in the example automatically
+adds a large number of cuts (valid inequalities) to improve the
+formulation, which, in itself, is very weak. If we used, e.g., the
+CBC solver, which is already a very advanced implementation, the
+same instance would be solved in 17 seconds, with over 150000
+simplex iterations. In fact, the formulation just presented does
+not allow to solve  problems of size, say, larger than 50.
+Different formulations will be introduced later in this chapter.</p>
+<p>Although “weak”  from the polyhedral point of view, the constraints just presented are
+important as they allow for the formulation  of additional
+constraints, useful in many applications. In fact, in place of the unit
+increase of variable <span class="math notranslate nohighlight">\(\var{y}_j\)</span>, an increase equal to, say,
+the travel time along arc <span class="math notranslate nohighlight">\((i, j)\)</span>, or the sum of the time
+spent in node <span class="math notranslate nohighlight">\(i\)</span>  plus the travel time on the arc. In this
+case, variable <span class="math notranslate nohighlight">\(\var{y}_j\)</span> would have the meaning of
+the arrival time at node <span class="math notranslate nohighlight">\(j\)</span>. Having this variable in the model
+easily allows to  insert temporal constraints like, e.g. requiring
+that a node must be visited in a specific time window, or requiring
+that a node is not visited before another one. An application of
+models of this kind can be considered, as an example, for the
+scheduling of home care visits to patients by a
+medical or nursing staff. In order to implement a model of
+this kind, the logical  constraints need to be slightly modified.
+The lower bound on the difference of
+visit times of two consecutive nodes must be computed as a function
+of the travel and visit times. For example, we might
+assume that there are an earliest start and return times, denoted
+by <span class="math notranslate nohighlight">\(\param{T_{\min}}, \param{T_{\max}}\)</span>.
+Assume furthermore that visiting a node requires
+<span class="math notranslate nohighlight">\(\param{T}_i\)</span>  time units
+and that the travel time between two nodes is
+<span class="math notranslate nohighlight">\(\param{T}_{ij}\)</span>. Then
+the logical constraint becomes</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+   \var{y}_j  - \var{y}_i &amp; \geq  (\param{T}_i +
+   \param{T}_{ij})\mathvar{\delta}_{ij}
+   - (\param{T_{\max}} - \param{T_{\min}})
+   (1-\mathvar{\delta_{ij}}) \\&amp; \forall\,i \in 0,n, \forall\, j \in
+   1,n  \\
+   \var{y}_0  &amp; = \param{T_{\min}}
+\end{align*}</div><p>The TSP problem has been the subject of very intense research in
+all recent years; there exist many different formulations of the
+sub-tour elimination constraints (see, e.g., <span id="id2">[<a class="reference internal" href="Bibliography.html#id8" title="Temel Oncan, İ. Kuban Altınel, and Gilbert Laporte. A comparative analysis of several asymmetric traveling salesman problem formulations. Computers &amp; Operations Research, 36(3):637–654, March 2009.">Oncan <em>et al.</em>, 2009</a>]</span> for a
+list of 24 different models).  One of the best known formulations
+directly proceeds
+without the need for any additional labeling.
+Let  <span class="math notranslate nohighlight">\(\set{S}\)</span> be any not empty subset of the set of nodes
+which does not coincide with the set of nodes: <span class="math notranslate nohighlight">\(\set{S} \subset V,
+S \ne \emptyset\)</span>. In order to prevent any tour within the set
+<span class="math notranslate nohighlight">\(\set{S}\)</span> it is sufficient to require that at least one arc in
+the solution exits (or enters) this set. This can be done through
+the constraint:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+   \sum_ {i \in \set{S}, j \not \in
+   \set{S}} \mathvar{\delta}_{ij} \geq 1
+\end{align*}</div><p>Such a constraint should theoretically be imposed for
+each set of non empty subset of the set of nodes,
+with the exception of the whole set. However, it is easily seen
+that, for symmetry,  imposing the constraint for a set is
+equivalent to imposing the same constraint to the complementary
+set, so that we can limit the set <span class="math notranslate nohighlight">\(\set{S}\)</span> to have a
+cardinality which is no more than one half the number of
+nodes. Moreover, when the set is a singleton, the constraint is
+already included in the model as an assignment constraint. Thus,
+the required sub-tour elimination constraints  are:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+   \sum_ {i \in \set{S}, j \not \in
+   \set{S}} \mathvar{\delta}_{ij} &amp;\geq 1  &amp; \forall \, \set{S}
+   \subset V: 2 \leq |S| \leq \lceil (|V|/2) \rceil
+\end{align*}</div><p>Despite this reduction, the number of constraints to be added
+to the formulation is astronomical and grows exponentially fast as
+the size of the problem grows. The total number of constraints
+remains <span class="math notranslate nohighlight">\(O(2^{|V|})\)</span>. It is therefore impossible
+to add all of these in a formulation of the
+problem. On the other hand it can be proven that these constraints are
+rather <em>strong</em> and their addition to the original formulation
+would lead to a model whose linear relaxation is quite good.
+A possibility, exploited in most recent implementations,
+is to dynamically insert only those inequalities which are violated
+in the solution of the current relaxation.
+This is done in an automatic way within so-called
+<span class="target" id="index-5"></span>Branch &amp; Cut implementations. The general idea is to
+solve an initial relaxation
+of the problem, and then calling  a procedure which  determines if there exists
+any of the sub-tour elimination constraints which is violated.
+If the current solution is binary, this task is quite easy, as it
+just requires to identify cycles in the current solutions: the
+nodes of any cycle which does not include the source node form a
+set <span class="math notranslate nohighlight">\(\set{S}\)</span> associated to a violated inequality which can
+be added to the formulation. More complex is the case in which the
+current solution is not binary: a separation procedure needs to be
+implemented which is capable of finding a violated inequality which
+cuts off the current solution. This topic is out of the scope of
+this volume. Just as an illustrative example, if in the example
+used before we drop the labeling constraints and just solve the
+relaxed problem with only the constraints requiring one unit flow
+in and out of each node, the following solution is obtained:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-de2360f26437dfe64cb0632182900a338a5ecd55.png" alt="Figure made with TikZ" /></p>
+</div><p>This solution, as it can be immediately seen, contains various
+sub-tours. Its total cost is 192.23, which is thus a lower bound on
+the optimal solution value. Adding to the formulation
+only the sub-tour elimination constraints
+associated to the 10 sub-tours in this solution, and solving the
+problem again, the following solution is found, which is again
+infeasible, but starts to get closer to a single tour:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-b0663959008300b98bf42fdb61f365a203abd85f.png" alt="Figure made with TikZ" /></p>
+</div><p>This process can be continued and eventually the optimal solution
+is found; this happens well before having added all of the possible
+sub-tour elimination constraints which, in this example, would be
+slightly more than <span class="math notranslate nohighlight">\(2\,000\)</span>.</p>
+<p>The applications of the traveling salesman model are
+many. Obviously, the main application field is in transportation
+logistics, where the model can be applied to sequence deliveries,
+garbage collection, home care visits, …
+Problems connected with street cleaning or snow removal are only apparently similar:
+in this case it is required that each <em>arc</em> is visited at least once,
+while in the traveling salesperson each <em>node</em> is visited at least
+once. This problem will be shortly dealt with later on in chapter <a class="reference internal" href="Arcrouting.html#arc-routing"><span class="std std-ref">Arc routing</span></a>.</p>
+<p>Among the many applications, it is important to  recall in particular those related to
+industrial production.
+It is quite common, in production,  that some jobs can be worked on a
+machine, or a plant, in any arbitrary ordering, within, say, a single
+production period (a day, as an example).  However, it is also
+frequently the case that after a job has been completed, before
+starting the next one some setup is needed, and production needs to be
+stopped. Frequently, this setup time depends <em>both</em> on the job just
+concluded <em>and</em> on the next one. Consider, as an example, a drilling
+machine: after drilling a hole in  a plate, it is necessary to change
+the tool in order to drill holes of different sizes: this retooling
+requires a time which depends on the relative sizes of the two
+different tools to be mounted and dismounted from the machine.
+In a different environment, consider the
+problem of establishing the optimal sequence of surgical operations
+in an hospital: after an operation ends, and before the following one
+can start, some time is needed for sterilization and for changing the
+equipment in the operating room. These setup actions have a  duration
+which might depend on the two surgeries involved. In these examples,
+the nodes to be “visited” are the different industrial or surgical
+operations; the arcs connect different operations which might be
+scheduled in sequence. The cost of each arc is the amount of time
+wasted in setup. The traveling salesperson solution allows us to find
+how to sequence all of the operations so that the total time spent in
+setup is minimized. This has great benefits in terms of productivity,
+in the first case, and, in the hospital case, allows the planner to
+save time on setup and have more time allowed for surgeries.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-6"></span>Sequencing in industrial production</p>
+</dd>
+</dl>
+<p>Consider the problem of sequencing operations in a
+machine used to color a material or in a textile loom where
+different colors are needed for each product. Assume a list
+of jobs ready to be processed is available, each characterized by a
+set of colors. The plant is organized in such a way that, when a
+job is finished and the next one has to be prepared to start, some
+colors need possibly to be changed. This change requires a setup
+time. If colors are liquid, it might be necessary to clean the
+containers and to fill them with  a new color, or to extract the
+color container and insert a new one. In textile industries, color
+changes require dismounting a set of threads and substituting them
+with another set.  In general, the time wasted in this operation
+depends on the number of colors changed. In painting, it might also
+depend on the colors themselves, as cleaning some colors from a
+container might require different times depending on the color
+type. In this latter case, the graph of the TSP is asymmetric.
+Consider as an example the case of coloring tissues in 4 colors,
+and assume that the jobs to be worked on a day are represented by
+the following figure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-536d0ed69c971be5d4cdf5288937d348eab5b3ef.png" alt="Figure made with TikZ" /></p>
+</div><p>In this figure the standard is to  process jobs in the order given
+by reading the table from left to right. At the left of
+each job a number denotes the number of colors to be changed before
+that job begins. For the first job this number is 4, as,
+considering the last job, all of the colors need to be changed. The
+second job in this sequence has a setup cost 2, as it can be seen
+that from job 1 to job 2 only two colors have to be changed, while
+blue and brown can be left unchanged. It should be clear how to
+compute setup times for all pairs of jobs. Using this sequence,
+which was built using a lexicographic ordering of job colors, a
+total of 35 color changes is needed.</p>
+<p>If we run the TSP model with the data corresponding to this job
+set, the following sequence of jobs is obtained:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-cc507da3887bfc1df1652d7f3244cecb4e3ed6da.png" alt="Figure made with TikZ" /></p>
+</div><p>This sequence requires only 24 color changes, with a saving of more
+than 30% of the setups.</p>
+</div></blockquote>
+<p>In the examples we  always assumed  an initial state is known and that
+at the end of the tour, the same state needs to be restored. In the
+geographical TSP, the start city, or base station,  is known and the
+tour should terminate in that node; in production or in surgery, we
+assume the initial setup is given and that at the end of the day the
+same setup needs to be restored. If this assumption were false,
+we could easily extend the model to include any
+start and end node, possibly  different one from the other.
+If the initial node coincides with the final one, then clearly
+choosing any different starting node, the same tour will remain
+optimal.
+If instead we do not know the initial and final nodes, and they are
+different, we might
+insert a dummy node (a repository) connected to every other node in
+the graph (in both directions)  with zero cost arcs.</p>
+<p>This part on the TSP problem is necessarily too short, as this is one
+of the most deeply explored problems in Optimization and Operations
+Research. We hope we have given at least the feeling on how relevant
+this problem is and of how many practical problems can be profitably
+solved through a model like this one. We did not mention many other
+possibilities, like, e.g., organizing the tour of an automatic
+machine for the production of VLSI (Very Large Scale Integrated)
+circuits: here the machine needs to place thousands of components on a
+chip, and the TSP tour could save a significant amount of time in
+moving the tool from one location to another one. A very large set of
+examples, software, historical notes on the TSP problem can be found
+in the <span class="target" id="index-7"></span>Concorde web site <span id="id3">[<a class="reference internal" href="Bibliography.html#id10" title="William Cook. Concorde Home. URL: http://www.math.uwaterloo.ca/tsp/concorde.html.">Cook, n.d.</a>]</span> which is devoted to
+the TSP problem and offers among the best software tools for the
+solution of large instances.</p>
+</section>
+</section>
+<section id="vehicle-routing">
+<h1><span class="section-number">22. </span>Vehicle Routing<a class="headerlink" href="#vehicle-routing" title="Link to this heading">¶</a></h1>
+<p>This chapter is meant to very briefly introduce the subject of Vehicle
+Routing, without any presumption of being exhaustive. This problem, in
+fact, is the subject of very active research and it is difficult to
+summarize here all of the variants, models, applications.   Just to
+give an idea, the problem deals with more than just sequencing a set
+of visits: the first complication is that more than one route has to
+be planned - a situation which arises, e.g., in good distribution
+services, where a company owns several trucks, possibly with different
+capacities, and would like to use them to serve all requests with the
+lowest possible cost. In addition to a multiple traveling
+salesperson problem, a bin-packing like model has to be formulated. It
+is important to say that even this first basic model has a very high
+computational complexity. The range of problems which can be
+solved through a mathematical optimization model with a standard
+general purpose solver is significantly more limited than those which
+might be solved as TSP ones. Moreover, already within this initial
+model, additional information is required: do all the trips consist of
+deliveries? Or there is some pick-up? In other words, does every truck
+start from a depot with full load and return to the depot after having
+delivered each parcel at a specific location, or are there location at
+which some parcel will be collected?   And, if this is the case, where
+should those parcel be delivered? To another customer, or back to the depot?
+Let us assume here that all parcels are to be delivered, and no
+pick-up is required. Then a possible formulation of the problem might
+be the following one. Assume that a graph <span class="math notranslate nohighlight">\(G=\langle V, E\rangle\)</span>
+is given with <span class="math notranslate nohighlight">\(V = \{0,1,\ldots,N\}\)</span> being the set of nodes;
+node <span class="math notranslate nohighlight">\(0\)</span> refers to the depot from which we assume that all vehicles
+will start and eventually return. Denote by <span class="math notranslate nohighlight">\(V_0 := V \setminus \{0\}\)</span>
+the set of customers to be served. Let <span class="math notranslate nohighlight">\(\var{\delta}\)</span> be a binary flow
+variable representing the  passage of a vehicle through each
+arc. If we denote by <span class="math notranslate nohighlight">\(\param{c}_{ij}\)</span> the cost associated to arc
+<span class="math notranslate nohighlight">\((i,j)\)</span>, by <span class="math notranslate nohighlight">\(\param{K}\)</span> the available number of vehicles (which we
+assume here to be identical) and by <span class="math notranslate nohighlight">\(\param{Q}\)</span> the capacity of
+each vehicle and <span class="math notranslate nohighlight">\(\param{q}_j\)</span> the quantity to be delivered to
+a customer at node <span class="math notranslate nohighlight">\(j\)</span>.
+The optimization problem can be stated as follows:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{\delta}} \sum_{(i,j) \in E} \param{c}_{ij}
+\var{\delta}_{ij} &amp; \\
+\sum_{i \in V: (i,j) \in E} \var{\delta}_{ij} &amp; = 1 &amp; \forall\, j
+\in  V_0 \\
+\sum_{j \in V: (i,j) \in E} \var{\delta}_{ij} &amp; = 1 &amp; \forall\, i
+\in  V_0 \\
+\sum_{j \in V_0 : (0,j) \in E} \var{\delta}_{0j} &amp; \leq \param{K} \\
+\var{\delta}_{ij} = 1 &amp; \implies \var{y}_i \geq \var{y}_j +
+\param{q}_j &amp; \forall\,i \in V, j \in V_0\\
+\var{y}_i &amp; \geq 0 &amp; \forall\, i \in V \\
+\var{y}_i &amp; \leq \param{Q} \\
+\var{y}_0 &amp; = \param{Q} \\
+\var{\delta}_{ij} &amp; \in \{0,1\} &amp; \forall\,(i,j) \in E
+\end{align*}</div><p>The logical constraint models the fact that in this problem, assumed
+to be a delivery one, each truck starts with full capacity from the
+depot and when it decides to visit a node <span class="math notranslate nohighlight">\(j\)</span>, it must have
+enough residual load to be able to satisfy the demand of that node.
+Using the standard tools to transform a logical constraint into a
+linear one, we obtain:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{y}_i &amp; \geq \var{y}_j + \param{q}_{j}
+\var{\delta}_{ij} - \param{Q} (1 - \var{\delta}_{ij}) &amp; \forall\,i \in V,j \in V_0
+\end{align*}</div><p>This model is quite similar to the TSP model presented above, and it
+shares the defects of that model, namely the fact that the linear
+relaxation is quite weak. Many different formulations exist, most of
+which are based  on binary variables with three indices  <span class="math notranslate nohighlight">\(\var{\delta}_{ijk}\)</span>
+which assume the value <span class="math notranslate nohighlight">\(1\)</span> if and only if vehicle <span class="math notranslate nohighlight">\(k\)</span> travels on
+arc <span class="math notranslate nohighlight">\((i,j)\)</span>.</p>
+<p>The following code contains a possible implementation of the model and
+of an example,
+based on the same data seen before.</p>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">vrp.mod</span><a class="headerlink" href="#id8" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="w">  </span><span class="kt">ordered</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="w"> </span><span class="kr">cross</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>j<span class="p">};</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Depot</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Cost</span><span class="p">{</span>ARCS<span class="p">},</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">Infinity</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Q</span><span class="p">;</span><span class="w"> </span><span class="c1"># capacity</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">q</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Depot<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">K</span><span class="p">;</span><span class="w"> </span><span class="c1"># num vehicles</span>
+
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span>ARCS<span class="p">},</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">y</span><span class="p">{</span>NODES<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">Total_cost</span><span class="p">:</span>
+<span class="w">  </span><span class="kr">sum</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>Cost<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+<span class="w">   </span>
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">input</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Depot<span class="p">}:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">   </span>
+<span class="w">   </span>
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">output</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Depot<span class="p">}:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">start</span><span class="p">:</span>
+<span class="w">   </span><span class="kr">sum</span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Depot<span class="p">}</span><span class="w"> </span>delta<span class="p">[</span>Depot<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>K<span class="p">;</span><span class="w"> </span>
+<span class="w">  </span>
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">labeling</span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">:</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Depot<span class="p">}:</span>
+<span class="w">   </span>y<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span>y<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="p">(</span>q<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span>Q<span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span>Q<span class="w"> </span><span class="p">;</span>
+
+<span class="kd">s.t.</span><span class="w"> </span><span class="nv">startlabel</span><span class="p">:</span>
+<span class="w">   </span>y<span class="p">[</span>Depot<span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span>Q<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id9">
+<div class="code-block-caption"><span class="caption-text">vrp.dat</span><a class="headerlink" href="#id9" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kr">model</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">time</span><span class="p">{</span>ARCS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">distance</span><span class="p">{</span>ARCS<span class="p">};</span>
+
+<span class="kr">data</span><span class="w"> </span>Pistoia.dat<span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="nv">Cost</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+
+<span class="kr">data</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Depot</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Pistoia&quot;</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">q</span><span class="p">:</span><span class="o">=</span>
+Abetone<span class="w">             </span><span class="mi">10</span>
+Agliana<span class="w">              </span><span class="mi">8</span>
+Buggiano<span class="w">             </span><span class="mi">5</span>
+ChiesinaUzzanese<span class="w">     </span><span class="mi">4</span>
+Cutigliano<span class="w">           </span><span class="mi">4</span>
+Lamporecchio<span class="w">         </span><span class="mi">2</span>
+Larciano<span class="w">             </span><span class="mi">3</span>
+Marliana<span class="w">             </span><span class="mi">1</span>
+MassaCozzile<span class="w">         </span><span class="mi">1</span>
+MonsummanoTerme<span class="w">      </span><span class="mi">8</span>
+Montale<span class="w">              </span><span class="mi">6</span>
+MontecatiniTerme<span class="w">    </span><span class="mi">12</span>
+Pescia<span class="w">               </span><span class="mi">9</span>
+PieveANievole<span class="w">        </span><span class="mi">6</span>
+Piteglio<span class="w">             </span><span class="mi">1</span>
+PonteBuggianese<span class="w">      </span><span class="mi">1</span>
+Quarrata<span class="w">             </span><span class="mi">3</span>
+SambucaPistoiese<span class="w">     </span><span class="mi">1</span>
+SanMarcelloPistoiese<span class="w"> </span><span class="mi">1</span>
+SerravallePistoiese<span class="w">  </span><span class="mi">1</span>
+Uzzano<span class="w">               </span><span class="mi">4</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">K</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Q</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>and the optimal solution, computed for 4 trucks with capacity 30 each,
+is represented below.</p>
+<blockquote>
+<div><div class="figure" style="text-align: center"><p><img  src="_images/tikz-411c77656e56efb23ec5b12c8fd2d282c6557680.png" alt="Figure made with TikZ" /></p>
+</div></div></blockquote>
+<p>We prefer not too go much into detail, as from one side the field is
+huge, and, from another one, very few exact models are really useful
+in even moderately sized problem instances. Most of the currently used
+approaches are based on heuristics; some of these heuristics exploit
+at least part of the formulation - thus modeling the problem is not
+a useless exercise. However the main problem is in the richness of
+different model types: one of the most frequently encountered variants
+includes time windows, e.g. lower and upper bounds on the time allowed
+for each visit and for the departure from and the return to the depot. Other
+variants include requirements on specific skills or capabilities, so
+that not all vehicles can serve all customers. Another one takes into
+account traffic limitations, like city centers in Europe where
+deliveries may occur only during a specific time window and/or require
+an additional payment. Other variants include priorities (some
+customers need to be served before others) or multiple visits to the
+same customer,  but at different times of the day, or preferences
+which tend to assign the same driver (truck) to the same set of
+customers in different days; another complex variant concerns multiple
+day planning, with the additional complexity of having to decide on
+the possibility of not returning to the depot. And of course many
+models try to take into account the inherent stochasticity of travel
+times and of customer availability; recently models have been proposed
+for green or electric vehicle routing or even for drones.
+We refer the interested reader to the vast literature on this subject
+and we limit to a classical reference book <span id="id4">[<a class="reference internal" href="Bibliography.html#id36" title="Daniele Vigo and Paolo Toth, editors. Vehice Routing. MOS-SIAM Series on Optimization. SIAM, Philadelphia, USA, 2014.">Vigo and Toth, 2014</a>]</span>.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="SetCovering.html" title="Previous document"><span class="section-number">20. </span>Set covering, packing, partition</a>
+        </li>
+        <li>
+          <a href="Arcrouting.html" title="Next document"><span class="section-number">23. </span>Arc routing</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">21. Sequencing problems: the Traveling Salesperson Problem</a><ul>
+<li><a class="reference internal" href="#sub-tour-elimination-constraints">21.1. Sub-tour elimination constraints</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#vehicle-routing">22. Vehicle Routing</a></li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="SetCovering.html" title="previous chapter"><span class="section-number">20. </span>Set covering, packing, partition</a></li>
+      <li>Next: <a href="Arcrouting.html" title="next chapter"><span class="section-number">23. </span>Arc routing</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/TravelingSalesPerson.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

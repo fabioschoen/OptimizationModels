@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>20. Set covering, packing, partition &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="21. Sequencing problems: the Traveling Salesperson Problem" href="TravelingSalesPerson.html" />
+    <link rel="prev" title="19. Knapsack, Bin Packing and Plant Location problems" href="Knapsack.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Knapsack.html" title="Previous document"><span class="section-number">19. </span>Knapsack, Bin Packing and Plant Location problems</a>
+        </li>
+        <li>
+          <a href="TravelingSalesPerson.html" title="Next document"><span class="section-number">21. </span>Sequencing problems: the Traveling Salesperson Problem</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="set-covering-packing-partition">
+<span id="set-covering"></span><h1><span class="section-number">20. </span>Set covering, packing, partition<a class="headerlink" href="#set-covering-packing-partition" title="Link to this heading">¶</a></h1>
+<p>Problems in this section are widely used and give rise, in some
+application fields, to huge dimensional optimization problems. All
+these problems can be formalized as the choice of subsets of a ground
+set which satisfy some constraints.</p>
+<p>The <span class="target" id="index-0"></span>set covering problem is formally defined  as follows:
+Consider a finite set <span class="math notranslate nohighlight">\(\mathcal{S}\)</span> and a collection of
+subsets:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\mathcal{C}  &amp; = \{C_1,C _2, \ldots, C_k\}
+ \subseteq 2^{\mathcal{S}}
+\end{align*}</div><p>where with <span class="math notranslate nohighlight">\(2^{\mathcal{S}}\)</span> we denote the <span class="target" id="index-1"></span>power set of
+<span class="math notranslate nohighlight">\(\mathcal{S}\)</span>, i.e. the set of all of its subsets.</p>
+<p>A <span class="target" id="index-2"></span>covering of <span class="math notranslate nohighlight">\(\mathcal{S}\)</span> with sets in the collection
+<span class="math notranslate nohighlight">\(\mathcal{C}\)</span> is defined as  a set of sets
+<span class="math notranslate nohighlight">\(C_{i_1}, \ldots, C_{i_h} \in \mathcal{C}\)</span> such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\cup_{j = 1}^{h} C_{i_j} = \mathcal{S}
+\end{align*}</div><p>A <span class="target" id="index-3"></span>packing  is defined as a collection of pairwise <em>disjoint</em>
+sets:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+C_{\ell} \cap C_{k} &amp; = \emptyset  &amp; \forall\, \ell,k \in \{i_1,
+\ldots, i_h\}
+\end{align*}</div><p>A <span class="target" id="index-4"></span>partitioning is a collection of subsets which is,
+simultaneously, both a covering and a packing. In other words, every
+element in the ground set is contained in one and only one of the sets
+of the chosen collection.</p>
+<p>The formal definition perhaps does not allow to immediately appreciate
+the importance of these models. Some  relevant applications will be
+presented later in this paragraph. We now present a formulation of the
+problem as an integer linear optimization model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Set Covering</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{Requests}\)</span>: a set of requests which are to be covered;</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{Resources}\)</span>: a set of potentially available resources</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{Pairs} \subseteq \set{Requests} \times
+\set{Resources}\)</span>: a
+pair <span class="math notranslate nohighlight">\((i, j)\)</span> belongs to the set <span class="math notranslate nohighlight">\(\set{Pairs}\)</span>,
+with <span class="math notranslate nohighlight">\(i \in \set{Requests}\)</span>
+and <span class="math notranslate nohighlight">\(j \in \set{Resources}\)</span>,  if and only if the
+activation of
+resource <span class="math notranslate nohighlight">\(i\)</span> is sufficient to cover the request
+<span class="math notranslate nohighlight">\(j\)</span>.
+It is possible to think of this set as a set of arcs that
+connect resources and requests.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\param{Cost}_j\)</span> the cost of activating  resource
+<span class="math notranslate nohighlight">\(j \in \set{Resources}\)</span>;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\mathvar{\delta}_{j}\)</span>: binary variable, with  value one
+if and only if  resource
+<span class="math notranslate nohighlight">\(j \in \set{Resources}\)</span> is activated;</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul>
+<li><p>Covering constraint: every request must be covered by <em>at least</em>
+an active  resource:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{j \in \set{Resources}: (i, j) \in \set{Pairs}} \mathvar{\delta}_{j}&amp; \geq 1
+&amp; \forall \, i \in \set{Requests}
+\end{align*}</div></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p>Minimization of the total activation cost:</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[
+\min \sum_{j \in \set{Resources}} \param{Cost}_j \mathvar{\delta}_j
+\]</div></div></blockquote>
+<p>The model just seen corresponds to the formal definition of
+set-covering. In fact, the set <span class="math notranslate nohighlight">\(\mathcal{S}\)</span> in the abstract
+definition corresponds
+to the set <span class="math notranslate nohighlight">\(\set{Requests}\)</span>; for what concerns the subsets,
+these are implicitly defined through the set of <span class="math notranslate nohighlight">\(\set{Pairs}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+C_j &amp;= \left \{i \in \set{Requests}: (i, j) \in \set{Pairs} \right \}
+&amp; \forall \, j \in \set{Resources}.
+\end{align*}</div><p>The following is a possible implementation of the model, almost a
+verbatim copy of the above model:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">setCovering.mod</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">REQUESTS</span><span class="p">;</span><span class="w">               </span><span class="c1"># requests to be covered</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">RESOURCES</span><span class="p">;</span><span class="w">              </span><span class="c1"># available resources</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">PAIRS</span><span class="w"> </span><span class="kr">within</span><span class="w"> </span>REQUESTS<span class="w"> </span><span class="kr">cross</span><span class="w"> </span>RESOURCES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">cost</span><span class="p">{</span>RESOURCES<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span>RESOURCES<span class="p">}</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span><span class="kd">minimize</span><span class="w"> </span><span class="nv">Total_Cost</span><span class="p">:</span>
+<span class="w">    </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>RESOURCES<span class="p">}</span><span class="w"> </span>cost<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>j<span class="p">];</span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">Covering</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>REQUESTS<span class="p">}:</span><span class="w"> </span>
+<span class="w">     </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>RESOURCES<span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>PAIRS<span class="p">}</span><span class="w"> </span>delta<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>As an example, consider the application of this model to emergency
+planning.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-5"></span>Localization of emergency facilities</p>
+</dd>
+</dl>
+<p>In planning for emergency situations, it often happens that we need
+to decide the location of critical facilities in such a way that
+the population which might be affected by an emergency will find
+the necessary equipment or the required support as close as
+possible. Examples concern the localization of fire stations to
+respond to large scale fires, the localization of parking places
+for ambulances, ready to serve nearby population, the choice of
+emergency inventories (for medicines, medical devices, protective
+devices, …). In these cases we can assume that the population is
+represented as a discrete set of nodes (cities, provinces, blocks
+in  a city,…); the resources to be activated might be localized
+in another (possibly, in the same) set of nodes. Between any pair
+of population nodes and potential resource nodes, a closeness
+measure has been computed. As an example, given the location of
+each node, a shortest path model can be solved, for every
+origin/destination pair, to determine the travel length between the
+nodes. This length might be a mileage, or an average travel time.
+After this pre-processing step, we might consider a threshold on the
+maximum distance (in space or travel time) between a request node
+(a population) and a resource node. As an example, we might decide
+that no more than 20’ should be necessary to travel between a
+resource node and the request node.  Given this threshold, we can
+state that a resource node covers a request node if the distance
+between the two nodes is below this threshold.  Given this, we
+usually look for the smallest number of resources to activate so
+that all request nodes are within the  maximum travel time
+from the closest activated
+resource node. In the example below we refer to a set of
+municipalities in the Tuscany region, and we consider all of them
+to be both a requesting node as well as a candidate location for a
+resource. The following data file, partially displayed, was used to generate the
+instance, which is based on official statistics on travel times and
+distance:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Pistoia.dat (partial)</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="o">=</span><span class="w"> </span>
+Abetone<span class="w"> </span>Agliana<span class="w"> </span>Buggiano<span class="w"> </span>ChiesinaUzzanese<span class="w"> </span>Cutigliano<span class="w"> </span>Lamporecchio
+Larciano<span class="w"> </span>Marliana<span class="w"> </span>MassaCozzile<span class="w"> </span>MonsummanoTerme<span class="w"> </span>Montale
+MontecatiniTerme<span class="w"> </span>Pescia<span class="w"> </span>PieveANievole<span class="w"> </span>Pistoia<span class="w"> </span>Piteglio
+PonteBuggianese<span class="w"> </span>Quarrata<span class="w"> </span>SambucaPistoiese<span class="w"> </span>SanMarcelloPistoiese
+SerravallePistoiese<span class="w"> </span>Uzzano<span class="w"> </span><span class="p">;</span>
+
+param<span class="p">:</span><span class="w"> </span><span class="nb">time</span><span class="w"> </span>distance<span class="p">:</span><span class="o">=</span>
+Agliana<span class="w"> </span>Abetone<span class="w">             </span><span class="mf">51.08</span><span class="w">   </span><span class="mf">60508.98</span>
+Buggiano<span class="w">    </span>Abetone<span class="w">         </span><span class="mf">59.25</span><span class="w">   </span><span class="mf">67756.87</span>
+Cutigliano<span class="w">  </span>Abetone<span class="w">         </span><span class="mf">12.67</span><span class="w">   </span><span class="mf">13590.61</span>
+Lamporecchio<span class="w">    </span>Abetone<span class="w">     </span><span class="mf">65.40</span><span class="w">   </span><span class="mf">73209.48</span>
+Larciano<span class="w">    </span>Abetone<span class="w">         </span><span class="mf">62.13</span><span class="w">   </span><span class="mf">69603.33</span>
+Marliana<span class="w">    </span>Abetone<span class="w">         </span><span class="mf">57.85</span><span class="w">   </span><span class="mf">66273.10</span>
+MassaCozzile<span class="w">    </span>Abetone<span class="w">     </span><span class="mf">60.56</span><span class="w">   </span><span class="mf">69217.51</span>
+MonsummanoTerme<span class="w"> </span>Abetone<span class="w">     </span><span class="mf">53.63</span><span class="w">   </span><span class="mf">61924.66</span>
+Montale<span class="w"> </span>Abetone<span class="w">             </span><span class="mf">54.04</span><span class="w">   </span><span class="mf">58561.24</span>
+MontecatiniTerme<span class="w">    </span>Abetone<span class="w"> </span><span class="mf">55.66</span><span class="w">   </span><span class="mf">63960.11</span>
+Pescia<span class="w">  </span>Abetone<span class="w">             </span><span class="mf">64.80</span><span class="w">   </span><span class="mf">73076.57</span>
+PieveANievole<span class="w">   </span>Abetone<span class="w">     </span><span class="mf">53.55</span><span class="w">   </span><span class="mf">62708.61</span>
+</pre></div>
+</div>
+</div>
+<p>In order to solve the problem we first need to define requests and
+resources and to connect them with arcs, if their distance is below
+the chosen threshold:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">setCovering.run</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kr">model</span><span class="w"> </span>setCovering.<span class="kr">mod</span><span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>NODES<span class="w"> </span><span class="kr">cross</span><span class="w"> </span>NODES<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">time</span><span class="p">{</span>ARCS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">distance</span><span class="p">{</span>ARCS<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">threshold</span><span class="p">;</span>
+
+<span class="kr">data</span><span class="w"> </span>Pistoia.dat<span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nv">REQUESTS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>NODES<span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="nv">RESOURCES</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>NODES<span class="p">;</span>
+
+
+<span class="kd">let</span><span class="w"> </span><span class="nv">threshold</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">20</span><span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nv">PAIRS</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>threshold<span class="p">};</span>
+
+<span class="kr">option</span><span class="w"> </span>solver<span class="w"> </span>gurobi<span class="p">;</span>
+<span class="kr">option</span><span class="w"> </span>omit_zero_rows<span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="kr">option</span><span class="w"> </span>omit_zero_cols<span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kr">solve</span><span class="p">;</span>
+<span class="kr">display</span><span class="w"> </span>delta<span class="p">;</span>
+<span class="kr">display</span><span class="w"> </span>Covering.body<span class="p">;</span>
+<span class="kr">for</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>REQUESTS<span class="p">}</span>
+<span class="w">   </span><span class="kr">display</span><span class="w"> </span>i<span class="p">,{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>RESOURCES<span class="p">:</span><span class="w"> </span>delta<span class="p">[</span>j<span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>PAIRS<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>The following picture graphically displays the solution obtained by
+running the model with threshold: 20’:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-12761a03ca6535c1953d34c5ea1d06cacbcd24d2.png" alt="Figure made with TikZ" /></p>
+</div><p>The next picture shows how the solution would change if the
+threshold was chosen as 25’:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-7cad0d5810c0a424cb127448e4e3722192f3ba88.png" alt="Figure made with TikZ" /></p>
+</div></div></blockquote>
+<p>A matrix formulation of the set-covering problem is easily
+obtained. In fact let <span class="math notranslate nohighlight">\(A\)</span> denote the <span class="target" id="index-6"></span>adjacency matrix
+of the requests/resources pairs, i.e. a binary matrix
+whose generic element <span class="math notranslate nohighlight">\(a_{ij}\)</span> is 1 if and only if resource
+<span class="math notranslate nohighlight">\(j\)</span> covers the request of node <span class="math notranslate nohighlight">\(i\)</span>.</p>
+<p>Consider an instance of the set covering problem  represented in the following
+figure:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-559b0f1a6c75d1bac65d432f6d2b293927a2620f.png" alt="Figure made with TikZ" /></p>
+</div><p>In this figure, yellow circle nodes are potential resources,  while
+light blue diamond nodes are requests and arcs connect feasible pairs.
+The adjacency matrix of this instance is</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+A = \begin{array} {||r|ccccc||}
+\hline
+  &amp; A &amp; B &amp; C &amp; D &amp; E \\ \hline
+1 &amp; 1 &amp; 1 &amp; 0 &amp; 1 &amp; 0 \\
+2 &amp; 1 &amp; 1 &amp; 1 &amp; 0 &amp; 0 \\
+3 &amp; 1 &amp; 0 &amp; 1 &amp; 0 &amp; 0 \\
+4 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 0 \\
+5 &amp; 0 &amp; 1 &amp; 1 &amp; 1 &amp; 1 \\
+6 &amp; 0 &amp; 0 &amp; 1 &amp; 0 &amp; 1 \\
+7 &amp; 0 &amp; 0 &amp; 0 &amp; 1 &amp; 0 \\
+8 &amp; 0 &amp; 1 &amp; 0 &amp; 1 &amp; 1 \\
+9 &amp; 0 &amp; 0 &amp; 0 &amp; 0 &amp; 1 \\ \hline
+\end{array}
+\end{align*}</div><p>Reading this matrix by rows, we can immediately see, for example,
+that node 1 can be covered by resources A. B, D, while node 2 can be
+covered by A, B, C.
+Defining a  vector of variables <span class="math notranslate nohighlight">\(\mathvar{\delta}\)</span>, the
+problem can be formalized as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min c^T \mathvar{\delta}  &amp; \\
+A \mathvar{\delta} &amp; \geq  1 \\
+\mathvar{\delta} &amp; \in  \{0,1\}^n
+\end{align*}</div><p>Set-covering problems, when analyzed as is usual in complexity theory,
+in the worst case, have an exponential computational complexity. No
+efficient algorithm is known to solve these problems efficiently.
+However it can be shown that the
+optimal (binary) solution is always a basic solution of the
+linear relaxation of the problem, i.e., a vertex of the linear
+relaxation of the problem. So it can happen, and indeed,
+in practice, it happens quite frequently, that the
+linear relaxation already generates the optimal binary solution or that,
+at most, a few iterations of the Branch and Bound method are
+sufficient. Thus, although theoretically very difficult, these
+problems, quite often, are easily solved in practice.</p>
+<p>The bottleneck, in many case, is their  huge size, which makes even
+the solution of the  linear relaxation computationally hard.
+Frequently, set covering examples encountered in practical
+applications have millions of variables.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-7"></span>Shift planning</p>
+</dd>
+</dl>
+<p>One of the fields in which the
+set covering model finds its widest use is that of
+shift planning (for hospital staff, flights,
+trains, etc.). In this case the needs to be covered are given
+by the number of nurses, pilots, locomotives respectively,
+that must be present in a given period of time on a date, at a
+location or on a given route. The resources available are
+given by possible shifts.
+Any shift will cover some of the available needs.
+The greatest complexity of these models consists in the
+fact that often the number of different allowed shifts is huge. These are
+all possible  work/no work combinations which satisfy
+specific regulations (such as laws,
+union contracts, local preferences,…).
+In planning  air personnel shifts, it is normal
+to have covering  problems with millions of variables.
+In the following  example, we
+consider a generalization of the set-covering model, in
+which, for each requirement, a minimum request  of employees
+is given; this request might be more than one, differently from
+standard covering
+problems. Moreover for each resource type which, in this case,
+represents a possible shift type, an integer number of resources
+might be chosen, not necessarily binary as in the standard set
+covering problem.</p>
+<p>The code below implements these small variations:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">shifts.mod</span><a class="headerlink" href="#id4" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">REQUESTS</span><span class="w"> </span><span class="kt">ordered</span><span class="p">;</span><span class="w">               </span><span class="c1"># requests to be covered</span>
+<span class="kd">set</span><span class="w"> </span><span class="nv">SHIFTS</span><span class="p">;</span><span class="w">                 </span><span class="c1"># legal shifts</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">A</span><span class="p">{</span>SHIFTS<span class="p">,</span>REQUESTS<span class="p">};</span><span class="w">  </span><span class="c1">#Shifts in rows, periods in cols</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">cost</span><span class="p">{</span>SHIFTS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">req</span><span class="p">{</span>REQUESTS<span class="p">}</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">num</span><span class="p">{</span>SHIFTS<span class="p">}</span><span class="w"> </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">Total_Cost</span><span class="p">:</span>
+<span class="w">    </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>SHIFTS<span class="p">}</span><span class="w"> </span>cost<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">num</span><span class="p">[</span>j<span class="p">];</span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">Covering</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>REQUESTS<span class="p">}:</span><span class="w"> </span>
+<span class="w">     </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>SHIFTS<span class="w"> </span><span class="p">:</span><span class="w"> </span>A<span class="p">[</span>j<span class="p">,</span>i<span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">}</span><span class="w"> </span><span class="nb">num</span><span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>req<span class="p">[</span>i<span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<p>It can be immediately seen that this model is pretty similar to the
+set covering one. We decided to describe the feasible pairs (shifts
+- covered time slots) through the adjacency matrix instead of the
+usual list of pairs, for compactness reasons only.</p>
+<p>The following file describes a realistic instance, inspired by a
+small healthcare facility, operating 7/24, with different
+requirements during different days and different parts of the
+day. Each day is divided into 4 time slots: 08-12, 12-16, 16-20,
+20-08. A minimum request is given for each of these time slots. We
+assume here that feasible shifts have been generated according to
+the following rule:</p>
+<ol class="arabic simple">
+<li><p>each week has two days off (V)</p></li>
+<li><p>each day only one shift type is possible among: 08-16, 12-20, 20-08</p></li>
+<li><p>the day after a night shift is a rest period and no other shift can
+be assigned</p></li>
+<li><p>no more than 2 nights per week are allowed</p></li>
+<li><p>shifts are to be considered as cyclical, so that if a night is
+allocated to Sunday, Monday should be a rest day.</p></li>
+</ol>
+<p>Applying in an exhaustive way these rules, 1316 possible shifts are
+obtained. For what concerns the cost, we considered each activate
+shift with only day shifts to cost 1, each weekly shift with one
+night to cost 2 and a week with two night shift to cost 5.
+The following is a tiny excerpt from the data file representing this
+instance:</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">shifts.dat</span><a class="headerlink" href="#id5" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">REQUESTS</span><span class="p">:</span><span class="w"> </span><span class="nv">req </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>
+Mo0812<span class="w">  </span><span class="mi">10</span><span class="w"> </span>Mo1216<span class="w">  </span><span class="mi">12</span><span class="w"> </span>Mo1620<span class="w">  </span><span class="mi">8</span><span class="w">  </span>Mo2008<span class="w">  </span><span class="mi">6</span><span class="w">  </span>Tu0812<span class="w">  </span><span class="mi">10</span><span class="w"> </span>Tu1216<span class="w">  </span><span class="mi">12</span>
+Tu1620<span class="w">  </span><span class="mi">8</span><span class="w">  </span>Tu2008<span class="w">  </span><span class="mi">6</span><span class="w">  </span>We0812<span class="w">  </span><span class="mi">10</span><span class="w"> </span>We1216<span class="w">  </span><span class="mi">12</span><span class="w"> </span>We1620<span class="w">  </span><span class="mi">8</span><span class="w">  </span>We2008<span class="w">  </span><span class="mi">6</span>
+Th0812<span class="w">  </span><span class="mi">10</span><span class="w"> </span>Th1216<span class="w">  </span><span class="mi">12</span><span class="w"> </span>Th1620<span class="w">  </span><span class="mi">8</span><span class="w">  </span>Th2008<span class="w">   </span><span class="mi">6</span><span class="w"> </span>Fr0812<span class="w">  </span><span class="mi">10</span><span class="w"> </span>Fr1216<span class="w">  </span><span class="mi">12</span>
+Fr1620<span class="w">  </span><span class="mi">8</span><span class="w">  </span>Fr2008<span class="w">  </span><span class="mi">6</span><span class="w">  </span>Sa0812<span class="w">  </span><span class="mi">8</span><span class="w">  </span>Sa1216<span class="w">   </span><span class="mi">8</span><span class="w"> </span>Sa1620<span class="w">  </span><span class="mi">6</span><span class="w">  </span>Sa2008<span class="w">  </span><span class="mi">4</span>
+Su0812<span class="w">  </span><span class="mi">4</span><span class="w">  </span>Su1216<span class="w">  </span><span class="mi">4</span><span class="w">  </span>Su1620<span class="w">  </span><span class="mi">4</span><span class="w"> </span>Su2008<span class="w">  </span><span class="mi">3</span>
+<span class="p">;</span>
+<span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">SHIFTS</span><span class="p">:</span><span class="w"> </span><span class="nv">cost </span><span class="p">:</span><span class="o">=</span>
+<span class="c1"># 1: day shifts, 2 one night per week, 5: two nights per week</span>
+VVAAAAA<span class="w">   </span><span class="mi">1</span>
+VVPAAAA<span class="w">   </span><span class="mi">1</span>
+VAVAAAA<span class="w">   </span><span class="mi">1</span>
+VPVAAAA<span class="w">   </span><span class="mi">1</span>
+AVVAAAA<span class="w">   </span><span class="mi">1</span>
+PVVAAAA<span class="w">   </span><span class="mi">1</span>
+VVAPAAA<span class="w">   </span><span class="mi">1</span>
+VVPPAAA<span class="w">   </span><span class="mi">1</span>
+VAVPAAA<span class="w">   </span><span class="mi">1</span>
+VPVPAAA<span class="w">   </span><span class="mi">1</span>
+AVVPAAA<span class="w">   </span><span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<p>…</p>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span>NRPNRVV<span class="w">   </span><span class="mi">5</span>
+ANRNRVV<span class="w">   </span><span class="mi">5</span>
+PNRNRVV<span class="w">   </span><span class="mi">5</span>
+<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">A</span><span class="w"> </span><span class="p">:</span><span class="w">  </span><span class="c1"># incidence matrix</span>
+Mo0812<span class="w"> </span>Mo1216<span class="w"> </span>Mo1620<span class="w"> </span>Mo2008<span class="w"> </span>Tu0812<span class="w"> </span>Tu1216<span class="w"> </span>Tu1620<span class="w"> </span>Tu2008
+We0812<span class="w"> </span>We1216<span class="w"> </span>We1620<span class="w"> </span>We2008<span class="w"> </span>Th0812<span class="w"> </span>Th1216<span class="w"> </span>Th1620<span class="w"> </span>Th2008
+Fr0812<span class="w"> </span>Fr1216<span class="w"> </span>Fr1620<span class="w"> </span>Fr2008<span class="w"> </span>Sa0812<span class="w"> </span>Sa1216<span class="w"> </span>Sa1620<span class="w"> </span>Sa2008
+Su0812<span class="w"> </span>Su1216<span class="w"> </span>Su1620<span class="w"> </span>Su2008
+<span class="p">:</span><span class="o">=</span>
+VVAAAAA<span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span>
+VVPAAAA<span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span>
+VAVAAAA<span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span>
+VPVAAAA<span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span>
+AVVAAAA<span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span>
+PVVAAAA<span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span>
+</pre></div>
+</div>
+<p>It is seen that, for example, the first shift type, VVAAAAA,
+consists in having Monday and Tuesday as a vacation, and work the
+rest of the week in AM shifts, which means 08-16. The row in the
+adjacency matrix, thus, has a 1 corresponding to We0812, We1216,
+Th0812, Th1216, and so on.</p>
+<p>An optimal solution found is reported here:</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">shifts.out</span><a class="headerlink" href="#id6" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="nb">num</span><span class="w"> </span><span class="p">[</span><span class="o">*</span><span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span>
+AAAVNRV<span class="w">  </span><span class="mi">3</span>
+AAVANRV<span class="w">  </span><span class="mi">2</span>
+ANRAPVV<span class="w">  </span><span class="mi">1</span>
+ANRAVAV<span class="w">  </span><span class="mi">3</span>
+AVPNRVA<span class="w">  </span><span class="mi">1</span>
+NRPAVVA<span class="w">  </span><span class="mi">1</span>
+NRVPAPV<span class="w">  </span><span class="mi">5</span>
+PANRPVV<span class="w">  </span><span class="mi">3</span>
+PANRVPV<span class="w">  </span><span class="mi">1</span>
+PPPNRVV<span class="w">  </span><span class="mi">3</span>
+PPVPPVA<span class="w">  </span><span class="mi">1</span>
+PVNRPVP<span class="w">  </span><span class="mi">1</span>
+RVAVAAN<span class="w">  </span><span class="mi">3</span>
+VAANRVA<span class="w">  </span><span class="mi">2</span>
+VNRPAVP<span class="w">  </span><span class="mi">1</span>
+VNRVAAP<span class="w">  </span><span class="mi">1</span>
+VPAAVNR<span class="w">  </span><span class="mi">2</span>
+VPNRVAP<span class="w">  </span><span class="mi">1</span>
+VPPANRV<span class="w">  </span><span class="mi">1</span>
+VVPPPNR<span class="w">  </span><span class="mi">2</span>
+<span class="p">;</span>
+
+<span class="p">:</span><span class="w">      </span>Covering.body<span class="w"> </span><span class="nv">Covering</span><span class="p">.</span><span class="kr">lb</span><span class="w">    </span><span class="p">:</span><span class="o">=</span>
+Mo0812<span class="w">       </span><span class="mi">10</span><span class="w">           </span><span class="mi">10</span>
+Mo1216<span class="w">       </span><span class="mi">19</span><span class="w">           </span><span class="mi">12</span>
+Mo1620<span class="w">        </span><span class="mi">9</span><span class="w">            </span><span class="mi">8</span>
+Mo2008<span class="w">        </span><span class="mi">6</span><span class="w">            </span><span class="mi">6</span>
+Tu0812<span class="w">       </span><span class="mi">11</span><span class="w">           </span><span class="mi">10</span>
+Tu1216<span class="w">       </span><span class="mi">19</span><span class="w">           </span><span class="mi">12</span>
+Tu1620<span class="w">        </span><span class="mi">8</span><span class="w">            </span><span class="mi">8</span>
+Tu2008<span class="w">        </span><span class="mi">6</span><span class="w">            </span><span class="mi">6</span>
+We0812<span class="w">       </span><span class="mi">10</span><span class="w">           </span><span class="mi">10</span>
+We1216<span class="w">       </span><span class="mi">18</span><span class="w">           </span><span class="mi">12</span>
+We1620<span class="w">        </span><span class="mi">8</span><span class="w">            </span><span class="mi">8</span>
+We2008<span class="w">        </span><span class="mi">6</span><span class="w">            </span><span class="mi">6</span>
+Th0812<span class="w">       </span><span class="mi">10</span><span class="w">           </span><span class="mi">10</span>
+Th1216<span class="w">       </span><span class="mi">19</span><span class="w">           </span><span class="mi">12</span>
+Th1620<span class="w">        </span><span class="mi">9</span><span class="w">            </span><span class="mi">8</span>
+Th2008<span class="w">        </span><span class="mi">6</span><span class="w">            </span><span class="mi">6</span>
+Fr0812<span class="w">       </span><span class="mi">10</span><span class="w">           </span><span class="mi">10</span>
+Fr1216<span class="w">       </span><span class="mi">18</span><span class="w">           </span><span class="mi">12</span>
+Fr1620<span class="w">        </span><span class="mi">8</span><span class="w">            </span><span class="mi">8</span>
+Fr2008<span class="w">        </span><span class="mi">6</span><span class="w">            </span><span class="mi">6</span>
+Sa0812<span class="w">        </span><span class="mi">8</span><span class="w">            </span><span class="mi">8</span>
+Sa1216<span class="w">       </span><span class="mi">14</span><span class="w">            </span><span class="mi">8</span>
+Sa1620<span class="w">        </span><span class="mi">6</span><span class="w">            </span><span class="mi">6</span>
+Sa2008<span class="w">        </span><span class="mi">4</span><span class="w">            </span><span class="mi">4</span>
+Su0812<span class="w">        </span><span class="mi">5</span><span class="w">            </span><span class="mi">4</span>
+Su1216<span class="w">        </span><span class="mi">9</span><span class="w">            </span><span class="mi">4</span>
+Su1620<span class="w">        </span><span class="mi">4</span><span class="w">            </span><span class="mi">4</span>
+Su2008<span class="w">        </span><span class="mi">3</span><span class="w">            </span><span class="mi">3</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This problem is of moderately large size, with 1316 integer
+variables; however, a good solver could find the provably optimal
+solution in a fraction of a second, requiring 103 simplex
+iterations and exploring only one node in the branch and bound
+tree, confirming what has been previously stated: set covering
+problems are, quite often, easy to solve to optimality.</p>
+<p>From the output file it can be seen that in some time slots the
+active personnel is quite larger than that required. This is due,
+in particular, to the fact the two day shifts both cover the time
+period 12-16, which turns out in extra workers in these periods.</p>
+</div></blockquote>
+<p>Another very relevant application of set covering models is in
+solving difficult combinatorial problems by choosing suitable
+components in the solution. Consider the problem of a delivery service
+which needs to serve a set of customers with some trucks. If we are
+allowed to list all possible subsets of customers served by a single
+feasible route, than a set covering approach will choose which subset
+of routes is the most convenient one and covers all of the deliveries.</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">application<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="target" id="index-8"></span>Set Covering approach to Vehicle routing</p>
+</dd>
+</dl>
+<p><span class="target" id="index-9"></span>Vehicle routing is a very difficult combinatorial optimization
+problem; a short introduction to the problem will be presented in
+Chapter <a class="reference internal" href="TravelingSalesPerson.html#vehicle-routing"><span class="std std-ref">Vehicle Routing</span></a>.
+A special case, with a single available vehicle,
+will be analyzed in Chapter <a class="reference internal" href="TravelingSalesPerson.html#sequencing-problems-the-traveling-salesperson-problem"><span class="std std-ref">Sequencing problems: the Traveling Salesperson Problem</span></a>.  In the
+example here, assume routes have to be planned in order to cover at
+most three cities in the region we already used (file
+<span class="math notranslate nohighlight">\(\texttt{Pistoia.dat}\)</span>). Routes might consists of single visits from the start
+node, which we assume to be the city of Pistoia; or they might be
+composed of two visits and, in this case, the order of visit is
+irrelevant, as we assume costs are symmetric. Or a route might
+consist of three cities to be visited. In this case, the order is
+relevant and, given three cities <span class="math notranslate nohighlight">\(i,j,k\)</span>, the optimal route
+covering them has a cost which can be computes as the minimum of:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+c_{si}+c_{ij}+ c_{jk}+ c_{ks} \\
+c_{si}+c_{ik}+ c_{kj}+ c_{js} \\
+c_{sj}+c_{ji}+ c_{ik}+ c_{ks}
+\end{align*}</div><p>We, again, slightly revise the basic model to account for some
+peculiarities of this case (e.g., the Start node should not be
+covered, as it is to be considered as a depot):</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">VrpCovering.mod</span><a class="headerlink" href="#id7" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="p">;</span><span class="w">               </span><span class="c1"># requests to be covered</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Start</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Nroutes</span><span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">COVERED</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>Nroutes<span class="p">}</span><span class="w"> </span><span class="kr">within</span><span class="w"> </span>NODES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">cost</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>Nroutes<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">var</span><span class="w"> </span><span class="nv">delta</span><span class="p">{</span><span class="mi">1</span><span class="o">..</span>Nroutes<span class="p">}</span><span class="w"> </span><span class="kt">binary</span><span class="p">;</span>
+
+<span class="kd">minimize</span><span class="w"> </span><span class="nv">Total_Cost</span><span class="p">:</span>
+<span class="w">    </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>Nroutes<span class="p">}</span><span class="w"> </span>cost<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span>delta<span class="p">[</span>j<span class="p">];</span>
+
+<span class="kd">subject to</span><span class="w"> </span><span class="nv">Covering</span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="w"> </span><span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Start<span class="p">}:</span><span class="w"> </span>
+<span class="w">     </span><span class="kr">sum</span><span class="w"> </span><span class="p">{</span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>Nroutes<span class="w"> </span><span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>COVERED<span class="p">[</span>j<span class="p">]}</span><span class="w"> </span>delta<span class="p">[</span>j<span class="p">]</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Using data from file Pistoia.dat, we can run the set covering model
+by executing the following script:</p>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">VrpCovering.run</span><a class="headerlink" href="#id8" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kr">model</span><span class="w"> </span>VrpCovering.<span class="kr">mod</span><span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">time</span><span class="p">{</span>NODES<span class="p">,</span>NODES<span class="p">};</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">distance</span><span class="p">{</span>NODES<span class="p">,</span>NODES<span class="p">};</span>
+
+<span class="kr">data</span><span class="w"> </span>Pistoia.dat<span class="p">;</span>
+
+<span class="kd">let</span><span class="w"> </span><span class="nv">Start</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Pistoia&quot;</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="nv">Nroutes</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kr">for</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Start<span class="p">}</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1"># single visit routes</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">Nroutes</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>Nroutes<span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">COVERED</span><span class="p">[</span>Nroutes<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{</span>i<span class="p">};</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">cost</span><span class="p">[</span>Nroutes<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mf">100.</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>Start<span class="p">,</span>i<span class="p">];</span>
+<span class="p">};</span>
+
+<span class="kr">for</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">,</span><span class="w"> </span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Start<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Start<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>j<span class="p">}</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1"># two cities visit routes</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">Nroutes</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>Nroutes<span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">COVERED</span><span class="p">[</span>Nroutes<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{</span>i<span class="p">,</span>j<span class="p">};</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">cost</span><span class="p">[</span>Nroutes<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mf">100.</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>Start<span class="p">,</span>i<span class="p">]</span><span class="o">+</span><span class="nb">time</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span>
+<span class="w">                         </span><span class="o">+</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>j<span class="p">,</span>Start<span class="p">];</span>
+<span class="p">};</span>
+
+
+<span class="kr">for</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">,</span><span class="w"> </span>j<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">,</span><span class="w"> </span>k<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">:</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Start<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Start
+<span class="w">                   </span><span class="o">&amp;&amp;</span><span class="w"> </span>k<span class="w"> </span><span class="o">!=</span><span class="w"> </span>Start<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>j<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>i<span class="w"> </span><span class="o">!=</span><span class="w"> </span>k<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>j<span class="w"> </span><span class="o">!=</span><span class="w"> </span>k<span class="p">}</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1"># three cities visit routes</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">Nroutes</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>Nroutes<span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">COVERED</span><span class="p">[</span>Nroutes<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="p">{</span>i<span class="p">,</span>j<span class="p">,</span>k<span class="p">};</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="nv">cost</span><span class="p">[</span>Nroutes<span class="p">]</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span><span class="mf">100.</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nb">min</span><span class="p">(</span><span class="nb">time</span><span class="p">[</span>Start<span class="p">,</span>i<span class="p">]</span><span class="o">+</span><span class="nb">time</span><span class="p">[</span>i<span class="p">,</span>j<span class="p">]</span><span class="o">+</span><span class="nb">time</span><span class="p">[</span>j<span class="p">,</span>k<span class="p">]</span><span class="o">+</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>k<span class="p">,</span>Start<span class="p">],</span>
+<span class="w">    </span><span class="nb">time</span><span class="p">[</span>Start<span class="p">,</span>i<span class="p">]</span><span class="o">+</span><span class="nb">time</span><span class="p">[</span>i<span class="p">,</span>k<span class="p">]</span><span class="o">+</span><span class="nb">time</span><span class="p">[</span>k<span class="p">,</span>j<span class="p">]</span><span class="o">+</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>j<span class="p">,</span>Start<span class="p">],</span>
+<span class="w">    </span><span class="nb">time</span><span class="p">[</span>Start<span class="p">,</span>j<span class="p">]</span><span class="o">+</span><span class="nb">time</span><span class="p">[</span>j<span class="p">,</span>i<span class="p">]</span><span class="o">+</span><span class="nb">time</span><span class="p">[</span>i<span class="p">,</span>k<span class="p">]</span><span class="o">+</span><span class="w"> </span><span class="nb">time</span><span class="p">[</span>k<span class="p">,</span>Start<span class="p">]);</span>
+<span class="p">};</span>
+
+<span class="kr">option</span><span class="w"> </span>solver<span class="w"> </span>gurobi<span class="p">;</span>
+<span class="kr">solve</span><span class="p">;</span>
+<span class="kr">option</span><span class="w"> </span>omit_zero_rows<span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="kr">option</span><span class="w"> </span>omit_zero_cols<span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="kr">display</span><span class="w"> </span>delta<span class="p">;</span>
+<span class="kr">for</span><span class="w"> </span><span class="p">{</span>i<span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="mi">1</span><span class="o">..</span>Nroutes<span class="p">:</span>delta<span class="p">[</span>i<span class="p">]</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.99</span><span class="p">}</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;Route: %s &quot;</span><span class="p">,</span><span class="w"> </span>Start<span class="p">;</span>
+<span class="w">    </span><span class="kr">for</span><span class="w"> </span><span class="p">{</span>c<span class="w"> </span><span class="kr">in</span><span class="w"> </span>COVERED<span class="p">[</span>i<span class="p">]}</span><span class="w"> </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;%s &quot;</span><span class="p">,</span><span class="w"> </span>c<span class="p">;</span>
+<span class="w">    </span><span class="nb">printf</span><span class="w"> </span><span class="s2">&quot;%s; Cost: %f\n&quot;</span><span class="p">,</span><span class="w"> </span>Start<span class="p">,</span><span class="w"> </span>cost<span class="p">[</span>i<span class="p">];</span>
+<span class="w">    </span><span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>In the code, each route cost, corresponding to the total travel
+time from the start node, to the delivery nodes and back, is
+augmented with a constant (100 in the example) to promote the usage
+of a smaller number of trucks. It is a sort of fixed charge for
+using the truck. Solving this model requires a non negligible time,
+mostly devoted to generating the set of all feasible routes, which
+turn out out be 8421. Then, the real optimization is concluded in a
+very limited amount of time and results in the following route choice:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-63312235f51d7cff24d619e4e9b009a3dea8a834.png" alt="Figure made with TikZ" /></p>
+</div><p>The optimal routes thus found cover all of the request and have a
+duration, in minutes of traveling, which is displayed in the
+figure.</p>
+<p>The example above is very important as it shows how a very difficult
+combinatorial optimization can sometimes be solved by a clever
+implementation of a set covering model. Vehicle routing problems are
+notoriously extremely hard to solve in practice;
+solving these models by exact linear optimization models is out of
+question except for tiny examples. The example above is an important
+exception: if                 single routes can be in some way
+enumerated, then what remains is to pack routes together to cover the
+demand.
+A possibility, which is exploited in some real world applications, is
+to have some heuristic procedure generate a huge amount of feasible
+routes and then to delegate to the set covering model the choice of
+the best possible subset.
+It is worth also considering the fact that the above approach might
+easily be extended to even more challenging problems. Consider, for
+example, the case when there are additional constraints: an
+example are <span class="target" id="index-10"></span>time windows: each delivery should occur within a specific
+time frame. In the approach above, we can simply eliminate from the
+list those sets of visit nodes which do not satisfy these
+constraints,
+although many more routes need to be generated as in this case
+symmetry does not hold anymore.
+Of course the difficulty should also be apparent: already
+limiting the nodes to be visited in a route to a maximum of three, in
+a small example like the one in the example we obtained more than eight
+thousand possible routes. Extending the number of nodes in a route
+will cause this number to explode. This is however not a hopeless
+strategy: methods do exist in which this enormous set of routes is
+only implicitly enumerated, without the need to exhaustively list all
+of them; a procedure is designed to check whether the current solution
+in a sequential algorithm is indeed the best one or if one of the
+routes not yet considered might be profitably included; thus the set
+of routes among which we choose is dynamically expanded. This subject
+is however out of topic for this modeling book.</p>
+</div></blockquote>
+<p>Here we have just seen the most common model, set covering. The other
+models we mentioned in this chapter are also very relevant in
+applications.  The <span class="target" id="index-11"></span>set packing problem</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max \sum_{j \in \set{R}} c_j \mathvar{\delta}_j &amp; \\
+\sum_{j \in \set{R}: (i, j) \in \set{Pairs}} \mathvar{\delta}_{j}&amp; \leq 1
+&amp; \forall \, i \in \set{U} \\
+\mathvar{\delta}_j &amp; \in \{0,1\} &amp; \forall\, j \in \set{R}
+\end{align*}</div><p>is concerned with placing a set of facilities, with the highest
+possible value, so that no user (set <span class="math notranslate nohighlight">\(\set{U}\)</span>) is covered by
+more than one of these. An example application might be the
+localization of some facilities which creates some disturbance to the
+population: as an example, locating base stations for radio
+transmission, so that interference is kept at a minimum. We might
+think to a set of points where the signals are measured and all these
+points should not be reached by more than one signal. This is a
+maximization problem, as the constraints try to avoid placing too many
+resources, so that the objective should try to contrast
+this and promote the maximum compatible set to be chosen. The
+objective function coefficients might be, e.g., a measure of the
+population reached by a good quality signal.</p>
+<p>Finally, the <span class="target" id="index-12"></span>set partitioning problem is both a set covering as
+well as a packing:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_{j \in \set{R}} c_j \mathvar{\delta}_j &amp; \\
+\sum_{j \in \set{R}: (i, j) \in \set{Pairs}} \mathvar{\delta}_{j}&amp; = 1
+&amp; \forall \, i \in \set{U} \\
+\mathvar{\delta}_j &amp; \in \{0,1\} &amp; \forall\, j \in \set{R}
+\end{align*}</div><p>As an example, the vehicle routing problem  described above as an
+application of the set covering model, is, indeed, a set partitioning,
+as we wish every parcel to be delivered by exactly one and only one
+truck.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Knapsack.html" title="Previous document"><span class="section-number">19. </span>Knapsack, Bin Packing and Plant Location problems</a>
+        </li>
+        <li>
+          <a href="TravelingSalesPerson.html" title="Next document"><span class="section-number">21. </span>Sequencing problems: the Traveling Salesperson Problem</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="Knapsack.html" title="previous chapter"><span class="section-number">19. </span>Knapsack, Bin Packing and Plant Location problems</a></li>
+      <li>Next: <a href="TravelingSalesPerson.html" title="next chapter"><span class="section-number">21. </span>Sequencing problems: the Traveling Salesperson Problem</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/SetCovering.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

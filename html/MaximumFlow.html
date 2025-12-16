@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>8. Maximum Flow &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="9. The transportation model" href="Transportation.html" />
+    <link rel="prev" title="7. Shortest (Minimum Cost) Path Problems" href="ShortestPath.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="ShortestPath.html" title="Previous document"><span class="section-number">7. </span>Shortest (Minimum Cost) Path Problems</a>
+        </li>
+        <li>
+          <a href="Transportation.html" title="Next document"><span class="section-number">9. </span>The transportation model</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="maximum-flow">
+<h1><span class="section-number">8. </span>Maximum Flow<a class="headerlink" href="#maximum-flow" title="Link to this heading">¶</a></h1>
+<p>The  maximum flow problem concerns finding
+a <em>feasible</em> flow in a network (i.e., a flow which satisfies upper and
+lower bounds on all arcs as well as the required balances at nodes)  in
+such a way as to maximize the total
+quantity of flow entering or circulating in the network. While in  the
+formulation of the minimum cost path  problem a single unit of flow
+was considered, here
+the amount of the circulating flow is unknown and it is the objective
+we would like to maximize.
+As in the minimum cost path problem, also here it is assumed that the
+balance at every node is zero, with the only exception of the source
+and destination.</p>
+<p>Before
+formulating the problem it is necessary to define
+the quantity of flow circulating in a network. Assume
+there exist  a unique source and destination nodes, and that  the source
+has only outgoing arcs, while the destination has only entering arcs.
+The <span class="target" id="index-0"></span>value of the flow  circulating in such a  network is defined as the sum of
+flows out from the source.</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{val} &amp; = \sum_{j: (s,j) \in E} \var{f}_{sj}
+\end{align*}</div><p>It is easy to proof that flow conservation law
+implies that this quantity is also equal to the total flow entering
+the destination node</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\var{val} &amp; = \sum_{i: (i,t) \in E} \var{f}_{it}
+\end{align*}</div><div class="figure" style="text-align: center"><p><img  src="_images/tikz-d826345002517f03e001dc7a8241d2a7e5cc772d.png" alt="Figure made with TikZ" /></p>
+</div><p>In the network above labels represent a feasible flow and the upper
+bound (or capacity) on each arc. The total flow out from the source
+node is 9 (4 units on <span class="math notranslate nohighlight">\((s,A)\)</span>, 5 on  <span class="math notranslate nohighlight">\((s,A)\)</span>). The
+same quantity of flow can be measured at the destination node
+<span class="math notranslate nohighlight">\(t\)</span>, with  a total of 9 units entering.</p>
+<p>Formally the problem can be represented as follows</p>
+<dl class="field-list simple">
+<dt class="field-odd">model<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Maximum flow</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Sets:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\set{V}\)</span>: nodes of the graph</p></li>
+<li><p><span class="math notranslate nohighlight">\(\set{E} \subseteq \set{V} \times \set{V}\)</span>: arcs</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Parameters:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(s \in V\)</span>: source node</p></li>
+<li><p><span class="math notranslate nohighlight">\(t \in V\)</span>: destination node</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Fmin}_{ij}\)</span>: lower  capacity of
+arc <span class="math notranslate nohighlight">\((i, j) \in E\)</span> - frequently this is equal to 0</p></li>
+<li><p><span class="math notranslate nohighlight">\(\param{Fmax}_{ij}\)</span>: maximum capacity of arc <span class="math notranslate nohighlight">\((i, j) \in E\)</span></p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Variables:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\var{f}_{ij}\)</span>: flow on arc <span class="math notranslate nohighlight">\((i, j)\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\(\var{val}\)</span>: value of the flow</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Constraints:</span></div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><ul class="simple">
+<li><p>Flow conservation:</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\sum_{(v, j) \in E} \var{f}_{vj} - \sum_{(i, v) \in E}
+\var{f}_{iv} &amp;=
+\left\{
+\begin{array}{rl}
+\var{val} &amp; \text{ if } v = s \cr
+-\var{val} &amp; \text{ if } v = t \cr
+0 &amp; \text{ otherwise}
+\end{array}
+\right. &amp; \forall\, v \in V
+\end{align*}</div><p>For nodes other than source and
+destination this constraint represents  flow conservation:
+total flow out from each node must be equal to the total incoming flow.
+For the source node the constraint corresponds to  the definition
+of the variable <span class="math notranslate nohighlight">\(\var{val}\)</span> as the value of the flow.
+Similarly  for the equation associated with the terminal node.</p>
+<ul class="simple">
+<li><p>Bounds on the flows:</p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\param{Fmin}_{ij} \leq \var{f}_{ij} &amp; \leq \param{Fmax}_{ij} &amp;
+\forall \, (i, j) \in E
+\end{align*}</div></div></blockquote>
+<div class="line-block">
+<div class="line"><span class="smallcaps">Objective:</span>  maximize the flow value:</div>
+<div class="line"><br /></div>
+</div>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[
+\max \var{val}
+\]</div></div></blockquote>
+<p>If there were multiple source nodes (or multiple
+destinations) in the network, it would be easy to
+build an equivalent single source – single destination one
+adding a dummy source node connected to
+each source node and a dummy destination node with arcs entering from
+all destinations; these added arcs should have no bound on maximum
+capacity.</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-22948664204cfc44901fafbb99af8c3517c412a5.png" alt="Figure made with TikZ" /></p>
+</div><p>Adding two dummy nodes the problem is equivalent to finding a maximum
+flow in the following network:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-571d6a7a3e14b8134bd69883926d05b10f0018bb.png" alt="Figure made with TikZ" /></p>
+</div><p>An alternative but equivalent way to define the maximum  flow problem
+is to connect the terminal node
+back to the source node through an arc with unlimited maximum capacity:
+by imposing a zero flow balance on all nodes, including
+source and terminal, we get a “closed” network
+in which the circulating flow is conserved at every node; the value of
+the flow is the flow along the fictitious arc <span class="math notranslate nohighlight">\((t, s)\)</span> .</p>
+<p>Consider the example introduced at the beginning of this section:
+we might represent the same example also as:</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-2d4dfca6903a7a1382e4cb628acb5949ac5b7d0f.png" alt="Figure made with TikZ" /></p>
+</div><p>where an arc has been added from the destination to the source node
+carrying all of the flow. A network of this kind is called  <em>circulation</em>
+network, and it is characterized by the fact that the balance is zero
+everywhere.</p>
+<p>The maximum flow model finds many direct applications to, e.g.,
+water  distribution networks, urban traffic flows, the design of
+emergency exits from public buildings.</p>
+<p>It is important to observe that the maximum flow model is indeed
+a special case of the minimum cost flow model: in fact,
+if we consider variable <span class="math notranslate nohighlight">\(\var{val}\)</span> as the value of a flow
+along  arc <span class="math notranslate nohighlight">\((t, s)\)</span>, the constraints are the standard ones of the
+flow problems (with zero balance on all nodes); the objective function
+to be minimized can be associated to the maximum flow by imposing zero
+cost on every arc, with the exception of the fictitious
+arc <span class="math notranslate nohighlight">\((t, s)\)</span> to which a unit cost -1 is assigned.</p>
+<p>Denoting as usual by <span class="math notranslate nohighlight">\(A\)</span> the incidence matrix of the graph, the
+problem can be written as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max_{\var{f},\var{val} } \var{val} \\
+A \var{f} + (\mathbf{e}_t-\mathbf{e}_s) \var{val}  &amp; = 0  \\
+\param{Fmin } \leq \var{f} &amp; \leq \param{Fmax}
+\end{align*}</div><p>From this equivalence it is
+immediately seen that if the minimum and maximum capacities on arcs
+are integer valued, then all  basic feasible  solutions are integers, and, in particular,
+an optimal basic solution will be integer.</p>
+<section id="dual-of-the-maximum-flow-problem">
+<h2><span class="section-number">8.1. </span>Dual of the maximum flow problem<a class="headerlink" href="#dual-of-the-maximum-flow-problem" title="Link to this heading">¶</a></h2>
+<p>The standard maximum flow problem
+contains two groups of constraints,  one corresponding to
+flow conservation, with an equation for each node of the
+network; the second one, associated to the maximum capacity,  with an
+inequality for each arc (we will omit minimum capacity in this part,
+assuming a simple non negativity constraint for every flow variable).</p>
+<p>In the dual there will be, thus, two groups of variables,
+associated respectively with the nodes and the arcs of the
+graph. Denoting by
+<span class="math notranslate nohighlight">\(\mathvar{\lambda}\)</span> and <span class="math notranslate nohighlight">\(\mathvar{\gamma}\)</span> the dual
+variables associated, respectively, with the balance and maximum flow
+constraints, the following dual is quite easily obtained:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min \sum_{(i, j) \in E} \param{Fmax}_{ij} \mathvar{\gamma}_{ij} &amp;
+\label{eq: dual-maxflow} \\
+\mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} - \mathvar{\gamma}_{ij}
+&amp; \leq0 &amp; \forall \, (i, j) &amp; \in E \nonumber \\
+\mathvar{\lambda}_{s} - \mathvar{\lambda}_{t} &amp; \geq1 \nonumber \\
+\mathvar{\gamma}_{ij} &amp; \geq0 &amp; \forall \, (i, j) &amp; \in E \nonumber
+\end{align*}</div><p>A possible interpretation of this dual is the following.
+Consider the design of an electrical circuit in which it is required
+to determine the maximum voltages associated with each arc. In
+particular, assume that  a tension with value  1 is applied
+between  nodes <span class="math notranslate nohighlight">\(s\)</span> and <span class="math notranslate nohighlight">\(t\)</span>; we wish to find an
+upper bound <span class="math notranslate nohighlight">\(\mathvar{\gamma}_{ij}\)</span> to the voltage at the
+extremes of each arc. The cost of  each arc
+is assumed to grow linearly with the difference of potential (or
+tension), with a coefficient
+<span class="math notranslate nohighlight">\(\param{Fmax}_{ij}\)</span>.</p>
+<p>It can be shown that every basic feasible solutions of this problem, and, thus, also
+at least one optimal solution, is binary.</p>
+<p>Furthermore, it can be shown that in each basic  solution,
+the set  nodes of the graph for which
+<span class="math notranslate nohighlight">\(\mathvar{\lambda}_{i} = 1\)</span>  are associated to a so called
+<span class="math notranslate nohighlight">\(s - t\)</span> - section. An <span class="target" id="index-1"></span>section is defined as
+a bi–partition of the set of nodes <span class="math notranslate nohighlight">\((W,\overline{W}): W \subset V\)</span>
+that separates the source
+from the terminal: <span class="math notranslate nohighlight">\(s \in W, t \not\in W\)</span>.</p>
+<p>Any such bi-partition also “cuts” a certain
+number of arcs, some of which are “forward” arcs (with the first node
+in set <span class="math notranslate nohighlight">\(W\)</span> and the other outside this set). Forward arcs cut by
+the bi-partition are arcs <span class="math notranslate nohighlight">\((i,j) \in E\)</span> such
+that <span class="math notranslate nohighlight">\(i \in W, j \not\in W\)</span>.   Analogously, we might define
+“backward” arcs characterized by   <span class="math notranslate nohighlight">\(i \not\in W, j \in W\)</span>.</p>
+<p>We define the  <span class="target" id="index-2"></span>capacity  of a
+cut as  the sum of the maximum capacities of the forward arcs
+across the section.</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\textrm{Cap}(W,\overline{W}) &amp; = \sum_{(i,j) \in E: i \in W, j \not\in
+W} \param{Fmax}_{i,j}
+\end{align*}</div><p>It is possible, although not trivial, to see  that the dual of the
+maximum flow problem corresponds to the problem of determining a cut of
+minimum capacity; this cut is indeed a “bottleneck” in the
+network. That is, in the optimal solution  variables <span class="math notranslate nohighlight">\(\mathvar{\lambda}\)</span>
+whose optimal value is equal to one  correspond to the indicator function of a
+minimum capacity
+bi-partition of nodes; the  arcs associated
+to variables <span class="math notranslate nohighlight">\(\mathvar{\gamma}\)</span>  are the “forward” arcs
+from that section. From the theory on maximum flows, it can be proven
+that in an optimal cut all forward arcs carry the maximum possible
+flow, while all backward arcs are at their minimum. Extending the
+definition of flow through a section as the difference between the
+flows on forward arcs and the flows on backward arcs, it can be shown
+that this flow is constant and equal to the value of the flow through
+the network. The following figure pictorially represents the
+situation.</p>
+<div class="figure" style="text-align: center"><p><img  src="_images/tikz-b32e16f758ffdc8ba57b63aacbca0bb3a09ab261.png" alt="Figure made with TikZ" /></p>
+</div><p>Here the optimal (maximum) flow is 10 units; <span class="math notranslate nohighlight">\(\{s,A,B,C\}\)</span> is
+a minimum capacity
+section, with forward arcs
+<span class="math notranslate nohighlight">\((C,t),(B,t)\)</span>, both carrying the maximum possible flow, and
+backward arc <span class="math notranslate nohighlight">\((D,C)\)</span> with a null flow. The capacity of this
+cut is 10 and it is quite evident that no additional unit of flow is
+feasible, as this cut limits the overall flow to a maximum of 10.</p>
+<p>The solution to the above example was found by solving a standard
+maximum flow problem, coded, e.g., as follows:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">maxflow.mod</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">S</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="w"> </span><span class="kt">symbolic</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">,</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span>S<span class="p">;</span>
+
+<span class="kd">set</span><span class="w"> </span><span class="nv">ARCS</span><span class="w"> </span><span class="kr">within</span><span class="w"> </span>NODES<span class="w">  </span><span class="kr">cross</span><span class="w"> </span>NODES<span class="p">;</span>
+
+<span class="kd">param</span><span class="w"> </span><span class="nv">Fmin</span><span class="p">{</span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kr">default</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">Fmax</span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>Fmin<span class="p">[</span>i<span class="p">,</span>j<span class="p">];</span>
+
+<span class="kd">node</span><span class="w"> </span><span class="nv">balance</span><span class="w"> </span><span class="p">{</span>k<span class="w"> </span><span class="kr">in</span><span class="w"> </span>NODES<span class="p">}:</span><span class="w"> </span><span class="kr">net_in</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="kd">arc</span><span class="w"> </span><span class="nv">Flow</span><span class="w"> </span><span class="p">{(</span>i<span class="p">,</span>j<span class="p">)</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span>ARCS<span class="p">}</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span>Fmin<span class="p">[</span>i<span class="p">,</span>j<span class="p">],</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span>Fmax<span class="p">[</span>i<span class="p">,</span>j<span class="p">],</span>
+<span class="w">    </span><span class="kr">from</span><span class="w"> </span>balance<span class="p">[</span>i<span class="p">],</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span>balance<span class="p">[</span>j<span class="p">];</span>
+
+<span class="kd">arc</span><span class="w"> </span><span class="nv">In</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kr">to</span><span class="w"> </span>balance<span class="p">[</span>S<span class="p">];</span>
+
+<span class="kd">arc</span><span class="w"> </span><span class="nv">Out</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span>balance<span class="p">[</span>T<span class="p">];</span>
+
+<span class="kd">maximize</span><span class="w"> </span><span class="nv">FlussoTotale</span><span class="p">:</span><span class="w"> </span>In<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>with the following data:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">maxflow.dat</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-ampl notranslate"><div class="highlight"><pre><span></span><span class="kd">set</span><span class="w"> </span><span class="nv">NODES</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>s<span class="w"> </span>A<span class="w"> </span>B<span class="w"> </span>C<span class="w"> </span>D<span class="w"> </span>t<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">S</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>s<span class="p">;</span>
+<span class="kd">param</span><span class="w"> </span><span class="nv">T</span><span class="w"> </span><span class="p">:</span><span class="o">=</span><span class="w"> </span>t<span class="p">;</span>
+
+<span class="kd">param</span><span class="p">:</span><span class="w"> </span><span class="nv">ARCS</span><span class="p">:</span><span class="w"> </span><span class="nv">Fmax </span><span class="p">:</span><span class="o">=</span>
+s<span class="w"> </span>A<span class="w"> </span><span class="mi">10</span>
+s<span class="w"> </span>B<span class="w">  </span><span class="mi">8</span>
+A<span class="w"> </span>C<span class="w">  </span><span class="mi">4</span>
+A<span class="w"> </span>B<span class="w">  </span><span class="mi">3</span>
+B<span class="w"> </span>C<span class="w">  </span><span class="mi">9</span>
+B<span class="w"> </span>D<span class="w">  </span><span class="mi">2</span>
+C<span class="w"> </span>t<span class="w">  </span><span class="mi">8</span>
+D<span class="w"> </span>C<span class="w">  </span><span class="mi">3</span>
+D<span class="w"> </span>t<span class="w">  </span><span class="mi">4</span>
+<span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Here, again, it is worth remembering that solving maximum flow
+problems with linear optimization solvers is in general not a
+suggested practice, as much more advanced specialized algorithms do
+exist. However, being able to model this problem as a linear
+optimization one, might turn out to be  useful when dealing with more
+general applications which include a maximum flow component as a part
+of a larger model.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="ShortestPath.html" title="Previous document"><span class="section-number">7. </span>Shortest (Minimum Cost) Path Problems</a>
+        </li>
+        <li>
+          <a href="Transportation.html" title="Next document"><span class="section-number">9. </span>The transportation model</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">8. Maximum Flow</a><ul>
+<li><a class="reference internal" href="#dual-of-the-maximum-flow-problem">8.1. Dual of the maximum flow problem</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="ShortestPath.html" title="previous chapter"><span class="section-number">7. </span>Shortest (Minimum Cost) Path Problems</a></li>
+      <li>Next: <a href="Transportation.html" title="next chapter"><span class="section-number">9. </span>The transportation model</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/MaximumFlow.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

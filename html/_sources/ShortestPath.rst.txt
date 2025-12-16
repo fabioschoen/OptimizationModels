@@ -1,0 +1,1257 @@
+.. include:: preamble.rst
+
+=====================================
+Shortest (Minimum Cost) Path Problems
+=====================================
+
+Consider a special case of the minimum cost flow problem in which
+ 
+1. there are two special nodes :math:`s, t`, called
+   respectively :index:`source` and :index:`terminal` (or :index:`origin`
+   and :index:`destination`)
+2. the balance is  :math:`+1`  for the source node,  :math:`-1` for the
+   terminal node, zero otherwise
+3. the lower bound for the flow  is everywhere 0
+4. the upper bound is :math:`\infty` (hence the corresponding constraint
+   can be omitted).
+
+This special case is called :index:`minimum cost path` problem and can
+be represented as follows:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min_{\var{f}} \sum_{(i, j) \in E} \param{c}_{ij} \var{f}_{{ij}} \label{eq: sp} \\
+   \sum_{(v, j) \in E} \var{f}_{vj} - \sum_{(i, v) \in E} \var{f}_{iv} &
+   = \left \{
+   \begin{array}[c]{rl}
+   +1 & \text{if } v = s \\
+   -1 & \text{if } v = t \\
+   0 & \text{otherwise}
+   \end{array} 
+   \right. & \forall\,v \in V \\ \nonumber
+   \var{f}_{ij} & \geq0 \nonumber
+   \end{align*}
+   
+
+In this minimum cost flow problem
+a single  unit of flow starts from the source node and goes to the
+destination node.
+
+Based on  the scheme already used, the minimum cost path model can be
+represented as follows:
+
+.. role:: model
+   :class: smallcaps
+
+:model: Minimum cost path
+
+|
+   :model:`Sets:`
+|
+
+   *  :math:`{V}`  nodes of the graph;
+   *  :math:`E \subseteq \set{V} \times \set{V}`: set of arcs
+
+|
+   :model:`Parameters:`
+|
+   
+   * :math:`\param{s} \in V`: source, or origin;
+   * :math:`\param{t} \in V`: terminal, or destination; :math:`s` and :math:`t`
+     are symbolic parameters, not numerical ones.
+   * :math:`\param{c}_{ij}`: "cost" associated with one unit of flow
+     traversing arc :math:`(i, j) \in E`; it is not necessarily a
+     monetary cost: it might be travel time, an index of discomfort or
+     of danger, the length, fuel consumption, difficulty, slope, ...
+
+|
+   :model:`Variables:`
+|
+
+   * :math:`\var{f}_{ij}`: flow along arc  :math:`(i, j) \in E`;
+
+|
+   :model:`Constraints:`
+|
+   
+   * Flow conservation:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+        \sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+        = \left \{
+        \begin{array} {rl}
+            1 & \textrm{if } v = \param{s} \\
+            -1 & \textrm{if } v = \param{t} \\
+            0 & \textrm{otherwise}
+        \end{array}
+        \right. \qquad \forall \, v \in V
+	\end{align*}
+   *  Flow non-negativity:
+
+      .. math::
+	 :nowrap:
+
+	 \begin{align*}
+         \var{f}_{ij} \geq 0 \qquad \forall \, (i, j) \in E
+	 \end{align*}
+
+|
+   :model:`Objective:` 
+|
+
+   Cost minimization:
+
+   .. math::
+      :nowrap:
+	 
+      \[
+      \min \sum_{(i, j) \in E} \param{c}_{ij} \var{f}_{ij}
+      \]
+
+An example of implementation of the model is given in the following.
+We recall however that this model is a  special case of the minimum
+cost flow one and thus can be easily solved using the generic
+model formulation. It is possible, in other words, to use the generic
+minimum cost flow model and simply implement a minimum cost path
+instance by suitably defining the problem's data.  Here we report a
+possible implementation also in order to show some peculiar aspects of
+the modeling language.
+
+.. literalinclude:: AMPL/sp.mod
+   :caption: sp.mod
+   :language: ampl
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The problem of arcs with negative cost
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Before going into more details on this  model and its many
+applications it is important  to check whether this model is indeed a
+correct one. By this we mean that it is important to check whether the
+optimal solution to this model is indeed an optimal path. We will see
+that in some cases the optimal solution might not be a path or it
+might be sub-optimal. These defects might however happen only when some
+arc has negative cost, i.e., traversing an arc produces a gain,
+instead of a cost. This might seem curious in general, but there are
+many situations in which this is normal. Just as an example, there are
+cases in which instead of minimizing costs, we would like to find a
+path over which some kind of *utility* is maximized. Maximizing a
+positive utility is equivalent to minimize its opposite, which is thus
+a negative cost. 
+
+A :index:`path` in a directed graph is a finite sequence
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   v_1,
+   (v_1,v_2), v_2, (v_2,v_3), v_3,\ldots, v_k
+   \end{align*}
+   
+such that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   v_h & \in V & \forall\, h=1,k \\
+   (v_h, v_{h+1}) & \in E & \forall\, h = 1, k-1
+   \end{align*}
+
+This sequence is composed
+of nodes and arcs; when the graph has no parallel arcs (arcs with the
+same end points), it
+can be represented more simply and without ambiguity as a finite sequence of nodes :math:`v_1,
+v_2, \ldots, v_k` where it is understood that :math:`(v_h,v_{h+1}) \in E`,
+that is, every pair of consecutive nodes in the path is an arc in the
+graph. 
+
+Assume that the linear optimization model has an optimal solution.
+The model is a special case of the
+minimum cost flow and thus, being the right hand side of the model
+integer, it is immediate to deduce that all basic solutions and, in
+particular, an optimal one, will be integer. However it is not
+granted that an optimal solution,  when it exists, is :math:`binary`.
+This fact is not a problem in itself, as a flow larger than one might
+represent a flow passing more than once trough an arc. However this is
+the sign of possible difficulties, as we are going to show now.
+
+Consider the following graph, where the label on each arc represents
+the cost:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \node[vertex] (s) at (0,0) {$s$};
+   \node[vertex] (A) at (2,0) {$A$};
+   \node[vertex] (B) at (5,0) {$B$};
+   \node[vertex] (t) at (7,0) {$t$};
+   \node[vertex] (C) at (3.5,-2) {$C$};
+   \foreach \ini/\fin/\cost in {
+   s/A/1,A/B/1,B/t/1,B/C/1,C/A/1
+   }
+   \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost}} (\fin);
+   \end{tikzpicture}
+
+  
+Here a :index:`directed cycle` exists in the graph: by this we mean a
+directed path with the same start and end node. In this case, the node
+sequence :math:`A,B,C,A` corresponds to a directed cycle. Although it is
+evident that the minimum cost path in the graph is  :math:`s,A,B,t`, with
+total cost 3, sub-optimal paths exist, like, e.g.,
+:math:`s,A,B,C,A,B,t`. The flow along this path will be non binary: one unit
+on :math:`(s,A),(B,C), (C,A), (B,t)`, but two units along :math:`(A,B)`,
+corresponding to two passages along this arc. It is easy to imagine
+how, going through the cycle more than once, other non binary feasible
+solutions might be found. Of course, in this case, it will be costly
+to traverse the cycle, so an optimal solution will be
+:index:`acyclic`, i.e., it will not contain any cycle with positive flow. 
+
+Assume now that the cost associated to arc :math:`(B,C)` is
+:math:`-2`;
+
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \node[vertex] (s) at (0,0) {$s$};
+   \node[vertex] (A) at (2,0) {$A$};
+   \node[vertex] (B) at (5,0) {$B$};
+   \node[vertex] (t) at (7,0) {$t$};
+   \node[vertex] (C) at (3.5,-2) {$C$};
+   \foreach \ini/\fin/\cost in {
+   s/A/1,A/B/1,B/t/1,B/C/-2,C/A/1
+   }
+   \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost}} (\fin);
+   \end{tikzpicture}
+
+Now the situation is different because, thanks to this
+negative cost, the overall cost of the cycle :math:`A,B,C,A` is null. Thus
+it is possible to assign flow to this cycle, at no additional cost. As a
+consequence, there exist optimal solutions which include a cycle and,
+thus, have non binary flows. The cyclic solution :math:`s,A,B,C,A,B,t` has
+the same cost as the optimal one and, thus, is optimal. It can be
+proven, however, that in this problem feasible solutions which contain
+cycles are not basic solutions: linear independence of the columns
+associated to arcs with positive flow correspond to the absence of
+cycles. Here with the term cycle we consider generic ones, i.e., even not
+directed ones or, in other words, closed paths which, after possibly a
+few changes in the direction of some arcs, turn into a directed
+cycle.
+Thus, even if an
+optimal cyclic solution might exist, the fundamental theorem of linear
+optimization grants that at least an 
+optimal acyclic solution  exists too. And most of the commonly used linear
+optimization algorithms will return such an optimal
+basic solution.
+
+However, going further with the example, assume now that the cost of
+arc :math:`(B,C)`  is, say, :math:`-3`: now, going through the cycle :math:`A,B,C,A`
+will "cost" :math:`-1`. In other words, the cycle gives us a positive
+gain. It is now evident that it is worth going through the cycle. If
+we traverse the cycle 1, 2, 3 times, the gain will be 1, 2, 3,...
+From  this, it immediately follows that the minimum cost path problem
+in this case becomes unsolvable or, more precisely, *unbounded*. Even in
+this case, the linear optimization formulation given before is correct
+and trying to solve that model in this case will correctly detect the
+unboundedness of the problem. Difficulties however arise in a slightly
+different situation. Consider the following example:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \node[vertex] (s) at (0,0) {$s$};
+   \node[vertex] (A) at (2,0) {$A$};
+   \node[vertex] (t) at (4,0) {$t$};
+   \node[vertex] (B) at (2,-2) {$B$};
+   \node[vertex] (C) at (1,-4) {$C$};
+   \node[vertex] (D) at (3,-4) {$D$};
+   \foreach \ini/\fin/\cost in {
+   s/A/1,A/t/1,B/A/1,C/D/-1,D/B/-1,B/C/-1
+   }
+   \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost}} (\fin);
+   \end{tikzpicture}
+
+Here there is a unique, thus optimal, path :math:`s,A,t` whose cost is 2.
+However, the linear optimization model turns out to be unbounded,
+as it is possible to assign any positive value to the arcs composing
+cycle BCDB, without violating any constraint. Thus the linear
+optimization model does not correctly represent the minimum cost path
+problem in this case, as a consequence of a negative cost cycle in the
+graph. We might think that bounding the flow over each arc to 1 might
+solve the problem, but this is false. Indeed, assigning a finite upper
+bound  to each arc will make the problem bounded. However, in this
+case, the optimal solution would assign unit flow to :math:`(s,A), (A,t)`
+but also to :math:`(B,C), (C,D), (D,B)`, thus returning an incorrect
+solution with an incorrect total cost. In this case the solution,
+although incorrect, contains the minimum cost path. Unfortunately, again,
+this is not the case, in general. Consider the following example:   
+
+.. tikz::
+  
+   \begin{tikzpicture}
+   \node[vertex] (s) at (0,0) {$s$};
+   \node[vertex] (t) at (4,0) {$t$};
+   \node[vertex] (B) at (2,0) {$B$};
+   \node[vertex] (C) at (1,-2) {$C$};
+   \node[vertex] (D) at (3,-2) {$D$};
+   \foreach \ini/\fin/\cost in {
+   s/B/1,B/t/1,D/C/-2,B/D/-1,C/B/-2,D/t/1
+   }
+   \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost}} (\fin);
+   \end{tikzpicture}
+
+Bounding the flow on each arc to 1 unit as a maximum, any linear
+optimization software would return the following optimal solution, consisting of
+one unit of flow on each arc, except arc  :math:`(D,t)`, with total cost
+:math:`-3` (the flow is reported in red below each arc):
+
+.. tikz::
+  
+   \begin{tikzpicture}
+   \node[vertex] (s) at (0,0) {$s$};
+   \node[vertex] (t) at (4,0) {$t$};
+   \node[vertex] (B) at (2,0) {$B$};
+   \node[vertex] (C) at (1,-2) {$C$};
+   \node[vertex] (D) at (3,-2) {$D$};
+   \foreach \ini/\fin/\cost/\flow in {
+   s/B/1/1,B/t/1/1,D/C/-2/1,B/D/-1/1,C/B/-2/1,D/t/1/0
+   }
+   \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost}}
+   node[below,sloped,red]{\tiny{\flow}} (\fin);
+   \end{tikzpicture}
+
+However, the minimum cost path is  :math:`s,B,D,t`,(cost: 1) which is not
+contained in the linear optimization solution:
+
+.. tikz::
+  
+   \begin{tikzpicture}
+   \node[vertex] (s) at (0,0) {$s$};
+   \node[vertex] (t) at (4,0) {$t$};
+   \node[vertex] (B) at (2,0) {$B$};
+   \node[vertex] (C) at (1,-2) {$C$};
+   \node[vertex] (D) at (3,-2) {$D$};
+   \foreach \ini/\fin/\cost/\flow in {
+   s/B/1/1,B/t/1/0,D/C/-2/0,B/D/-1/1,C/B/-2/0,D/t/1/1
+   }
+   \draw[arc] (\ini) --node[above,sloped]{\tiny{\cost}}
+   node[below,sloped,red]{\tiny{\flow}} (\fin);
+   \end{tikzpicture}
+
+Concluding this section, it can be observed that problems arise when a
+negative cost cycle is included in the graph. In these cases the 
+linear model might not be correct and special care has to be taken in order to
+avoid solution which include cycles. This can be done, as it will be
+seen in chapter :ref:`Sequencing problems: the Traveling Salesperson Problem`.
+But the inclusion of constraints to avoid cycles will come at a huge
+computational cost. It can be proven that, while the minimum cost path
+is "easy", in the sense that it admits a solution time which grows
+at most polynomially with the size of the problem, when negative
+cycles are present the complexity becomes much higher and no
+polynomial time algorithm is known, nor it is likely to be found in
+the future.
+
+It is also important to recall, however, that in the vast majority of
+practical cases the linear model will be a correct representation of
+the problem. Two wide classes of cases in which the model is granted
+to be correct
+are:
+
+* graphs with non negative arc costs
+* acyclic graphs, even with negative cost arcs
+
+In the two cases above it is evident that no negative cost cycle can
+exist. It is not difficult to prove that in these cases the linear
+model will be a correct one for the minimum cost
+path problem.
+
+Going back to the application of this model, let us consider the
+following application. 
+
+:application: :index:`Minimum resistance path in an electrical network`
+
+Consider the following minimum cost path problem:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \foreach \nod/\x/\y in
+   {-/0/4,A/2/4,B/4/4,C/6/4,D/2/2,E/4/2,F/0/0,G/2/0,+/4/0}
+   \node[vertex] (\nod) at (\x,\y) {$\nod$};
+   \foreach \ini/\fin/\cost in {
+   -/A/100,-/F/250,A/B/250,A/D/100,A/F/300,B/C/120,B/D/250,
+   B/E/100,C/E/250,D/E/230,D/F/200,E/F/150,E/G/50,E/+/110,
+   F/G/300,G/+/90
+   }
+   \draw[arc,-] (\ini) --node[above,sloped]{\tiny{\cost}} (\fin);
+   \end{tikzpicture}
+
+This graph is undirected, but we can consider it as a directed graph
+in which each edge corresponds to two arcs, in opposite directions,
+each with the same cost as displayed. Assume we wish to find the
+minimum cost path from node :math:`-`  to node :math:`+`. This network might be an
+electrical one and we are interested in finding the minimum total resistance
+path in the network, assuming the labels of each edge are the
+resistances associated to each connection.
+
+Solving this problem either with a specialized shortest path algorithm
+or with a generic linear optimization tool, we obtain the optimal
+solution as :math:`-,F,E,+` with total cost 510.
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \foreach \nod/\x/\y in
+   {-/0/4,A/2/4,B/4/4,C/6/4,D/2/2,E/4/2,F/0/0,G/2/0,+/4/0}
+   \node[vertex] (\nod) at (\x,\y) {$\nod$};
+   \foreach \ini/\fin/\cost/\flow in {
+   -/A/100/ ,-/F/250/1,A/B/250/ ,A/D/100/ ,A/F/300/ ,B/C/120/
+   ,B/D/250/ ,
+   B/E/100/ ,C/E/250/ ,D/E/230/ ,D/F/200/ ,E/F/150/1,E/G/50/ ,E/+/110/
+   1,
+   F/G/300/ ,G/+/90/ }
+   \draw[arc,-] (\ini) --node[above,sloped]{\tiny{\cost}} node[below,sloped,red]{\tiny{\flow}} (\fin);
+   \foreach \ini/\fin in {-/F,F/E,E/+}
+   \draw[arc,red] (\ini) -- (\fin);
+   \end{tikzpicture}
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Dual of the minimum cost path model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this section we analyze the *dual* of the linear model for the
+minimum cost path problem (assuming it correctly represents the
+minimum cost path problem).
+Consider the matrix representation of the minimum cost path problem:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min_{\var{f}} \param{c}^T \var{f} & \\
+   \param{A} \var{f} & = \mathbf{e}_s-\mathbf{e}_t \\
+   \var{f} & \geq 0
+   \end{align*}
+
+where :math:`\param{A} \in \{-1, 0, +1\}^{|V| \times |E|}` is the :index:`incidence
+matrix` of the graph and :math:`\mathbf{e}_v \in \R^{|V|}` is a binary vector
+whose components are all zero except the one associated to node
+:math:`v`. Thus the right hand side is +1 in the equation of the
+origin node, -1 in that of the destination and zero otherwise. 
+
+This is a standard linear optimization model whose dual is immediately
+found to be
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max_{\mathvar{\lambda}} \mathvar{\lambda}^T (\mathbf{e}_s-\mathbf{e}_t) & \\
+   \mathvar{\lambda}^T \param{A} & \leq \param{c}
+   \end{align*}
+
+where :math:`\mathvar{\lambda}_i` denotes the vector of
+dual variable associated to the nodes of the
+graph. The dual problem, in explicit form, turns out to be
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t} & \label{eq: sp-dual-espl} \\
+   \mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} & \leq
+   \param{c}_{ij} & \forall \, (i, j) \in E
+   \end{align*}
+ 
+Consider the previous example of an electrical network. Dual variables
+can be thought of as node :index:`potentials`. If a voltage is applied
+between the two special  nodes :math:`+,-`, the objective function of the
+dual corresponds to the maximization of the :index:`difference of potential`,
+or :index:`tension`,
+between the source and the terminal
+nodes (negative and positive nodes). Constraints can be interpreted as
+limits on the maximum allowable tension :math:`\param{c}_{ij}` at the extremes of each
+arc :math:`(i,j)`.
+Thus the dual of the shortest path problem is a problem of maximum
+tension with bounds on the tension at each arc. It can be seen that
+node potentials never appear isolated in the constraints or the
+objective; in each expression, the difference between two potentials
+always appear. Thus each feasible solution, and in particular, an
+optimal one, can always be modified by adding a constant to each
+potential (dual variable). Seen in a different way, the dual problem has a "free"
+variable, which can be set to an arbitrary value. As an example, we
+might chose any node and fix its potential to zero (or *ground*).
+This redundancy in the dual variables is connected with a "primal"
+redundancy: a balance constraint can be arbitrarily chosen and deleted
+from the model, without changing the set of feasible solutions. It is
+not difficult to show that, if, in the primal, the balance constraint   
+associated to node :math:`i` is canceled then in the dual the optimal
+solution will correspond to one in which :math:`\mathvar{\lambda}_i = 0`.
+ 
+In the example above, an optimal solution to the dual problem is
+reported in the following figure:
+
+.. tikz::
+   
+   \begin{tikzpicture}]
+   \foreach \nod/\x/\y/\nam in
+   {-/0/4/0,A/2/4/-100,B/4/4/-300,C/6/4/-420,D/2/2/-200,E/4/2/-400,F/0/0/-250,G/2/0/-450,+/4/0/-510}
+   \node[vertex] (\nod) at (\x,\y) {\tiny{\nam}};
+   \foreach \ini/\fin/\cost in {
+   -/A/100,-/F/250,A/B/250,A/D/100,A/F/300,B/C/120,B/D/250,
+   B/E/100,C/E/250,D/E/230,D/F/200,E/F/150,E/G/50,E/+/110,
+   F/G/300,G/+/90
+   }
+   \draw[arc,dotted,-] (\ini) --node[above,sloped]{\tiny{\cost}} (\fin);
+   \foreach \ini/\fin in {
+   -/F,F/E,E/+}
+   \draw[arc,=>,very thick] (\ini) -- (\fin);
+   \end{tikzpicture}
+
+   
+From this solution it is also possible to notice that, as a
+consequence of complementarity, on all arcs on which a positive
+(primal) flow is assigned, there cannot be any slack in the dual
+constraint. In particular we can observe that
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \mathvar{\lambda}_F - \mathvar{\lambda}_{-}  & = 250 \\
+   \mathvar{\lambda}_E - \mathvar{\lambda}_{F}  & = 150 \\
+   \mathvar{\lambda}_{+} - \mathvar{\lambda}_{E}  & = 110 \\
+   \end{align*}
+
+An alternative interpretation of the dual of the minimum cost path
+problem is a mechanical one.
+Consider  a  physical model of a graph, made of strings,
+in which  nodes are knots and arc lengths are proportional to arc costs.
+Considering the dual, as a maximum tension problem, it is possible to
+think to an analogical solution procedure, in which nodes :math:`s` and :math:`t`
+are pulled in opposite directions as much as possible, without exceeding
+the length of each arc.  
+When a maximum tension is reached, an optimal, minimum length path,
+will be in tension. Consider the following example:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \foreach \nod/\x/\y in {s/-2/0,A/0/1,B/0/-1,t/2/0}
+   \node[vertex] (\nod) at (\x,\y) {$\nod$};
+   \foreach \ini/\fin/\cost/\where in
+   {s/A/10/above,s/B/15/below,A/B/5/above,A/t/15/above,B/t/20/below}
+   \draw[arc] (\ini) --node[\where,sloped]{\tiny{\cost}} (\fin);
+   \end{tikzpicture}
+
+It is easy to see that the minimum cost path is :math:`sAt` and that
+assigning potential 25 to the node :math:`s`, 15 to :math:`A`,
+20 to :math:`B`  and 0 to
+:math:`t`,  an optimal dual solution is obtained. This solution can
+be represented with the string model as in the next graph (please
+notice that in this picture arc lengths are not correctly scaled):
+
+.. tikz::
+   
+   \begin{tikzpicture}[scale=0.8,in = -45, out = -135]
+   \foreach \nod/\x/\y in {s/3/0,A/-1/0,B/1/0,t/-6/0}
+   \node[vertex] (\nod) at (\x,\y) {$\nod$};
+   \path[draw,very thick,->] (s) -- node [above right=0mm and 1em] {10} (A);
+   \path[draw,->,in=-90,out=-90] (s) edge node [below] {15} (B);
+   \path[draw,->] (B) edge node [above] {5} (A);
+   \path[draw,very thick,->] (A) -- node [above] {15} (t);
+   \path[draw,->] (B) edge node [below] {20} (t);
+   \end{tikzpicture}
+ 
+It is seen that, as prescribed by complementarity, the optimal path is
+"in tension" and no slack exists between adjacent nodes along the
+optimal path: their potential difference, which, in this case, is
+simply their distance, is equal to the right hand side (the cost). On
+the other end, nodes not on the optimal path (node :math:`B` in the example)
+have incident arcs whose length can be, and in the example are,
+strictly greater than their cost (length).  
+
+It might seem that this physical model is slightly unrealistic, being
+the arcs in the graph oriented. On the contrary we may assume that the
+graph is not directed and arc costs represent arc lengths. In this
+case we might build an equivalent network in which every undirected arc
+is transformed into two arcs with the same cost and opposite
+orientation. In this case to each arc in the graph two inequalities
+are found in the dual formulation:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t}  \\
+   \mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} & \leq
+   \param{c}_{ij} & \forall \, (i, j) \in E \\
+      \mathvar{\lambda}_{j} - \mathvar{\lambda}_{i} & \leq
+   \param{c}_{ij} & \forall \, (i, j) \in E
+   \end{align*}
+
+and it is immediately seen that this is equivalent to
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t}  \\
+   | \mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} | & \leq
+   \param{c}_{ij} & \forall \, (i, j) \in E
+   \end{align*}
+
+and the main constraints represent distance upper bounds for each
+pair of nodes connected by an arc.
+ 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Applications of the minimum cost path model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Many problems, sometimes apparently unrelated to minimum cost paths,
+can be traced back to this scheme. In this paragraph
+we will analyze a few of them.
+ 
+:application: :index:`Maximum reliability path`
+	      
+Consider a graph representing, as an example, a road network.
+Assume that a statistics on the :math:`reliability` of each arc is
+available. The term "reliability" might have different definitions
+in various contexts. Here we assume that the reliability of an arc is
+an estimate of the probability that the arc can be "safely"
+traversed. In a road arc, it can be linked to incidentality and
+defined as one minus the incident rate of the road. In a
+telecommunication network it might be the probability of the
+connection being available.
+Let :math:`\param{p}_{ij}` be the probability that an arc
+:math:`(i, j)` can be traversed without accidents (or that it is
+available for message passing in telecommunication networks). We
+assume that accidents in different roads are not correlated,
+and, in particular, that there is stochastic independence between
+events in different arcs of the graph. This assumption, in road
+traffic, might be reasonable in situations of light traffic, or in
+extra-urban or secondary roads, when
+accidents are mostly due to road conditions and not to congestion.
+
+As a consequence of the assumption of stochastic independence, given a
+set of arcs :math:`I \subseteq E`, their joint reliability, i.e., the
+probability that no accident will occur in any of the arcs is given by
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \prod_{(i, j) \in I} \param{p}_{ij}.
+   \end{align*}
+
+The problem of finding a :index:`Maximum reliability path` in a graph
+can be formulated as  follows, where the constraints force basic
+feasible solutions to be paths:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \prod_{(i, j) \in E: \var{f}_{ij} = 1} \param{p}_{ij} & \\
+   \sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+   & = \left \{
+   \begin{array} {rl}
+   1 & \textrm{if } v = s \\
+   -1 & \textrm{if } v = t \\
+   0 & \textrm{otherwise}
+   \end{array}
+   \right. & \forall \, v & \in V \\
+   \var{f}_{ij} & \in \{0,1 \} & (i, j) & \in E
+   \end{align*}
+
+This, as an optimization problem, is apparently very complex: a
+product of terms appears in the objective and
+variables are in the index of the product operator. Moreover,
+although it is true that the constraints associate basic feasible
+solutions to paths (provided the 
+assumptions connected with the absence of negative cost cycles hold),
+given the form of the  objective it is not granted, a priori, that optimal solutions will
+be basic ones. Notice also that binary constraints are imposed on all
+variables, as the integrality property cannot be assumed to hold for general
+problems different from linear network flow ones.
+
+However a simplification of this formulation is indeed possible, and
+will lead to a network flow problem.
+Recall that in any optimization problem, applying a
+monotonically increasing function to the objective does not change the
+location of optima. That is, given a problem
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \min_{x \in S} f (x)
+   \end{align*}
+   
+if  :math:`x^\star` is an optimal solution and :math:`\phi(\cdot) : \R
+\rightarrow \R` is increasing, then :math:`x^\star`  will be an optimal solution of the
+problem
+
+.. math::
+   :nowrap:
+   
+   \begin{align*}
+   \min_{x \in S} \phi (f (x))
+   \end{align*}
+
+and vice-versa.
+
+The same applies to maximization problems too.
+Thus, assuming without loss of generality that no arc exists with zero
+reliability, a logarithmic transformation of the objective function
+can be safely applied. Thus the maximum reliability  problem can be
+equivalently represented as
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_{(i, j) \in E: \var{f}_{ij} = 1} \log (\param{p}_{ij}) & \\
+   \sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+   & = \left \{
+   \begin{array} {rl}
+   1 & \textrm{if } v = s \\
+   -1 & \textrm{if } v = t \\
+   0 & \textrm{otherwise}
+   \end{array}
+   \right. & \forall \, v & \in V \\
+   \var{f}_{ij} & \in \{0,1 \} & (i, j) & \in E
+   \end{align*}
+ 
+But now we can observe that binary variables can be used to include or
+exclude specific terms in a summation and we can transform the problem
+as follows:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_{(i, j) \in E} \log (\param{p}_{ij}) \var{f}_{ij} & \\
+   \sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+   & = \left \{
+   \begin{array} {rl}
+   1 & \textrm{if } v = s \\
+   -1 & \textrm{if } v = t \\
+   0 & \textrm{otherwise}
+   \end{array}
+   \right. & \forall \, v & \in V \\
+   \var{f}_{ij} & \geq 0 & (i, j) & \in E.
+   \end{align*}
+ 
+Observe that binary constraints on the variables have been removed,
+as this  is a pure  linear flow model and the integrality  of the
+optimal solution is
+guaranteed. We can also observe that this problem, when transformed
+into a minimization one, has non negative costs on each arc, so the
+optimal solution will be a path:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   - \min \sum_{(i, j) \in E} (- \log (\param{p}_{ij})) \var{f}_{ij}.
+   \end{align*}
+
+As an example, consider the following reliability network:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \foreach \nod/\x/\y in {s/0/4,a/2/4,d/4/4,c/0/2,b/2/2,t/4/0,e/2/0}
+   \node[vertex] (\nod) at (\x,\y) {$\nod$};
+   \foreach \ini/\fin/\cost in
+   {s/a/0.91,s/b/0.94,s/c/0.96,a/d/0.94,a/b/0.93,b/c/0.91,b/d/0.93,c/e/0.94,
+   d/t/0.99,e/t/0.94}
+   \draw[arc] (\ini) --node[sloped,above]{\tiny{\cost}} (\fin);
+   \end{tikzpicture}
+
+Transforming the problem as explained and running a minimum cost path
+solver, the optimal solution turns out to be :math:`s-b-d-t` with
+overall reliability :math:`0.902286`.
+This result has been obtained by running a linear optimization solver
+on the following data:
+
+.. literalinclude:: AMPL/reliability.dat
+   :caption: reliability.dat
+   :language: ampl
+ 
+Notice from one side that, through a transformation of the data, the
+standard shortest path model was used. On the other hand, it is worth
+recalling that this problem is so special that much more efficient
+algorithms do exist to solve it to optimality, even for huge
+dimensional problems. It is out of the scope of this volume to go into
+these algorithmic details.
+
+Going back to the example, a myopic strategy 
+which starts by choosing the  most reliable outgoing arc, in this
+case, would produce the path :math:`s-c-e-t` whose reliability is only
+:math:`0.848256`; by the way, such a strategy is not even granted to find a
+feasible path.
+ 
+This model finds applications in the field of
+dangerous  or highly polluting goods transportation, where minimizing
+accident probability is a typical objective.
+In this context, sometimes the objective to be minimized is the  expected
+damage (e.g., the expected number of possibly affected people
+or the expected monetary damage in case of an
+accident).
+This situation is easier to model, as, after having
+associated an expected damage to each arc, the overall cost of a path
+would be just the sum of the expected costs on the arcs of the path. Thus a
+regular minimum cost path is generated.
+Finally, it is appropriate to remember that  often in problems related to
+environmental issues several  objectives coexist: frequently the
+decision maker would like to obtain a path  with
+minimal risk, high reliability, low cost, short distance, ...
+In these cases a   *multi-objective* approach is required, a topic
+which will be dealt with later on (see section
+:ref:`Multiple Objectives`).
+
+     
+:application: :index:`Project planning`
+
+When dealing with complex projects it is often
+very difficult to estimate the total time needed to complete them.
+However, there are a number of methodological tools and software that make 
+the process of planning much easier.
+
+The most common scheme 
+corresponds to the situation in which  a complex project
+can be subdivided into a number of "elementary" activities whose duration can be estimated
+with sufficient accuracy.
+Such activities are to be considered as elementary ones, in the sense
+that they cannot be further split into sub--activities and, once
+started, they are carried on until completion without interruptions.
+Between some pairs of activities there might be a precedence relation.
+The most common of these relationships is expressed as
+
+*"activity* :math:`j` *cannot start until  activity* :math:`i`
+*is completed"* (start / end relationship).
+
+Denoting by :math:`t_{i}` 
+the starting time of activity :math:`i` and with :math:`s`
+and :math:`t` respectively the activities associated to the start
+and to the end of the whole project
+(these activities in some cases might be fictitious)
+the problem of finding a  minimum duration plan  for the whole
+project, taking into account precedence relationships,  can be
+modeled as follows:
+
+.. _cpm:
+
+:model: Project planning
+
+|
+   :model:`Sets:`
+|
+
+   * :math:`\set{A}`: set of activities to be carried out
+   * :math:`\set{P} \subseteq \set{A} \times \set{A}`: set of
+     pairs of activities among which a start/end precedence needs to
+     be imposed. The elements of each pair
+     are called predecessor and successor
+
+|
+   :model:`Parameters:`
+|
+
+   * :math:`s \in \set{A}`: project start activity; it can be
+     fictitious, that is, it can be an activity of null duration whose only
+     purpose is to set the start time/date of the whole project.
+     This activity has no predecessors;
+   * :math:`t \in
+     \set{A}`: end of project; similarly to the previous one
+     it is generally a fictitious one, with no successors.
+   * :math:`\param{d}_i`: duration of  activity :math:`i \in \set{A}`;
+
+|
+   :model:`Variables:`
+|
+
+   * :math:`\var{t}_i`: start time of activity :math:`i \in \set{A}`
+
+|
+   :model:`Constraints:`
+|
+
+   * Precedence constraint between selected pairs activities:
+
+     .. math::
+	:nowrap:
+	   
+	\begin{align*}
+        \var{t}_{j} \geq \var{t}_{i} + \param{d}_{i} \quad \forall \, (i, j) \in \set{P}
+	\end{align*}
+	
+    This constraint expresses the fact that if there is a precedence between
+    activity :math:`i` and activity :math:`j`, then the start time of
+    activity :math:`j` cannot be set before a  time period of length
+    :math:`d_i` passed since the beginning of activity :math:`i`.
+
+|
+   :model:`Objective:` 
+|
+
+   Minimization of the overall duration of the
+   project, equal to  the difference between the
+   project end and start times:
+
+   .. math::
+      :nowrap:
+	 
+      \begin{align*}
+      \min \var{t}_{t} - \var{t}_{s}
+      \end{align*}
+
+      
+It is easy to see that
+this problem is  a particular case of the dual of a minimum cost path
+problem (in this case, indeed,  of *maximum* cost path) expressed in
+the following form
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \max \sum_{i} \param{d}_{i} \sum_{j} \var{f}_{ij} & \\
+   \sum_{j: (v, j) \in E} \var{f}_{vj} - \sum_{i: (i, v) \in E} \var{f}_{iv}
+   & = \left \{
+   \begin{array} {rl}
+   1 & \textrm{if } v = s \\
+   -1 & \textrm{if } v = t \\
+   0 & \textrm{otherwise}
+   \end{array}
+   \right. & \forall \, v \in V
+   \\
+   \var{f}_{ij} & \geq 0 & \forall \, (i, j) \in E
+   \end{align*}
+   
+where the nodes of the graph are associated to the  activities and the arcs correspond to
+precedence relationships between two consecutive activities.
+
+Indeed, the dual of a *maximum* cost path problem 
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \max_{\var{f}} \param{c}_{ij} \var{f}_{ij} & \\
+   \sum_{j} \var{f}_{vj} -     \sum_{i} \var{f}_{iv} & = \mathbf{e}_s - \mathbf{e}_t & \forall\, v \in
+   \set{V} \\
+   \var{f}_{ij} & \geq 0 & \forall\,(i,j) \in \set{E}
+   \end{align*}
+
+can be found by first transforming the above problem into an
+equivalent minimization one:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   -\min_{\var{f}} -\param{c}_{ij} \var{f}_{ij} & \\
+   \sum_{j} \var{f}_{vj} -     \sum_{i} \var{f}_{iv} & = \mathbf{e}_{s} -
+   \mathbf{e}_{t} &\forall\, v \in
+   \set{V} \\
+   \var{f}_{ij} & \geq 0 & \forall\,(i,j) \in \set{E}
+   \end{align*}
+
+and then going to the dual:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   -\max \mathvar{\lambda}_{s} - \mathvar{\lambda}_{t} &\\
+   \mathvar{\lambda}_{i} - \mathvar{\lambda}_{j} & \leq
+   -\param{c}_{ij} & \forall \, (i, j) \in E 
+   \end{align*}
+
+or
+ 
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min \mathvar{\lambda}_{t} - \mathvar{\lambda}_{s} &  \\
+   \mathvar{\lambda}_{j} & \geq  \mathvar{\lambda}_{i} + \param{c}_{ij} &
+   \forall \, (i, j) \in E  
+   \end{align*}
+
+The optimal solution to this problem is a 
+*maximum cost path* which, in this context, is called
+:index:`critical path`. It is important to observe that this problem
+can always be solved by the above linear optimization models (although
+there exist enormously more efficient algorithms), since the graph of 
+precedence relationships needs to be acyclic: this derives
+from the observation that, if a cycle 
+:math:`v_1, v_2, \ldots, v_k = v_1` existed in the graph,
+this would mean that  activity
+:math:`v_1` should precede activity :math:`v_2`, which
+precedes activity :math:`v_3` and so on until the last
+:math:`v_1`. If this  was the case, :math:`v_1` would precede
+itself, which is obviously absurd.
+ 
+Given the well known relationship between a linear optimization
+problem and its  dual, the cost
+of the critical path is equal to the minimum duration of the project;
+moreover the
+activities associated with  nodes  on the critical path
+are responsible for the total duration of the project.  This fact can be deduced
+as a consequence of the  complementary slackness property: along
+the arcs on  which the flow associated  to the optimal
+(or critical) path is non zero (equal to one),
+in the corresponding dual the slack must be  zero;
+in other words, the start time of the next activity must be
+exactly equal to the start time of the previous one plus its
+duration. This means that between the end
+of the preceding activity and the beginning of the next one, along the
+critical path, there can be no delay.
+If even a single activity belonging to the critical path is
+delayed, the whole project would be delayed (from
+which the adjective "critical").
+
+In the following we present a model for project planning, derived with
+tiny variations from the generic shortest path model, and a tiny
+example, inspired by planning a simple cooking recipe:
+
+.. literalinclude:: AMPL/cpm.mod
+   :caption: cpm.mod
+   :language: ampl
+
+.. literalinclude:: AMPL/cpm.dat
+   :caption: cpm.dat
+   :language: ampl
+
+The only changes with respect to the basic shortest path model
+are simply the redefinition of the objective function (which
+now is a maximization) and the definition of the cost associated 
+to each arc, based on the duration of the activities. The model
+presented above can be easily generalized allowing that the cost on
+each arc is any positive number, removing in this way the requirement
+that every arc out from an activity has the same cost, equal to the
+duration of that activity. There might in fact be situation in which
+different activities with a common predecessor require a different
+amount of time before being allowed to start.
+
+A graphical representation of the project network implemented in the
+above data file is the following:
+
+.. tikz::
+
+   \begin{tikzpicture}[xscale=0.7]
+   \node[whitevertex] (s) at (-2,5) {S};
+   \node[whitevertex] (BW) at (0,10) {BW};
+   \node[whitevertex] (CO) at (0,8) {CO};
+   \node[whitevertex] (CG) at (0,6) {CG};
+   \node[whitevertex] (PT) at (0,4) {PT};
+   \node[whitevertex] (SG) at (0,2) {SG};
+   \node[whitevertex] (CS) at (4,10) {CS};
+   \node[whitevertex] (FO) at (4,7) {FO};
+   \node[whitevertex] (CT) at (5,5) {CT};
+   \node[whitevertex] (PS) at (7,5) {PS};
+   \node[whitevertex] (SS) at (9,5) {SS};
+   \node[whitevertex] (t) at (11,5) {End};
+   \path[draw,->] (s) -- (CO);
+   \path[draw, ->, thick, color = red] (s) -- (BW);
+   \path[draw, ->] (s) -- (CG);
+   \path[draw, ->] (s) -- (PT);
+   \path[draw, ->] (s) -- (SG);
+   \path[draw, ->] (CO) -- node[above] {2} (FO);
+   \path[draw, ->] (PT) -- node[above] {3} (CT);
+   \path[draw, ->] (CG) -- node[above] {2} (CT);
+   \path[draw, ->] (FO) -- node[above] {2} (CT);
+   \path[draw, ->] (CT) -- node[above] {10} (PS);
+   \path[draw, ->, thick, color = red] (BW) -- node[above left] {10} (CS);
+   \path[draw, ->] (PS) -- node[above] {3} (SS);
+   \path[draw, ->, thick, color = red] (CS) -- node[above] {8} (SS);
+   \path[draw, ->, thick, color = red] (SS) -- node[above] {1} (t);
+   \path[draw, ->] (SG) -- node[above] {1} (t);
+   \end{tikzpicture}
+
+Running a general purpose linear optimization solver on this example,
+a solution of cost 19 is obtained, associated with the critical path
+emphasized in red in the graph above. 
+It is important to recall that
+problems of this kind can be solved by means of
+extremely efficient  algorithms consisting in a suitable "visit"
+of the graph and  based on simple
+sorting algorithms. By running an optimization algorithm, non zero
+flow variables
+represent critical paths, while values associated with the dual variables
+represent possible 
+start times of each activity. Alternative optimal schedules can be obtained by
+summing a constant to all of these dual variables.
+ 
+Frequently in project planning a  graphical representation is used
+which goes under the name of  :index:`Gantt chart`. In this
+diagram to  each activity a bar is associated whose
+length is proportional to its duration  and whose position, along a
+time axis, depends on  the start and end time obtained after finding
+an optimal plan. The next figure reports a Gantt chart for the
+example above:
+
+.. tikz::
+
+   \begin{tikzpicture}[yscale=1.5,xscale=0.4]
+   \foreach \lab/\start/\from/\to/\col in
+   {BW/4.5/0/10/red,
+   CO/4/0/2/yellow,
+   CG/3.5/0/2/yellow,
+   SG/3/0/1/yellow,
+   PT/2.5/0/3/yellow,
+   FO/2/2/4/yellow,
+   CT/1.5/4/14/yellow,
+   PS/1/14/17/yellow,
+   CS/.5/10/18/red,
+   SS/0/18/19/red}{
+   \filldraw[fill=\col, line width=1pt] (\from,\start) rectangle (\to,\start+0.4);
+   \node[above left] at (0,\start) {\lab};
+   };
+   \draw[help lines] (0,0) grid[xstep=1,ystep=100] (20,5);
+   \end{tikzpicture}
+
+From a standard Gantt chart it is possible to deduce
+the detailed plan of activities, and, through the use of color,
+it is possible to show the critical path. In classical Gantt charts,
+however, it is usually not possible to see precedence relationships,
+although this can be easily done adding some arcs over the
+chart. Usually, for non critical activities, the "slack", can also be
+represented, as shown in the following chart:
+
+.. tikz::
+
+   \begin{tikzpicture}[yscale=1.5,xscale=0.4]
+   \foreach \lab/\start/\from/\to/\col in
+   {BW/4.5/0/10/red,
+   CO/4/0/2/yellow,
+   CG/3.5/0/2/yellow,
+   SG/3/0/1/yellow,
+   PT/2.5/0/3/yellow,
+   FO/2/2/4/yellow,
+   CT/1.5/4/14/yellow,
+   PS/1/14/17/yellow,
+   CS/.5/10/18/red,
+   SS/0/18/19/red}{
+   \filldraw[fill=\col, line width=1pt] (\from,\start) rectangle (\to,\start+0.4);
+   \node[above left] at (0,\start) {\lab};
+   };
+   \foreach \start/\from/\to in
+   {4/2/3/,
+   3.5/2/5,
+   3/1/19,
+   2.5/3/5,
+   2/4/5,
+   1.5/14/15,
+   1/17/18}{\filldraw[pattern color=green, pattern=north east lines,
+   line width=1pt] (\from,\start) 
+   rectangle (\to,\start+0.4);}; 
+   \draw[help lines] (0,0) grid[xstep=1,ystep=100] (20,5);
+   \end{tikzpicture}
+
+Colored in green it is possible to see the so-called  "float", i.e.
+the delay that a given activity might allow without causing
+a delay to the whole project; this information can be inferred from the
+constraint slack.
+
+If the problem is solved by means of a linear optimization solver
+(which is discouraged, as there exist much more efficient tools for
+this basic scenario) it is worth observing that dual variables will
+represent  just one out of the possibly infinite number of optimal
+start times for the activities. There is in fact nothing in the
+formulation which induces, as an example, all activities to start at
+the earliest possible time (which is the one reported in the Gantt
+charts).  
+ 
+In real project planning 
+situations, constraints often are more complex than
+those seen before, based on  the start/end  precedence. It is  very easy
+to modify the dual  model presented here in order to represent
+constraints such as: "activity :math:`i` cannot start later than
+:math:`\param{g}` days  from  the start of activity, :math:`j`", or
+"activities :math:`h,k` must end simultaneously".  In formulae:
+
+.. math::
+   :nowrap:
+      
+   \begin{align*}
+   \mathvar{\lambda}_i & \leq \mathvar{\lambda}_j + \param{g} \\
+   \mathvar{\lambda}_h + \param{d}_h & = \mathvar{\lambda}_k + \param{d}_k
+   \end{align*}
+ 
+Although, as mentioned, the solution of a problem of
+project planning is extremely simple from a 
+computational point of view and does not require the use of tools
+like the simplex method, it is anyway important
+to present the formulation of the problem in terms of
+a linear model since in practical
+project planning, additional constraints frequently appear, which
+cannot be dealt with unless specialized project planning algorithms
+are available.
+ 
+A frequently required constraint which makes the problem significantly
+more complex is  related to 
+implicit precedences, caused by  the limited availability of some
+resources.
+In the example above, assume that a single fire is
+available, so that, e.g.,  it is not possible to simultaneously boil
+the water and fry the onions.
+It is thus necessary to include a  constraint to  force these two
+activities, which require the same resource, not to
+overlap.
+In this case  a
+"disjunctive" constraint needs to be imposed: either  activity BW
+follows FO or, in
+alternative, activity FO should follow BW:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \textbf{Either } \, \mathvar{\lambda}_{BW} & \geq \mathvar{\lambda}_{FO} + 2 
+    \\
+   \textbf{Or}\, \mathvar{\lambda}_{FO} & \geq \mathvar{\lambda}_{BW} + 10 
+   \end{align*}
+   
+This type of "OR" constraint cannot be
+formulated through  linear equalities or inequalities and makes the problem
+extremely more complex. We will see how to formulate this and other
+kinds of logical constraints in  chapter
+:ref:`Using binary variables to impose constraints`. The example above is clearly only
+partial - if the conflict for the use of resources were limited to
+two activities only, a quick-and-dirty solution could simply be that of
+solving two optimal project planning problems, using one of the two
+possible precedence relationships in the model and choosing the one
+which produces the shortest total duration. However when, as
+already in this tiny example, the conflicts for one or more scarce
+resources causes more than just two activities to be incompatible, an
+explicit enumeration of all possible combination would immediately
+lead to an exponential number of instances to be solved.
+
+It can be shown that planning when resources are so scarce as to cause
+the decision maker to impose a sequence on pairs of  activities  which
+otherwise might be planned in parallel is an hard combinatorial
+optimization problem, for which no efficient algorithm is known.
+Commercial software tools are usually based on heuristic procedures
+which might produce plans which are quite far from being
+optimal. Thanks to the model described above, as we will see in later
+chapters, the problem can be formulated as a mixed integer linear
+optimization problem which, although very complex in theory, might
+nonetheless be solved to optimality thanks to the advances of recent
+optimization software, at least for moderately sized project planning instances.
+
+.. include:: closing.rst
+

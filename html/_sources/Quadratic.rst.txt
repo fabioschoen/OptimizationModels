@@ -1,0 +1,917 @@
+.. include:: preamble.rst
+
+=============================
+Quadratic Optimization Models
+=============================
+
+
+The step from linear models to quadratic ones can be a giant
+one. This is  not due to the fact that we are abandoning the linear world and enter
+the non linear one. Or, at least, it depends. The really difficult
+border to cross is not the one of non linearity, but another one: the
+border between convex and non convex optimization problems. We do not
+wish to go into details here on this theoretical and algorithmic
+aspect.
+Convex optimization (see some definitions in the :ref:`Appendix`)  is often (although
+not always) computationally tractable, in the sense that there exist
+polynomial complexity algorithms for a very large set of convex
+problems. Almost always, on the contrary, if either the objective
+function or the feasible set is non convex, the optimization problem
+becomes intractable (e.g., we do not know any algorithm whose
+complexity is better than exponential), or even unsolvable (in the
+sense that there cannot exist any finite procedure guaranteed to find
+a global optimum, or even an approximation of it).
+
+Sorry for the imprecision of the above concepts! But we do not wish to
+enter this very deep subject in a book on modeling. What makes convex
+optimization so special is the fact that these problems enjoy several
+very important properties which are not enjoyed by most of the other
+problems. First, any feasible solution which is a :index:`local
+optimum` is also a :index:`global optimum` (refer to any
+textbook on analysis or optimization for precise
+definitions). Moreover there exist many optimality conditions which,
+in general, are just necessary and which, in convex problems, become
+sufficient.
+
+As a simple example: linear optimization is an example of a convex
+optimization problem. And, in fact, there exist excellent algorithms
+to solve even large scale problems. By the way: the simplex algorithm,
+which we invariably used in this volume and which is the top used
+method for this class of problems, has an exponential worst case
+complexity! But the reader should not worry too much: this method is
+excellent in practice - the theoretical worst cases which proof the
+exponential complexity of the simplex method simply do not appear in real life
+situations. And, as a simple example of a problem which is *not* a
+convex one, linear *integer* optimization is one we encountered in
+this book. And we know it is a difficult one. In this case, non
+convexity is in the feasible set: being discrete, it cannot be convex,
+unless it is empty or it reduces to a singleton.
+
+In this part we will only give a tiny set of examples, without any
+desire even to approximately describe the possibilities opened by the
+apparently small change in the model, in which the objective function,
+instead of being a polynomial of degree one, becomes a polynomial of
+degree 2. We will thus give a tiny set of practical cases in which we
+might be interested in solving a problem of the form
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      \min \half  \var{x}^T \param{Q} \var x & \\
+      \param{A} \var{x} & = \param{b} \\
+      \var{x} & \geq 0
+   \end{align*} 
+
+where :math:`Q \in \R^{n \times n}` is a symmetric matrix. The above
+problem might be generalized to include also quadratic constraints or
+integer variables. We would like to point out, again, that the
+simplicity of this formulation should not be confused with its
+complexity. As a simple matter of thought, consider the fact that any
+linear optimization problem in binary  variables can be equivalently
+written as a quadratically constrained problem:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      \min \param{c}^T \var x & \\
+      \param{A} \var{x} & = \param{b} \\
+      \var{x} & \geq 0
+      \\
+      \var{x} & \leq 1 \\
+      \var{x}_j (1-\var{x}_j) & = 0 & \forall\,j
+   \end{align*} 
+
+or, choosing a large enough penalty parameter :math:`\lambda`, as
+the quadratic optimization problem
+
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      \min \param{c}^T \var x +  \lambda \var{x}^T(1-\var{x}) & \\
+      \param{A} \var{x} & = \param{b} \\
+      \var{x} & \geq 0
+      \\
+      \var{x} & \leq 1 
+   \end{align*} 
+
+and this should be enough to convince the reader of the possibly
+high complexity of quadratic optimization.
+
+Of course *some* sub-classes of quadratic optimization models are
+indeed easy to solve and lend themselves to solution strategies which
+are not very dissimilar, in their basic ideas,  implementation and
+computational complexity, from those of linear optimization. The
+widest class of "easy" quadratic optimization problems is that
+characterized by a convex objective function. This is the case when
+matrix :math:`Q` is :index:`positive-semidefinite`, which means that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      v^T Q v & \geq 0 & \forall \, v \in \R^n
+   \end{align*}
+
+or, equivalently, when all the :index:`eigenvalues` of the matrix,
+besides being real (as a consequence of symmetry) are also *non
+negative*. Even better is the case in which the matrix is
+:index:`positive definite`:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      v^T Q v & > 0 & \forall \, v\ne 0
+   \end{align*}
+
+or when its eigenvalues are all strictly positive. Our first examples
+fall within this framework.
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Solving linear electrical networks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We cannot  go  much into details on the theory and practice
+of electrical circuits. We refer the readers to the vast literature on
+the subject; the literature is rich not only of first principles, but
+also of computational methods oriented towards a solution "by hand" of
+small networks. Here we take a different approach, which is very well
+introduced in the classical :cite:`Dennis59`. Assume we are given a
+graph, composed of nodes and arcs. Every arc is associated with a
+*linear* electric component. 
+
+.. tikz::
+   
+   \begin{tikzpicture}[scale=2,circuit ee IEC,set resistor graphic=var resistor IEC graphic]
+   \foreach \num/\x/\y in {A/0/2,B/2/2,C/4/1,D/0/0,E/2/0,F/-1/1}
+   \node[contact,gray!20] (\num) at (\x,\y)
+   {\textcolor{blue}{\small{\num}}};
+   \node (G) at (2,-.5) {};
+   \draw (E) to [ground] (G);
+   % Standard resistors
+   \foreach \x/\y\ohm in {A/B/1k,B/C/3k,D/F/1.5k,B/E/2k}
+   \draw (\x) to [resistor] node[above,sloped] {\ohm $\Omega$}(\y);
+   \foreach \x/\y/\V in {F/A/18V,D/E/3V,E/C/19V}
+   \draw (\x) to [battery] node[below left,sloped] {\V} (\y);
+   \end{tikzpicture}
+
+In  the example we have a tiny electrical network with two types of
+components: voltage generators, which keep a fixed difference of
+potential at their extremes, and resistors, which are characterized by
+a fixed flow of current, linked to a voltage drop by Ohm's law. We
+might easily add other linear components, like diodes or inductances,
+but we wish to keep the example as simple as possible. The above
+network can be represented as a graph whose arcs are of different
+types, depending on the component associated to them. The following
+data file represents the circuit above:
+
+.. literalinclude:: AMPL/circuit.dat
+   :caption: circuit.dat
+   :language: ampl
+
+In order to find voltages and currents in equilibrium conditions, an
+energy minimization problem can be solved. In fact the flow of current at
+steady state is such as to minimize the total energy. In circuits like
+the one above, it can be shown that, from Ohm's law, the energy of the
+circuit can be expressed as a linear combination of the squares of the
+voltages across resistors, with coefficients equal to the
+:index:`conductance` of each resistor, which corresponds to the
+inverse of the :index:`resistance`.  Voltages in the circuit are
+easily computed, depending on the electric element associated to each
+arc. In general, denoting by :math:`\var{v}_{ij}` the tension
+(voltage) along an arc :math:`(i,j)` and by :math:`\var{u}_i` the
+potential of a node, the relevant equations are:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{u}_j - \var{u}_i & = \param{V}_{ij}
+   \end{align*}
+
+for an arc containing a voltage generator, and
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{u}_j - \var{u}_i & = \var{v}_{ij}
+   \end{align*}
+
+for an arc associated to a resistor. The energy is obtained  as
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \sum_{(i,j) \in \set{Resistors}}  \frac{\var{v}^2_{ij}}{\param{R}_{ij}}
+   \end{align*}
+
+where :math:`\param{R}_{ij}` is the resistance on arc
+:math:`(i,j)`.
+The model below implements this energy optimization problem:
+
+.. literalinclude:: AMPL/circuit.mod
+   :caption: circuit.mod
+   :language: ampl
+
+This problem can be solved through those solvers which accept
+quadratic (convex) optimization problems.
+
+We do not wish to go into further details, but it can be seen that
+this problem has a Lagrange dual whose main variables are current
+intensities. The optimal value of dual variables can be displayed, in
+AMPL, as the language automatically associates to each constraint a
+dual variable with the same name. So we can find voltages and currents
+in the optimal solutions to the above model:
+
+For the simple circuit used here as an example, we
+obtain the solution:
+
+.. literalinclude:: AMPL/circuit.out
+   :caption: circuit.out
+   :language: ampl
+
+which can be represented as
+
+
+.. tikz::
+   
+   \begin{tikzpicture}[scale=2,circuit ee IEC,set resistor graphic=var resistor IEC graphic]
+   \foreach \num/\x/\y in {A/0/2,B/2/2,C/3.5/1,D/0/0,E/2/0,F/-1.5/1}
+   \node[contact,gray!20] (\num) at (\x,\y)
+   {\textcolor{blue}{\small{\num}}};
+   \node (G) at (2,-.5) {};
+   \draw (E) to [ground] (G);
+   \foreach \x/\y/\ohm/\curr in {A/B/1k/2,C/B/3k/3,D/F/1.5k/2,B/E/2k/5}
+   \draw (\x) to  [current direction,
+   resistor={near end,info={\ohm $\Omega$}}] node[above,sloped]{\small{\curr mA}}(\y);
+   \foreach \x/\y/\V in {F/A/18V,D/E/3V,E/C/19V}
+   \draw (\x) to [battery] node[below left,sloped] {\V} (\y);
+   \end{tikzpicture}
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Elementary portfolio optimization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Another important set of convex quadratic   models is related to
+financial optimization.  The model presented here is inspired by that
+analyzed by Markowitz in 1952 and which eventually led him to win the
+Nobel prize for Economics in 1990. The model is described in many papers
+and books by Markowitz himself - see, e.g., an historical account in
+:cite:`Markowitz99`. Only in 1999, however, Markowitz realized that the
+same model had indeed been already discovered by the Italian
+probabilist Bruno De Finetti. Markowitz admitted in 2006 that  the
+origin of the model were to be traced back to De Finetti, see
+:cite:`Markowitz06`,
+although he had re-discovered it independently.
+
+Assume
+a  set of :math:`n`  :index:`risky assets` :math:`\{S_1, S_2,
+\ldots, S_n\}` is available. Each asset has an associated :index:`return`
+:math:`R_i`, which is, in general, random; it is also assumed that
+different assets have returns which cannot be modeled as independent
+random variables; on the contrary, they are typically correlated one to the other,
+either positively or negatively. It is assumed that, for each asset,
+the :index:`expected return` :math:`\mathpar{\mu}_i = E(R)_i` is either
+known or can be reliably estimated. It is also assumed that, for each pair
+of assets, the covariance  of their returns is available or can be
+estimated:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \param{Q}_{ij}& =\textrm{Cov}(S_i,S_j) \\
+   & = E((S_i-\mathpar{\mu}_i)(S_j-\mathpar{\mu}_j))
+   \end{align*}
+   
+
+Often, in
+order to obtain an estimate of these parameters, an historical set of
+observations of actual returns is used. Assume that for a time
+period :math:`t=1,2,\ldots,T`
+the actual return of an asset has been observed: :math:`r_{it}`. Then
+we can use the estimates:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      \hat{\mu}_i & = \frac{1}{T} \sum_{t=1}^T r_{it} \\
+      \hat{\textrm{Cov}}_{ij} & = \frac{1}{T} \sum_{t=1}^T
+      (r_{it} - \hat{\mu}_i)(r_{jt} - \hat{\mu}_j)
+   \end{align*}
+
+Whichever the method used to estimate averages and covariances,
+assume that a fixed amount of money, conventionally assumed to be one
+unit, needs to be invested. We denote by :math:`\var{x}_i` the
+fraction of the total investment devoted to asset :math:`i`. The
+constraint of optimal portfolio models include the following ones:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \sum_{i=1}^n \var{x}_i & = 1 \\
+   \var{x}_i & \geq 0
+   \end{align*}
+
+where the sign constraints means that no "short selling" is
+allowed. Given these variables, the expected return of the portfolio,
+thanks to the linearity of the expectation operator, is
+easily computed as
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \sum_{i=1}^n \mathpar{\mu}_i \var{x}_i 
+   \end{align*}
+
+A frequently used measure of the *risk* of an investment is the
+standard deviation of the return, although several alternative risk
+measures are now in current use.  It can be proven that the *variance*
+of a portfolio, given the covariance matrix :math:`\param{Q}` is given by
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \sum_i \sum_j \var{x}_i \var{x}_j \param{Q}_{ij} & = \var{x}^T
+   \param{Q} \var{x}
+   \end{align*}
+
+From the above formulae, three main models can be derived in the
+context of mean-variance portfolio theory:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      f_1(\mathpar{\sigma}^2) & = \max \mathpar{\mu}^T \var{x}  \\
+       \var{x}^T \mathpar{Q} \var{x} & \leq \mathpar{\sigma}^2 \\
+       \mathbf{1}^T \var{x} & = 1 \\
+       \var{x} & \geq 0
+   \end{align*}
+
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      f_2(\param{r}) & = \min \var{x}^T \param{Q} \var{x} \\
+      \mathpar{\mu}^T \var{x} & \geq \param{r} \\
+       \mathbf{1}^T \var{x} & = 1 \\
+       \var{x} & \geq 0
+   \end{align*}
+
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+      f_3(\mathpar{\lambda}) & = \max \mathpar{\mu}^T \var{x} -
+      \mathpar{\lambda} \var{x}^T \param{Q} \var{x} \\
+       \mathbf{1}^T \var{x} & = 1 \\
+       \var{x} & \geq 0
+   \end{align*}
+
+Each of the three models above require some parameter to be specified
+or, better, to be varied in order to generate a set of
+:index:`efficient portfolios`. In the first model, the maximum expected
+return is sought among all portfolios whose risk, measured in terms of
+the variance, is below a threshold :math:`\mathpar{\sigma}^2`; in the
+second model a minimum risk portfolio is required, so that the
+expected return of the investment is bounded below by a threshold
+:math:`r`. In the third model a compromise is sought between risk and
+return, through the multiplier :math:`\mathpar{\lambda}`. In the
+author's modest opinion, the third model is weaker, as
+it is less interpretable by a user and mixes quantities which
+are not comparable one to the other. In fact, a more correct version of the model would
+require to use the standard deviation of the portfolio return, in place
+of the variance, thus summing two quantities (return and standard
+deviation) which have the same unit of measurement. However, the
+square root operator needed to obtain the standard deviation would
+cause the model to become numerically much more complex. In fact all
+of the three models above are *convex* quadratic optimization  or
+quadratically constrained convex problems, very easily
+solvable with modern convex optimization algorithms.
+
+In order to present an example of implementation of the model, we used
+a set of  returns from  52 financial assets
+observed over a period of more than 2500 days. The raw data used is contained in a
+file whose first rows are displayed here:
+
+.. literalinclude:: AMPL/returns.dat
+   :language: ampl
+   :lines: 1-31 
+   :caption: returns.dat (partial listing)
+
+From these data we generated estimates for the expected return and
+variance/covariance matrix:
+
+.. literalinclude:: AMPL/portfolio.dat
+   :language: ampl
+   :lines: 1-35 
+   :caption: portfolio.dat (partial listing)
+and then we could run the optimization model:
+
+.. literalinclude:: AMPL/portfolio.mod
+   :language: ampl
+   :caption: portfolio.mod
+This model requires a minimum expected return as a parameter. Instead
+of choosing a fixed return, we solved the problem with a required
+expected return between 0 and the maximum expected return of all
+assets, in small steps. The results, generated with the following
+command file:
+
+
+.. literalinclude:: AMPL/portfolioFrontier.run
+   :language: ampl
+   :caption: portfolioFrontier.run
+generated the following output:
+
+
+.. literalinclude:: AMPL/portfolioFrontier.out
+   :language: ampl
+   :lines: 1-30
+   :caption: portfolioFrontier.out
+
+In the output we can see the expected risk of the optimal portfolio
+(standard deviation of the portfolio), the expected return as well as
+the number of assets whose level, in the optimal solution, is
+sufficiently far from 0. The following picture represents the obtained
+results:
+
+.. tikz::
+   
+   \begin{tikzpicture}
+   \foreach \ret/\risk/\nonz in {0.062207/1.563148/0.326923, 0.124414/1.580828/0.326923, 0.186622/1.602063/0.365385, 0.248829/1.624509/0.365385, 0.311036/1.649187/0.326923, 
+   0.373243/1.677917/0.346154, 0.435450/1.708412/0.307692, 0.497658/1.742983/0.288462, 0.559865/1.782478/0.288462, 0.622072/1.826345/0.288462, 
+   0.684279/1.874567/0.288462, 0.746486/1.927199/0.288462, 0.808694/1.983724/0.288462, 0.870901/2.043504/0.307692, 0.933108/2.106089/0.307692, 
+   0.995315/2.171887/0.288462, 1.057522/2.240499/0.269231, 1.119730/2.312232/0.250000, 1.181937/2.386901/0.230769, 1.244144/2.464683/0.230769, 
+   1.306351/2.547326/0.230769, 1.368558/2.631581/0.211538, 1.430766/2.718180/0.211538, 1.492973/2.810602/0.211538, 1.555180/2.903961/0.211538, 
+   1.617387/2.998888/0.192308, 1.679594/3.097344/0.211538, 1.741802/3.198054/0.211538, 1.804009/3.300261/0.211538, 1.866216/3.404359/0.211538, 
+   1.928423/3.509926/0.211538, 1.990630/3.617062/0.211538, 2.052838/3.725384/0.211538, 2.115045/3.834995/0.211538, 2.177252/3.944556/0.192308, 
+   2.239459/4.056020/0.192308, 2.301666/4.168902/0.211538, 2.363874/4.281629/0.192308, 2.426081/4.396220/0.211538, 2.488288/4.510525/0.192308, 
+   2.550495/4.626890/0.211538, 2.612702/4.742493/0.173077, 2.674910/4.859605/0.173077, 2.737117/4.977386/0.173077, 2.799324/5.095783/0.173077, 
+   2.861531/5.214751/0.173077, 2.923738/5.334257/0.173077, 2.985946/5.454419/0.173077, 3.048153/5.574773/0.173077, 3.110360/5.695819/0.173077, 
+   3.172567/5.817421/0.153846, 3.234774/5.939568/0.153846, 3.296982/6.062271/0.153846, 3.359189/6.185534/0.153846, 3.421396/6.309403/0.134615, 
+   3.483603/6.433753/0.134615, 3.545810/6.559006/0.134615, 3.608018/6.684427/0.134615, 3.670225/6.810634/0.134615, 3.732432/6.937328/0.134615, 
+   3.794639/7.065093/0.096154, 3.856846/7.196886/0.096154, 3.919054/7.333477/0.096154, 3.981261/7.473419/0.096154, 4.043468/7.617529/0.096154, 
+   4.105675/7.765343/0.096154, 4.167882/7.916643/0.096154, 4.230090/8.071198/0.096154, 4.292297/8.228844/0.096154, 4.354504/8.389391/0.096154, 
+   4.416711/8.552695/0.096154, 4.478918/8.718655/0.096154, 4.541126/8.886934/0.096154, 4.603333/9.057585/0.096154, 4.665540/9.230693/0.096154, 
+   4.727747/9.406508/0.076923, 4.789954/9.589109/0.076923, 4.852162/9.778675/0.076923, 4.914369/9.974571/0.076923, 4.976576/10.176427/0.076923, 
+   5.038783/10.383973/0.076923, 5.100990/10.596847/0.076923, 5.163198/10.814988/0.076923, 5.225405/11.037337/0.076923, 5.287612/11.264461/0.076923, 
+   5.349819/11.495622/0.076923, 5.412026/11.730785/0.076923, 5.474234/11.969628/0.076923, 5.536441/12.212060/0.057692, 5.598648/12.460740/0.057692, 
+   5.660855/12.716808/0.057692, 5.723062/12.979803/0.057692, 5.785270/13.249326/0.057692, 5.847477/13.524968/0.057692, 5.909684/13.806370/0.057692, 
+   5.971891/14.093197/0.057692, 6.034098/14.385112/0.057692,
+   6.096306/14.681816/0.057692, 6.158513/14.983035/0.057692,
+   6.220720/15.606249/0.019231}
+   {
+   \fill[blue] (\ret,0.4*\risk) circle(1pt);
+   \fill[red] (\ret,10*\nonz) circle(0.5pt);
+   };
+   \draw[->] (0,0) -- (8.,0) node[right] {\tiny{Return}};
+   \foreach \ret in {0.0001, 0.0002, 0.0003, 0.0004, 
+     0.0005, 0.0006, 0.0007} { 
+   \draw[thin] (10000*\ret,.1) -- (10000*\ret,-.1) node[rotate=-90,right] {\tiny{\ret}};
+   };
+   \draw[blue,->] (0,0) -- (0,7) node[above] {\tiny{Risk}};
+   \foreach \risk in {0.003,  0.004,  0.005, 0.006, 0.007, 
+     0.008, 0.009, 0.010, 0.011, 0.012, 0.013, 0.014, 0.015, 0.016} {
+   \draw[blue,thin] (.1,400*\risk) -- (-.1,400*\risk) node[blue,left] {\tiny{\risk}};
+   };
+   \draw[red,->] (7.5,0) -- (7.5,4.5) node[above] {\tiny{Non Zero \%}};
+   \foreach \nonz in {5,10,15,20,25,30,35,40} {
+   \draw[red,thin] (7.4,0.1*\nonz) -- (7.6,0.1*\nonz) node[red,right] {\tiny{\nonz}};
+   };
+   \end{tikzpicture}
+
+
+As it can be expected, higher expected return is always associated
+with higher risk. In the picture we  also show the number of
+assets in the optimal portfolios. It seems that higher return
+portfolios have a lower number of assets: this fact is actually
+related not to the return, but to the risk: the lower the number of
+assets in the portfolio, the higher, in general, is the risk. So it is
+reasonable to diversify. Diversification, as well as many other
+variants like, e.g., the requirement that if an asset is chosen, then
+its contribution to the total portfolio should be limited in a range
+(e.g., at least 5%, at most 20%), can be easily modeled through the
+introduction of binary variables and logical constraints:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \param{LB}_i \mathvar{\delta}_i & \leq  \var{x}_i \leq \param{UB}_i
+   \mathvar{\delta}_i \\
+   \sum_i \mathvar{\delta}_i & \geq \param{K}
+   \end{align*}
+
+It goes without saying that these additions make the model both non
+linear and binary (for the sake of precision, being binary is already a non
+linearity...). In general quadratic (even convex) optimization
+problems with binary variables are hard to solve: to convince the
+reader, take into account the fact that a linear function is a special
+case of a convex quadratic one and, thus, quadratic integer
+optimization is at least as difficult as linear integer
+optimization.
+Nonetheless, in many cases, optimal solution can be found through
+advanced modern optimization solvers, if the structure of the problem
+allows that and the size is not too large.
+Modern, practical, portfolio optimization models differ, sometimes
+substantially, from the Nobel-prize winning one described here. As a
+minimum, they include transaction costs, a sort of fixed charge when
+investing on an asset, and predetermined lot sizes, e.g., multiple of
+1000 euros.  Moreover,  the variance of the investment
+is no more considered as a practical and effective measure of the
+risk. Other measures are used, one of which is the
+:index:`semi-variance` or :index:`downside risk` defined as the
+expected  value of the squared *negative* deviation from the expected
+return. In other words, any deviation of the actual return which is
+above the required expected one is considered as beneficial, while the
+model penalizes any deviation which causes the actual return to be
+below the threshold value. Other risk measures are the VaR, or
+:index:`Value at Risk` and the CVaR, or :index:`Conditional Value at
+Risk`. Their description is beyond the scope of this volume - there
+are many publications on this important subject, among which we just
+cite :cite:`Artzner97` and :cite:`uryasev01`.
+
+^^^^^^^^^^^^^^^^^^^^^^^
+Support Vector Machines
+^^^^^^^^^^^^^^^^^^^^^^^
+
+There exists many methods for data analysis and prediction, most of
+which are nowadays widely used for :index:`classification`  or for
+:index:`regression` tasks. Assume we are given a set of observations
+:math:`X_1, X_2, \ldots, X_N`, each of which composed of :math:`d`
+:index:`features`, i.e., :math:`X_i \in \R^d, \forall\,i`. Assume that
+to
+each of these observation a :index:`label` :math:`Y_i` is
+associated. This label might be *binary* (typically: :math:`\pm 1`),
+integer or generic real. We speak, respectively, of :index:`binary
+classification`, :index:`multi-class classification`,
+:index:`regression`. We would like to build a model, i.e., a function,
+from the feature space to the label space which, in a sense to be made
+precise, best approximates the available data.
+
+Many approaches exist, depending on the task and the quantity and quality
+of data. Among these, we recall decision trees, random forests,
+artificial neural networks, support vector machines. All of these are
+strictly related to optimization. In fact, choosing the "best"  model
+for the available data is always an optimization problem whose aim is
+to select the best parameters to characterize one out of a large
+number of available  function, according to a quality criterion to be
+optimized. We will briefly introduce here the concept of
+:index:`Support Vector Machines`. Consider  a dataset, an example of
+which is represented in the figure below:
+
+.. tikz::
+
+   \begin{tikzpicture}%[>=stealth']
+      % Draw axes
+      \draw [<->,thick] (0,5) node (yaxis) [above] {$x_2$}
+      |- (6,0) node (xaxis) [right] {$x_1$};
+      % draw line
+      %%\draw (0,-1) -- (5,4); % y=x-1
+      %%\draw[dashed] (-1,0) -- (4,5); % y=x+1
+      %%\draw[dashed] (2,-1) -- (6,3); % y=x-3
+      % \draw labels
+      %%\draw (3.5,3) node[rotate=45,font=\small] 
+      %%{$\mathbf{w}^T \mathbf{x} + b = 0$};
+      %%\draw (2.5,4) node[rotate=45,font=\small] 
+      %%{$\mathbf{w}^T \mathbf{x} + b = 1$};
+      %%\draw (4.5,2) node[rotate=45,font=\small] 
+      %%{$\mathbf{w}^T \mathbf{x} + b = -1$};
+      % draw distance
+      %%\draw[dotted] (4,5) -- (6,3);
+      %%\draw (5.25,4.25) node[rotate=-45] {$\frac{2}{\Vert \mathbf{w} \Vert}$};
+      %%\draw[dotted] (0,0) -- (0.5,-0.5);
+      %%\draw (0,-0.5) node[rotate=-45] {$\frac{b}{\Vert \mathbf{w} \Vert}$};
+      %%\draw[->] (2,1) -- (1.5,1.5);
+      %%\draw (1.85,1.35) node[rotate=-45] {$\mathbf{w}$};
+      % draw negative dots
+      \fill[green] (0.5,1.5) circle (3pt);
+      \fill[green]   (1.5,2.5)   circle (3pt);
+      \fill[green] (1,2.5)     circle (3pt);
+      \fill[green] (0.75,2)    circle (3pt);
+      \fill[green] (0.6,1.9)   circle (3pt);
+      \fill[green] (0.77, 2.5) circle (3pt);
+      \fill[green] (1.5,3)     circle (3pt);
+      \fill[green] (1.3,3.3)   circle (3pt);
+      \fill[green] (0.6,3.2)   circle (3pt);
+      \foreach \X / \Y in {0.6/2,0.2/4,0.8/3.5,1.5/4,1.2/3.8,.7/2.5,1.2/3.6,1.8/4.2}
+      {\fill[green] (\X,\Y) circle (3pt);};
+      % draw positive dots
+      \draw[red] (4,1)     circle (3pt); 
+      \draw[red] (3.3,.3)  circle (3pt); 
+      \draw[red]     (4.5,1.2) circle (3pt); 
+      \draw[red]     (4.5,.5)  circle (3pt); 
+      \draw[red]     (3.9,.7)  circle (3pt); 
+      \draw[red]     (5,1)     circle (3pt); 
+      \draw[red]     (3.5,.2)  circle (3pt); 
+      \draw[red]     (4,.3)    circle (3pt); 
+      \foreach \X / \Y in {4/.5,4.5/1,4.8/1.7,4.9/1.2,5.2/2,5.5/2.1,5.9/2.5}
+      {\draw[red] (\X,\Y) circle (3pt);};
+   \end{tikzpicture}
+
+In the example above we plot a dataset of observations, each of which
+consists of two features; the dataset is split into positive and
+negative examples (two classes), represented here by two different
+colors.
+As it can be easily seen, this dataset is :index:`linearly
+separable`. This means that there exists at least an (hyper)plane
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{w}^T x + \var{b} & = 0
+   \end{align*}
+
+such that
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \var{w}^T \param{X}_i + \var{b} & \geq 1 & \forall\, i: \param{Y}_i
+   = +1 \\
+   \var{w}^T \param{X}_i + \var{b} & \leq -1 & \forall\, i: \param{Y}_i
+   = -1 \\
+   \end{align*}
+
+or, concisely,
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \param{Y}_i (\var{w}^T \param{X}_i + \var{b}) & \geq 1 & \forall\, i
+   \end{align*}
+
+In cases like the one above, if there exists a separating hyperplane,
+there usually exist an infinite number of them. The main idea of the Support
+Vector Machine (SVM) approach is to chose the one which maximizes the
+so-called
+:index:`margin`. Consider any point in the dataset and denote by
+:math:`H(w,b)` the hyperplane :math:`w^T x + b = 0`. The Euclidean distance of a
+point from the hyperplane can be found to be equal to
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   dist(\param{X}_i, H(w,b)) & = \frac{|w^T \param{X}_i + b|}{\|w\|}
+   \end{align*}
+
+The *margin* of an hyperplane is defined as the distance from the
+hyperplane to the *closest*  point in the dataset:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min_{i=1,N} \frac{|w^T \param{X}_i + b|}{\|w\|}
+   \end{align*}
+
+and the problem considered by the SVM approach is to find a separating hyperplane
+with maximum margin:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \max_{\var{w}, \var{b}} \min_{i=1,N} \frac{|\var{w}^T \param{X}_i +
+   \var{b}|}{\|\var{w}\|} & \\
+   \param{Y}_i (\var{w}^T \param{X}_i + \var{b}) & \geq 1 & \forall\,i=1,N
+   \end{align*}
+
+This apparently complex non linear problem can be proven to be
+equivalent to the following quadratic one:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min_{\var{w}, \var{b}}  \var{w}^T\var{w} & \\
+   \param{Y}_i (\var{w}^T \param{X}_i + \var{b}) & \geq 1 & \forall\,i=1,N
+   \end{align*}
+
+and a geometrical representation of the maximum margin separating
+hyperplane is given in the figure:
+
+.. tikz::
+
+   \begin{tikzpicture}%[>=stealth']
+      % Draw axes
+      \draw [<->,thick] (0,5) node (yaxis) [above] {$x_2$}
+      |- (6,0) node (xaxis) [right] {$x_1$};
+      % draw line
+      \draw (0,-1) -- (5,4); % y=x-1
+      \draw[dashed] (-1,0) -- (4,5); % y=x+1
+      \draw[dashed] (2,-1) -- (6,3); % y=x-3
+      % \draw labels
+      \draw (3.5,3) node[rotate=45,font=\small] 
+      {$\mathbf{w}^T \mathbf{x} + b = 0$};
+      \draw (2.5,4) node[rotate=45,font=\small] 
+      {$\mathbf{w}^T \mathbf{x} + b = 1$};
+      \draw (4.5,2) node[rotate=45,font=\small] 
+      {$\mathbf{w}^T \mathbf{x} + b = -1$};
+      % draw distance
+      \draw[dotted] (4,5) -- (6,3);
+      \draw (5.25,4.25) node[rotate=-45] {$\frac{2}{\Vert \mathbf{w} \Vert}$};
+      \draw[dotted] (0,0) -- (0.5,-0.5);
+      \draw (0,-0.5) node[rotate=-45] {$\frac{b}{\Vert \mathbf{w} \Vert}$};
+      \draw[->] (2,1) -- (1.5,1.5);
+      \draw (1.85,1.35) node[rotate=-45] {$\mathbf{w}$};
+      % draw negative dots
+      \fill[green] (0.5,1.5) circle (3pt);
+      \fill[green]   (1.5,2.5)   circle (3pt);
+      \fill[green] (1,2.5)     circle (3pt);
+      \fill[green] (0.75,2)    circle (3pt);
+      \fill[green] (0.6,1.9)   circle (3pt);
+      \fill[green] (0.77, 2.5) circle (3pt);
+      \fill[green] (1.5,3)     circle (3pt);
+      \fill[green] (1.3,3.3)   circle (3pt);
+      \fill[green] (0.6,3.2)   circle (3pt);
+      \foreach \X / \Y in {0.6/2,0.2/4,0.8/3.5,1.5/4,1.2/3.8,.7/2.5,1.2/3.6,1.8/4.2}
+      {\fill[green] (\X,\Y) circle (3pt);};
+      % draw positive dots
+      \draw[red] (4,1)     circle (3pt); 
+      \draw[red] (3.3,.3)  circle (3pt); 
+      \draw[red]     (4.5,1.2) circle (3pt); 
+      \draw[red]     (4.5,.5)  circle (3pt); 
+      \draw[red]     (3.9,.7)  circle (3pt); 
+      \draw[red]     (5,1)     circle (3pt); 
+      \draw[red]     (3.5,.2)  circle (3pt); 
+      \draw[red]     (4,.3)    circle (3pt); 
+      \foreach \X / \Y in {4/.5,4.5/1,4.8/1.7,4.9/1.2,5.2/2,5.5/2.1,5.9/2.5}
+      {\draw[red] (\X,\Y) circle (3pt);};
+   \end{tikzpicture}
+
+There exists highly specialized software  for the solution of the
+above problem, the most famous and widely used one is contained in the
+LibSVM library by Chih-Jen Lin :cite:`Lin`. We do not report here a
+numerical example for this convex quadratic problem with linear
+constraints, as the interest in problems like this one is mainly for
+cases in which large datasets are available. And we just note in
+passing that there are many important extensions to the basic model:
+we can account for outliers, we can solve the dual problem instead of
+the one reported here, we might extend the model to include so called
+:index:`kernels` which allow us to generate highly non linear
+separating hypersurfaces. We would like just to observe that all of
+these extensions do not make the model deviate from a quadratic one
+with linear constraints.
+
+   
+^^^^^^^^^^^^^^^^^^^^
+Quadratic Assignment
+^^^^^^^^^^^^^^^^^^^^
+
+A very relevant, important and particularly hard to solve
+combinatorial model goes under the name of *Quadratic Assignment* and
+consists in an extension of the classical bi-partite assignment model
+with a quadratic objective function.
+
+A possible example of application of this model is related to facility
+location. Assume, e.g. in planning the wards of a new hospital, that
+:math:`n` location have been chosen and that :math:`n` facilities
+(wards, in the example) need to be assigned, one to each
+location. This is a classical setting for the bi-partite
+assignment model: a binary variable :math:`\mathvar{\delta}_{ij}` can
+be used to decide whether facility :math:`i` is assigned to location
+:math:`j` or not. In another application, locations might be places in
+a circuit and facilities are electric or electronic equipment to be
+placed in the available places. Once a decision has been taken, the
+cost associated to the decision depends on two parameters, both of
+which take into account the allocation of pairs of facilities: the
+distance between two different facilities, and the (expected) patient
+flow between the two facilities. In the circuit design example, these
+two parameters might be, again, the distance and the number of wires
+to be placed to connect the two components.  The overall cost of an
+assignment is thus obtained as the sum of all costs associated to each
+pair of locations chosen for each facility. The idea is that, in the
+ward case, wards with a large flow of people should be placed as close
+as possible, while pairs of wards with relative low traffic might be
+located far from each other.
+So, in the model, we should consider pairs of facilities and pairs of
+possible location, and assign a cost which depends from one side on
+the distance between the two chosen locations, while from the other
+also on the flow between the two facilities. Let :math:`\param{Dist}`
+be  a matrix which represent the distance between two locations and
+:math:`\param{Flow}` be another matrix representing flows between pairs of
+facilities, a quadratic model of this problem might be
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \min \sum_{i,j \in \set{Facilities}}
+   \sum_{h,k \in \set{Locations}}
+   \param{Dist}_{ij} \param{Flow}_{hk}\, \mathvar{\delta}_{ih}
+   \mathvar{\delta}_{jk} \\
+   \sum_{i} \mathvar{\delta}_{ih} & = 1 & \forall\, h \\
+   \sum_h \mathvar{\delta}_{ih} & = 1 & \forall\, i \\
+   \mathvar{\delta}_{ih} & \in \{0,1\}
+   \end{align*}
+
+
+A numerical example can be given for illustration, based on the
+following graph:
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=1.4]
+   \foreach \name/\x/\y in {
+   A/1/4,B/2/4,C/3/4,I/4/4,D/2/3,E/3/3,
+   F/4/3,G/3/2,J/4/2,H/3/1,K/4/1,L/4/0}
+   \node[vertex] (\name) at (\x,\y) {\small{\name}};
+   \foreach \ini/\fin in
+   {A/B,B/C,C/I,B/D,C/E,D/E,E/F,E/G,F/J,G/H,G/J,J/K,H/K,K/L}
+   \draw[arc,-] (\ini) -- (\fin);
+   \end{tikzpicture}
+
+In the figure it is assumed that all edges have length one. The
+distance between any two locations in the graph is easily computed and
+can be traced back to :index:`Manhattan distance`: nodes are
+considered as blocks in a city with perpendicular roads. Given these
+locations, and their pairwise distances, it is assumed that also the
+expected flows between any two pairs of facilities is given. The
+following datafile implements an example based on the above graph:
+
+.. literalinclude:: AMPL/qap.dat
+   :caption: qap.dat
+   :language: ampl
+
+and a straightforward model of the problem is given in the following:
+
+.. literalinclude:: AMPL/qap.mod
+   :caption: qap.mod
+   :language: ampl
+
+Despite its apparent simplicity, solving this model is far
+from being easy, even at this relatively small dimension. After
+roughly one hour of computation, we stopped a top performing exact
+solver and obtained the following solution which, by the way, is
+indeed optimal. However, according to the output of the stopped
+solver, a gap as large as 16.7% still existed between the best
+feasible solution (of value 1652) and the current lower bound
+(1375.9).
+
+
+.. tikz::
+
+   \begin{tikzpicture}[scale=1.4]
+   \foreach \optsol/\name/\x/\y in {
+   3/A/1/4,10/B/2/4,11/C/3/4,2/I/4/4,12/D/2/3,5/E/3/3,
+   6/F/4/3,7/G/3/2,8/J/4/2,1/H/3/1,4/K/4/1,9/L/4/0}
+   \node[vertex] (\name) at (\x,\y) {\small{\name\optsol}};
+   \foreach \ini/\fin in
+   {A/B,B/C,C/I,B/D,C/E,D/E,E/F,E/G,F/J,G/H,G/J,J/K,H/K,K/L}
+   \draw[arc,-] (\ini) -- (\fin);
+   \end{tikzpicture}
+
+The literature on the quadratic assignment problem is huge, both for
+the many applications of the model, and for the extreme difficulty in
+solving even small scale instances. It is evident that different
+formulations are possible. As an example, it is possible to reduce the
+problem to a purely linear binary one by introducing a large set of
+binary variables to substitute the quadratic terms:
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \mathvar{\delta}_{ih}=\mathvar{\delta}_{jk} = 1 & \iff
+   \var{y}_{ijhk}= 1
+   \end{align*}
+   
+which can be formulated as
+
+.. math::
+   :nowrap:
+
+   \begin{align*}
+   \mathvar{\delta}_{ih} & \geq    \var{y}_{ijhk}\\
+   \mathvar{\delta}_{jk} & \geq    \var{y}_{ijhk}\\
+   \mathvar{\delta}_{ih}+\mathvar{\delta}_{jk}  & \leq
+   2 \var{y}_{ijhk}
+   \end{align*}
+   
+Although this way the problem  becomes a linear binary one, its
+complexity is not diminished and the number of required variables is
+in general very high. The problem remains one of the most difficult
+"small" scale combinatorial optimization problems known.
+
+.. include:: closing.rst
+

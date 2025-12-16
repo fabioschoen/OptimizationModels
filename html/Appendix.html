@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>25. Appendix &#8212; OptimizationModels 1.02 April 4, 2024 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=712fa57f" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=edc3226b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=8bd57eb4" />
+    <script src="_static/documentation_options.js?v=d77a62b4"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script>window.MathJax = "{'tex': { 'macros': {RR: '{\\bf R}', R: '{\\mathbb{R}}', bold: ['{\\bf #1}', 1] }, 'environments': {braced: ['\\left\\{', '\\right\\}'] }, 'inlineMath': [['$', '$'], ['\\(', '\\)']] } }"</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="26. Bibliographic References" href="Bibliography.html" />
+    <link rel="prev" title="24. Quadratic Optimization Models" href="Quadratic.html" />
+<link rel="stylesheet" type="text/css" 
+     href="_static/custom.css" /> 
+
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Quadratic.html" title="Previous document"><span class="section-number">24. </span>Quadratic Optimization Models</a>
+        </li>
+        <li>
+          <a href="Bibliography.html" title="Next document"><span class="section-number">26. </span>Bibliographic References</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <p class="hidden"><span class="math notranslate nohighlight">\(\newcommand{\R}{{\mathbb{R}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\Z}{{\mathbb{Z}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\N}{{\mathbb{N}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\var}[1]{{\color{red}{\mathbf{#1}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\param}[1]{{\color{blue}{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathsc}[1]{{\normalfont\textsc{#1}}}\)</span>
+<span class="math notranslate nohighlight">\(\def\sc#1{\dosc#1\csod}\)</span>
+<span class="math notranslate nohighlight">\(\def\dosc#1#2\csod{{\rm{#1{\rm\small #2}}}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\set}[1]{{\sc#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathvar}[1]{\var{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\mathpar}[1]{\param{#1}}\)</span>
+<span class="math notranslate nohighlight">\(\newcommand{\half}{{\small{\frac{1}{2}}}}\)</span></p>
+<section id="appendix">
+<h1><span class="section-number">25. </span>Appendix<a class="headerlink" href="#appendix" title="Link to this heading">¶</a></h1>
+<p>In this appendix we wish to briefly summarize a few essential
+definitions and facts which might prove useful when reading this
+book. We would like, however, to warn the reader that the theory
+behind many of the models and all of the algorithms needed to solve
+them requires advanced mathematical skills and cannot be summarized in
+an appendix like this one. We refer the interested reader to the huge
+literature available on all of the topics we covered in this volume,
+from optimization theory, to the simplex method to duality theory or
+network flows, and so on…</p>
+<p>Here we simply would like to summarize a few basic definitions and
+concepts which are found somewhere in the volume and maybe more
+efficiently found in a single place like this appendix. We list them
+here, without any specific logic.</p>
+<section id="basic-optimization-notions">
+<h2><span class="section-number">25.1. </span>Basic optimization notions<a class="headerlink" href="#basic-optimization-notions" title="Link to this heading">¶</a></h2>
+<p>Let <span class="math notranslate nohighlight">\(n\)</span> be an integer and <span class="math notranslate nohighlight">\(S \subseteq \R^n\)</span> be a subset
+of the Euclidean <span class="math notranslate nohighlight">\(n\)</span>-dimensional space. Let
+<span class="math notranslate nohighlight">\(f: S \rightarrow \R\)</span> be a real-valued function. A generic
+<span class="target" id="index-0"></span>optimization problem  is defined as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_{\var{x} \in S} f(\var{x})
+\end{align*}</div><p>where <span class="math notranslate nohighlight">\(\var{x}\)</span> is the array of unknown variables,
+<span class="math notranslate nohighlight">\(\set{S}\)</span> the <span class="target" id="index-1"></span>feasible set, <span class="math notranslate nohighlight">\(f\)</span> the
+<span class="target" id="index-2"></span>objective function. A similar definition can also be given
+for a maximization problem. Any vector <span class="math notranslate nohighlight">\(\bar{x}\)</span> such that
+<span class="math notranslate nohighlight">\(\bar{x} \in S\)</span> is called a <span class="target" id="index-3"></span>feasible solution. Any
+feasible solution <span class="math notranslate nohighlight">\(x^\star\)</span> such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f(x^\star) &amp; \leq f(x) &amp; \forall\, x &amp;\in  S
+\end{align*}</div><p>is called an <span class="target" id="index-4"></span>optimal solution or a <span class="target" id="index-5"></span>global optimum
+solution.
+The value of the objective
+function at an optimal solution <span class="math notranslate nohighlight">\(f^\star = f(x^\star)\)</span> is called
+the <span class="target" id="index-6"></span>optimal value, or <span class="math notranslate nohighlight">\(optimum\)</span> of the
+problem. Sometimes, when it is felt that no confusion should arise, we
+use the term optimum also to denote the optimal solution, not just its
+value.</p>
+<p>An optimization problem need not possess optimal solutions. In
+particular, if <span class="math notranslate nohighlight">\(\set{S} = \emptyset\)</span> then the problem is called
+<span class="target" id="index-7"></span>infeasible.</p>
+<p>If on the contrary <span class="math notranslate nohighlight">\(\set{S} \ne \emptyset\)</span> it might happen that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\forall\,x \in S &amp; \exists\, y \in S: \\
+f(y) &amp; &lt; f(x)
+\end{align*}</div><p>In this case the optimization problem is <span class="target" id="index-8"></span>unbounded and no
+optimal solution can exist.</p>
+<p>Let <span class="math notranslate nohighlight">\(\bar{x} \in S\)</span> be a feasible solution.
+Let
+<span class="math notranslate nohighlight">\(B(x,\varepsilon) := \{y \in \R^n: \|x-y\| \leq \varepsilon\}\)</span>
+be an <span class="target" id="index-9"></span>euclidean ball centered at <span class="math notranslate nohighlight">\(x\)</span> with radius <span class="math notranslate nohighlight">\(\varepsilon\)</span>,
+If
+<span class="math notranslate nohighlight">\(\exists\,\varepsilon &gt; 0\)</span>  such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f(\bar{x}) &amp; \leq f(y) &amp; \forall\, y \in \set{S} \bigcap B(\bar{x},\varepsilon)
+\end{align*}</div><p>then <span class="math notranslate nohighlight">\(\bar{x}\)</span> is called a <span class="target" id="index-10"></span>local optimum or
+<span class="target" id="index-11"></span>local minimum. Of course an optimum is always a local
+optimum, but, in general, the opposite is not true.</p>
+<p>An extremely important class of optimization problems
+is that of <span class="target" id="index-12"></span>convex optimization problems.</p>
+<p>A set <span class="math notranslate nohighlight">\(S  \subseteq \R^n\)</span> is called a <span class="target" id="index-13"></span>convex set if</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\lambda x + (1-\lambda) y &amp; \in S &amp; \forall\, x,y \in S, \lambda
+\in [0,1]
+\end{align*}</div><p>Geometrically this means that a convex set is characterized by the
+fact that for any pair of points in the set, also the segment with
+those points as extremes entirely belongs to the set.</p>
+<p>A function <span class="math notranslate nohighlight">\(f\)</span> defined on a convex set <span class="math notranslate nohighlight">\(S\)</span> is called a
+<span class="target" id="index-14"></span>convex function if</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f(\lambda x + (1-\lambda)y) &amp; \leq \lambda f(x) + (1-\lambda) f(y) &amp; \forall\, x,y \in S, \lambda
+\in [0,1]
+\end{align*}</div><p>Also in this case a geometrical interpretation is possible: a convex
+function is such that for any pair of points a linear interpolation of
+the function through the two points overestimates the function along
+the segment with those points as extremes.</p>
+<p>A <span class="target" id="index-15"></span>convex optimization  problem is defined as a problem in
+which the feasible set is convex and the objective function is convex
+over a set that contains the feasible set. A <span class="target" id="index-16"></span>concave function
+is a function <span class="math notranslate nohighlight">\(f\)</span> whose opposite <span class="math notranslate nohighlight">\(-f\)</span> is convex. By
+extension, the problem of <em>maximizing</em> a <em>concave function</em>, always on
+a convex feasible set, is called a convex optimization problem.</p>
+<p>Convex optimization problems enjoy many interesting properties, one of
+the most notable of which is that if a feasible point is a local
+optimum, than it is also global.</p>
+<p>A <span class="target" id="index-17"></span>linear function is an additive and homogeneous function,
+i.e.,</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f(x+y) &amp; = f(x)  + f(y) &amp; \forall\, x,y \\
+f(\alpha x) &amp; = \alpha f(x) &amp; \forall\, \alpha \in \R, \forall\,x
+\end{align*}</div><p>It can be shown that in Euclidean spaces a function is linear if and
+only if there exists a vector <span class="math notranslate nohighlight">\(v \in \R^n, v = [v_1, \ldots, v_n]^T\)</span> such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+f(x) &amp; = \sum_{j=1}^n v_j x_j \\
+&amp; = v^T x
+\end{align*}</div><p>An <span class="target" id="index-18"></span>affine function   is defined as a linear function plus a
+constant: <span class="math notranslate nohighlight">\(v^Tx + u\)</span>.</p>
+<p>A fundamental convex optimization problem is the <span class="target" id="index-19"></span>linear
+optimization one:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_\var{x} \param{c}^T \var{x} &amp; \\
+\param{A}_1 \var{x} &amp; = \param{b}_1 \\
+\param{A}_2 \var{x} &amp; \leq \param{b}_2 \\
+\param{A}_3  \var{x} &amp; \geq \param{b}_3
+\end{align*}</div><p>where vectors and matrix have dimensions which are compatible with the
+matrix products as required. In the above problem a linear objective
+function is to be minimized subject to a set of linear equations and
+inequalities. Quite often, inequalities include sign constraints (all
+variables non negative) or box constraints (all variables constrained
+to be in a specific interval).  It can be easily shown that this
+problem is indeed a convex optimization problem, called generic linear
+optimization problem.</p>
+<p>A special case, to which any generic linear optimization problem can
+be reduced, is the so-called <span class="target" id="index-20"></span>standard linear
+optimization problem:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\min_\var{x} \param{c}^T \var{x} &amp; \\
+\param{A} \var{x} &amp; = \param{b} \\
+\var{x} &amp; \geq 0
+\end{align*}</div><p>If the feasible set is non empty and the set of linear equations is
+reduced by eliminating redundant equations, then matrix <span class="math notranslate nohighlight">\(\param{A}\)</span> is reduced to its
+rank and it can be shown that we can always assume that the number
+<span class="math notranslate nohighlight">\(m\)</span> of its rows can always be assumed to be equal to the rank and is
+never larger than the number of variables.  In this situation, a
+square sub-matrix  composed of all of the rows and an equal number of
+columns can always be chosen so that the resulting square matrix
+<span class="math notranslate nohighlight">\(\param{A}_B\)</span> is non singular.  Any such matrix is called a
+<span class="target" id="index-21"></span>basis for the problem and by solving the sub-problem
+<span class="math notranslate nohighlight">\(\param{A}_B \var{x}_B = \param{b}\)</span> a solution is always found. Here by
+<span class="math notranslate nohighlight">\(\var{x}_B\)</span> we denote the subset of variables whose indices are
+the same as those of the columns  of the basis matrix. The
+<span class="math notranslate nohighlight">\(n\)</span>-dimensional array obtained completing this unique solution
+with zeros is called a <span class="target" id="index-22"></span>basic solution. If it is composed of
+non negative elements, it is called a <span class="target" id="index-23"></span>basic feasible
+solution.  A fundamental property in linear optimization says that if
+a standard linear optimization problem is reduced to its row rank than
+the problem admits a feasible solution if and only if it admits a
+<em>basic</em> feasible solution. Moreover, it admits an optimal solution if
+and only if it admits an optimal solution which is also <em>basic</em>. The
+<span class="target" id="index-24"></span>simplex method, one of the most popular algorithms to solve
+linear optimization problems, is strongly associated to this property
+and, in fact, limits the search for optimal solutions to basic ones.</p>
+<p>A fundamental property of linear optimization, as well as of more
+general optimization problems, is that of <span class="target" id="index-25"></span>duality; a general
+introduction to the topic is far beyond our aims in this appendix: the
+interested reader might consult any optimization book, where the topic
+of Lagrange duality is usually dealt with. Limiting ourselves to the
+easy case of linear optimization, let us associate
+to a linear optimization problem  (which for the sake of simplicity
+we assume to be in standard form) another optimization problem, called
+the <span class="target" id="index-26"></span>dual:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\max_{\mathvar{\lambda}} \mathvar{\lambda}^T \param{b} &amp; \\
+\mathvar{\lambda}^T \param{A} &amp; \leq \param{c}^T
+\end{align*}</div><p>It can be proven that:</p>
+<ul>
+<li><p>given a pair of feasible solutions, <span class="math notranslate nohighlight">\(\bar{x}\)</span> for the original
+problem and <span class="math notranslate nohighlight">\(\bar{\lambda}\)</span> for the dual, it holds that
+<span class="math notranslate nohighlight">\(\bar{\lambda}^T \param{b} \leq \param{c}^T \bar{x}\)</span>. This is called the
+<span class="target" id="index-27"></span>weak duality theorem and states that in the two problems
+the objective function of one of the two always limits the other one</p></li>
+<li><p>if, as before, two feasible solutions exist and, furthermore, the
+above inequality holds as an equality (i.e., the objective functions
+in the two problems are equal) than each of the two solutions is
+optimal for the respective optimization problem</p></li>
+<li><p>if one of the two problems admits an optimal solution, the other
+admits an optimal solution too and the objective functions of the two
+optimal solutions are identical (<span class="target" id="index-28"></span>strong duality theorem)</p></li>
+<li><p>if one of the two problems in unbounded, the other one is infeasible</p></li>
+<li><p>there exists a one-to-one correspondence between variables in the
+standard problem and inequalities in the dual. Given two feasible
+solutions, one for each problem, they are both optimal if and only
+if for any variable in the problem either the variable is null or
+the dual constraint associated to this variable holds as an
+equality. In formulae:</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+\bar{x}_j (\bar{\lambda}^T \param{A}_j - \param{c}_j) &amp; = 0 &amp; \forall\, j
+\end{align*}</div><p>This property is known as <span class="target" id="index-29"></span>complementarity.</p>
+</li>
+</ul>
+</section>
+<section id="graphs-basic-definitions">
+<h2><span class="section-number">25.2. </span>Graphs: basic definitions<a class="headerlink" href="#graphs-basic-definitions" title="Link to this heading">¶</a></h2>
+<p>A <span class="target" id="index-30"></span>graph is a pair <span class="math notranslate nohighlight">\(\langle V, E \rangle\)</span>, where
+<span class="math notranslate nohighlight">\(V\)</span> is a finite set called set of <span class="target" id="index-31"></span>nodes or
+<span class="target" id="index-32"></span>vertices. <span class="math notranslate nohighlight">\(E \subseteq V \times V\)</span> is a set of pair of
+nodes. Each element of <span class="math notranslate nohighlight">\(E\)</span> is called an <span class="target" id="index-33"></span>edge of the
+graph and is an (unordered) subset of the set of nodes with
+cardinality 2.</p>
+<p>An edge in a graph is said to be <span class="target" id="index-34"></span>incident to the two  vertices
+which define it; these vertices are called <span class="target" id="index-35"></span>extremes of the
+edge. A  sequence of edges <span class="math notranslate nohighlight">\(e_1, e_2, \ldots, e_k\)</span> is
+called a <span class="target" id="index-36"></span>walk if there exists a sequence of nodes in the
+graph <span class="math notranslate nohighlight">\(v_1, v_2, \ldots, v_k, v_{k+1}\)</span> such that</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+e_1 &amp; = \{v_1,v_2\} \\
+e_2 &amp; = \{v_2, v_3\}\\
+\dots \\
+e_k &amp; = \{v_k,v_{k+1}\}
+\end{align*}</div><p>If the last node <span class="math notranslate nohighlight">\(v_{k+1}\)</span> coincides with the first one
+<span class="math notranslate nohighlight">\(v_1\)</span> then the walk is called a
+<span class="target" id="index-37"></span>chain.</p>
+<p>A graph is <span class="target" id="index-38"></span>connected if there exists at least a walk
+connecting every pair of nodes. A graph is called <span class="target" id="index-39"></span>acyclic if
+it is not possible to find, in the graph, chains in which no edge is
+repeated.</p>
+<p>A connected and acyclic graph is called a <span class="target" id="index-40"></span>tree. A tree enjoys
+several important properties. A graph is a tree if and
+only if any one of the following holds:</p>
+<ul class="simple">
+<li><p>it is connected and acyclic (this is the definition)</p></li>
+<li><p>in the finite case, it is connected and <span class="math notranslate nohighlight">\(|E| = |V|-1\)</span></p></li>
+<li><p>in the finite case, it is acyclic and <span class="math notranslate nohighlight">\(|E| = |V|-1\)</span></p></li>
+<li><p>the graph is connected, but if any edge is removed it gets
+disconnected</p></li>
+<li><p>the graph is acyclic, but if we add any edge one and only one chain
+is generated</p></li>
+<li><p>every pair of vertices is connected by a unique path (with no
+repeated edges)</p></li>
+</ul>
+<p>In most application we are more interested in <span class="target" id="index-41"></span>directed graphs
+or <span class="target" id="index-42"></span>di-graphs.  These are graphs for which edges, which now
+are called <span class="target" id="index-43"></span>arcs, are an ordered subset of cardinality two of
+the set of nodes. This means, e.g., that in a di-graph arc
+<span class="math notranslate nohighlight">\((i,j)\)</span> is different from arc <span class="math notranslate nohighlight">\((j,i)\)</span>.</p>
+<p>All the definitions above, including that of  a tree, can be given for
+directed arcs too, by simply neglecting the orientation of
+arcs. However in di-graphs we often consider paths  as
+<span class="target" id="index-44"></span>oriented paths.</p>
+<p>It is possible to associate several matrices to graphs and
+di-graphs. One of the most useful is the <span class="target" id="index-45"></span>incidence
+matrix. Given a di-graph, its incidence matrix is a
+<span class="math notranslate nohighlight">\(|V| \times |E|\)</span> matrix whose elements are defined as</p>
+<div class="math notranslate nohighlight">
+\begin{align*}
+a_{ij} &amp; = \left\{
+\begin{array}{rl}
++1 &amp; \textrm{ if } \exists\, v_k \in V: e_j = (v_i,v_k) \\
+-1 &amp; \textrm{ if } \exists\, v_k \in V: e_j = (v_k,v_i) \\
+0 &amp; \textrm{ otherwise}
+\end{array}
+\right.
+\end{align*}</div><p>In order to be able to define such a matrix the graph needs to be
+finite and loop-free. A <span class="target" id="index-46"></span>loop is defined as an arc
+<span class="math notranslate nohighlight">\((v,v)\)</span> from a node to itself.</p>
+<p><a class="reference external" href="https://creativecommons.org/licenses/by-nc-nd/3.0/"><img alt="CreativeCommonsLicence" src="_images/Cc-by-nc-nd_icon.svg.png" /></a></p>
+<p>© Fabio Schoen 2024</p>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="Quadratic.html" title="Previous document"><span class="section-number">24. </span>Quadratic Optimization Models</a>
+        </li>
+        <li>
+          <a href="Bibliography.html" title="Next document"><span class="section-number">26. </span>Bibliographic References</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="contents.html">
+              <img class="logo" src="_static/OM.jpg" alt="Logo of OptimizationModels"/>
+            </a></p>
+  <div>
+    <h3><a href="contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">25. Appendix</a><ul>
+<li><a class="reference internal" href="#basic-optimization-notions">25.1. Basic optimization notions</a></li>
+<li><a class="reference internal" href="#graphs-basic-definitions">25.2. Graphs: basic definitions</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="contents.html">Document start page</a><ul>
+      <li>Previous: <a href="Quadratic.html" title="previous chapter"><span class="section-number">24. </span>Quadratic Optimization Models</a></li>
+      <li>Next: <a href="Bibliography.html" title="next chapter"><span class="section-number">26. </span>Bibliographic References</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;Fabio Schoen,  v 1.02 / April 4th, 2024, Creative Commons Cc-by-nc-nd.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/Appendix.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,12 @@
+.. include:: preamble.rst
+
+========================
+Bibliographic References
+========================
+
+.. bibliography:: refs.bib
+   :all:
+   :style: plain
+
+.. include:: closing.rst
+

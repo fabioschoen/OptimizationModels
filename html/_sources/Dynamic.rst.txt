@@ -1,0 +1,160 @@
+.. include:: preamble.rst
+
+.. _section:dynamic-networks:
+
+=============
+Dynamic flows
+=============
+
+The applications of the generic minimum cost flow model considered up
+to now correspond to *static* flows, i.e. to flows that do not vary in time.
+It is sometimes interesting to consider a generalization 
+which allows for *dynamic* flows. This generalization will be
+presented here for the discrete time case.
+A simple technique for modeling
+dynamic flows consists in replicating the nodes of the graph over time, a copy for
+each time instant. Each node of 
+the replicated graph will contain a label with the time instant
+associated to the original one.
+Arcs connecting nodes with different time labels can be thought of as
+flows out from a node at a time instant which will enter another node
+at a future time instant.
+If it is assumed that the travel time between nodes :math:`i` and
+:math:`j`  is  :math:`\Delta_{ij}` time units,
+then in the dynamic graph there will be arcs between nodes labeled
+:math:`i,t`  and nodes  :math:`j,t+\Delta_{ij}`. 
+The interpretation of a flow along one of these arcs will be  that of
+a flow unit that was in  :math:`i` 
+at time  :math:`t`  and will arrive in  :math:`j` at time  :math:`t + \Delta_{ij}`.
+
+|
+
+   :application:  :index:`Safe evacuation from a building`
+
+   In this application we consider a simplified problem connected with
+   emergency planning in buildings.
+   Given a graph representing possible paths in a building, with nodes
+   associated to rooms, intersections and exits, we would like to
+   evaluate the maximum number of persons in source nodes who can safely
+   proceed towards an exit in a given amount of time, given travel times
+   along arcs as well as capacity.
+   Consider, as a very simplified example, the following situation:
+   
+   .. tikz::
+   
+      \begin{tikzpicture}[scale=2]
+      \foreach \x / \y / \name  in {0/1/s,1/2/A,1/0/B,2/1/t}
+      \node[vertex] (\name) at (\x,\y) {\textcolor{black}{\name}};
+      \foreach \source /  \dest / \capac / \time in {s/A/2/1,s/B/8/2,A/B/3/2,A/t/2/1,B/t/2/1}
+      \path[arc] (\source) -- node[weight] {\capac;\time} (\dest);
+      \node[vertex] (i) at (0,-1)  {$i$};
+      \node[vertex] (j) at (2,-1) {$j$};
+      \path[arc] (i) -- node[weight] {$Fmax_{ij};\Delta_{ij}$} (j);
+      \end{tikzpicture}
+
+   This network can be "unfolded" in time. Assume we would like to
+   check how many units of flow, as a maximum, can be safely taken to
+   the terminal node in, say, 4 time units. Then, a 4 "frames" network
+   can be defined as follows:
+
+   .. tikz::
+   
+      \begin{tikzpicture}[scale=1.1,rotate=-90]
+      \foreach \x / \y / \name  in {0/1/s,1/2/A,1/0/B,2/1/t} {
+      \node[vertex] (\name) at (\x,\y) {\textcolor{black}{\name}};
+      \node[vertex] (\name1) at (\x+3,\y) {\textcolor{black}{\name1}};
+      \node[vertex] (\name2) at (\x+6,\y) {\textcolor{black}{\name2}};
+      \node[vertex] (\name3) at (\x+9,\y) {\textcolor{black}{\name3}};
+      \node[vertex] (\name4) at (\x+12,\y) {\textcolor{black}{\name4}};
+      }
+      \node[vertex] (T) at (6,4) {T};
+      \foreach \source /  \dest / \capac  / \bnd in
+      {s/A1/2/45,s1/A2/2/45,s2/A3/2/45,s3/A4/2/45,s/B2/8/-45,s1/B3/8/-45,s2/B4/8/-45,A/B2/3/-15,A1/B3/3/-15,A3/B4/3/-15,
+      A/t1/2/25,A1/t2/2/25,A2/t3/2/25,A3/t4/2/25,B/t1/2/-45,B1/t2/2/-45,B2/t3/2/-45,B3/t4/2/-45}
+      \path (\source) edge[->,bend left=\bnd] node[weight] {\capac}
+      (\dest);
+      \foreach \source / \dest in {s/s1,s1/s2,s2/s3,s3/s4,A/A1,A1/A2,A2/A3,A3/A4,B/B1,B1/B2,B2/B3,B3/B4}
+      \path (\source) edge[thick,dashed,->,bend right=10,blue] (\dest);
+      \foreach \source / \dest in {t1/T//90,t2/T//90,t3/T//90,t4/T}
+      \path (\source) edge[thick,dashed,->] (\dest);
+      \end{tikzpicture}
+
+   In order to determine the  maximum amount of people located at node :math:`s`
+   who might be able  to exit the building in a specific amount of time, we
+   can  solve the maximum flow problem  in the expanded  graph
+   shown above, using  node
+   :math:`S = s1` as source and a fictitious node :math:`T` as
+   destination. This node is connected to each replica of the original
+   terminal node in different time instants.
+   In the graph, the
+   labels on each  arc represents the maximum capacity.
+
+   There are
+   two types of arc:
+
+   * arcs  between nodes with different names
+     which  represent flows both in space and in time
+   * arcs   connecting two nodes with the same name in consecutive
+     time instants which represent flow units which do not leave the
+     node during a specific time instant.
+
+   As an example, the arc between node :math:`(s, 1)` and :math:`(B, 2)` with
+   capacity 2 represents a maximum flow of 2 units which,
+   starting from the source at time 1, reaches  node :math:`B`
+   in time instant 2. The arc 
+   connecting :math:`(s, 1)` with :math:`(s, 2)` instead represents a part of the flow
+   which, after time instant 1, remains in node :math:`s`.
+   
+   Any implementation of the maximum flow model for this special case
+   needs some non standard definitions in order to allow for an easy
+   definition of the network. In practice it is reasonable to assume
+   that the data contains the description of the graph and the time
+   horizon, and building the expanded network is left to the modeling
+   language itself.  As an example, consider the following data
+   describing a more elaborated situation. Here a time horizon of 5 is
+   chosen and a network with 6 arcs is defined:
+   
+   .. literalinclude:: AMPL/evacuation.dat
+      :caption: evacuation.dat
+      :language: ampl
+
+   A possibility for the model is the following, where we can observe
+   the definition of the expanded network as well as the
+   re-implementation of the maximum flow problem:
+   
+   .. literalinclude:: AMPL/evacuation.mod
+      :caption: evacuation.mod
+      :language: ampl
+
+   Running  a linear solver on this example generates an optimal
+   solution of value 10 with the following flows:
+
+   .. code-block:: ampl
+
+      S 1 s 1   10
+      s 1 A 2    3
+      s 1 B 4    3
+      s 1 s 2    4
+      A 2 B 3    2
+      A 2 t 3    1
+      A 3 A 4    1
+      A 3 B 4    2
+      A 3 t 4    1
+      A 4 t 5    1
+      B 3 t 4    2
+      B 4 t 5    5
+      s 2 A 3    4
+      t 3 t 4    1
+      t 4 T 5    4
+      t 5 T 5    6
+
+   The example shown here is extremely simplified; in a realistic application
+   other fundamental aspects should be included. In particular  it
+   would be advisable that out of each node the
+   whole flow is
+   routed along a single path and not split into different flows.
+   This is needed in order to be able to put clear and not ambiguous
+   directions to follow when leaving a node. 
+
+.. include:: closing.rst
+
