@@ -1,1 +1,165 @@
-html/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimization Models - Fabio Schoen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #f0f0f0;
+            font-size: 1.5em;
+            margin-bottom: 50px;
+            font-style: italic;
+        }
+        
+        .books-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .book-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        
+        .book-card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .book-card img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .book-card img:hover {
+            transform: scale(1.05);
+        }
+        
+        .book-card p {
+            color: #555;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1.2em;
+            }
+            
+            .books-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Optimization Models</h1>
+        <p class="subtitle">by Fabio Schoen</p>
+        
+        <div class="books-container">
+            <div class="book-card">
+                <h2>Free Online Edition</h2>
+                <a href="https://fabioschoen.github.io/OptimizationModels/html/contents.html" target="_blank">
+                    <img src="OM.png" alt="Optimization Models Online Edition">
+                </a>
+                <p>Access the complete book online for free. Perfect for students and researchers who want immediate access to all chapters and mathematical content.</p>
+                <a href="https://fabioschoen.github.io/OptimizationModels/html/contents.html" class="cta-button" target="_blank">Read Online</a>
+            </div>
+            
+            <div class="book-card">
+                <h2>Print Edition</h2>
+                <a href="https://www.amazon.com/Optimization-Models-Fabio-Schoen/dp/B0CTXM4B52" target="_blank">
+                    <img src="OM2.png" alt="Optimization Models Print Edition">
+                </a>
+                <p>Get the physical book from Amazon. Enjoy the convenience of a printed copy for deep study and easy reference wherever you are.</p>
+                <a href="https://www.amazon.com/Optimization-Models-Fabio-Schoen/dp/B0CTXM4B52" class="cta-button" target="_blank">Buy on Amazon</a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>&copy; 2022-2025 Fabio Schoen. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
